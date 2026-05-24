@@ -1,0 +1,5046 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IrrigationOS v8.0 Industrial Command Center</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <!-- Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+      :root {
+        --bg-base: #080c10;
+        --bg-panel: #0d1520;
+        --bg-panel-2: #111c2a;
+        --border: rgba(255, 255, 255, 0.06);
+        --border-accent: rgba(0, 200, 140, 0.25);
+        --text-primary: #e8f0f8;
+        --text-secondary: #6a8ba8;
+        --text-muted: #3a5068;
+        --accent: #00c88c;
+        --accent-dim: rgba(0, 200, 140, 0.15);
+        --accent-glow: rgba(0, 200, 140, 0.08);
+        --amber: #f59e0b;
+        --red: #ef4444;
+        --blue: #3b82f6;
+        --indigo: #6366f1;
+        --mono: "IBM Plex Mono", monospace;
+        --sans: "IBM Plex Sans", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--sans);
+        background: var(--bg-base);
+        color: var(--text-primary);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* Scanline overlay for industrial aesthetic */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.04) 2px,
+          rgba(0, 0, 0, 0.04) 4px
+        );
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      /* Corner-cut panels — industrial look */
+      .panel {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .panel::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        background: var(--bg-base);
+        clip-path: polygon(100% 0, 100% 100%, 0 100%);
+      }
+
+      .panel-accent {
+        border-color: var(--border-accent);
+        background: linear-gradient(
+          135deg,
+          rgba(0, 200, 140, 0.04) 0%,
+          var(--bg-panel) 50%
+        );
+      }
+
+      .panel-danger {
+        border-color: rgba(239, 68, 68, 0.3);
+        background: linear-gradient(
+          135deg,
+          rgba(239, 68, 68, 0.05) 0%,
+          var(--bg-panel) 50%
+        );
+      }
+
+      /* Monospace data readouts */
+      .data-readout {
+        font-family: var(--mono);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      /* Status LED */
+      .led {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .led-green {
+        background: var(--accent);
+        box-shadow:
+          0 0 6px var(--accent),
+          0 0 14px rgba(0, 200, 140, 0.4);
+      }
+      .led-red {
+        background: var(--red);
+        box-shadow:
+          0 0 6px var(--red),
+          0 0 14px rgba(239, 68, 68, 0.4);
+      }
+      .led-amber {
+        background: var(--amber);
+        box-shadow:
+          0 0 6px var(--amber),
+          0 0 14px rgba(245, 158, 11, 0.4);
+      }
+      .led-off {
+        background: #1e3048;
+      }
+
+      .led-pulse::before {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        animation: ledPulse 2s ease-in-out infinite;
+      }
+
+      .led-pulse-green::before {
+        background: rgba(0, 200, 140, 0.3);
+      }
+      .led-pulse-red::before {
+        background: rgba(239, 68, 68, 0.3);
+      }
+
+      @keyframes ledPulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.8;
+        }
+        50% {
+          transform: scale(2.2);
+          opacity: 0;
+        }
+      }
+
+      /* Valve toggle switch — heavy industrial feel */
+      .valve-toggle {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .valve-toggle input {
+        display: none;
+      }
+
+      .valve-track {
+        width: 52px;
+        height: 26px;
+        background: #0a1520;
+        border: 1px solid #1e3048;
+        border-radius: 2px;
+        position: relative;
+        transition: all 0.2s;
+      }
+
+      .valve-track::before {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        background: #3a5068;
+        transition: all 0.2s;
+        border-radius: 1px;
+      }
+
+      .valve-toggle input:checked + .valve-track {
+        background: rgba(0, 200, 140, 0.1);
+        border-color: var(--accent);
+      }
+
+      .valve-toggle input:checked + .valve-track::before {
+        transform: translateX(26px);
+        background: var(--accent);
+        box-shadow: 0 0 8px rgba(0, 200, 140, 0.5);
+      }
+
+      /* Tag / badge */
+      .tag {
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 2px 6px;
+        border-radius: 2px;
+      }
+
+      .tag-green {
+        background: rgba(0, 200, 140, 0.1);
+        color: var(--accent);
+        border: 1px solid rgba(0, 200, 140, 0.2);
+      }
+      .tag-red {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--red);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+      .tag-amber {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--amber);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+      }
+      .tag-blue {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--blue);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+      }
+      .tag-muted {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+      }
+
+      /* Top nav */
+      #topnav {
+        border-bottom: 1px solid var(--border);
+        background: rgba(8, 12, 16, 0.95);
+        backdrop-filter: blur(8px);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      /* Section labels */
+      .section-label {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1e3048;
+        border-radius: 2px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--accent);
+      }
+
+      /* Progress / activity bar */
+      .activity-bar {
+        height: 3px;
+        border-radius: 1px;
+        background: #1e3048;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .activity-bar-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        border-radius: 1px;
+        transition: width 1s ease;
+      }
+
+      /* Chart area */
+      .chart-container {
+        position: relative;
+        width: 100%;
+      }
+
+      /* Uptime grid */
+      .uptime-cell {
+        width: 8px;
+        height: 18px;
+        border-radius: 1px;
+        background: #1e3048;
+        transition: background 0.3s;
+        cursor: default;
+        flex-shrink: 0;
+      }
+
+      .uptime-cell.on {
+        background: var(--accent);
+        box-shadow: 0 0 4px rgba(0, 200, 140, 0.4);
+      }
+      .uptime-cell.off {
+        background: #1e3048;
+      }
+      .uptime-cell.error {
+        background: var(--red);
+      }
+
+      /* Log line */
+      .log-line {
+        display: grid;
+        grid-template-columns: 68px 52px 1fr;
+        gap: 8px;
+        align-items: start;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 11px;
+      }
+
+      .log-line:last-child {
+        border-bottom: none;
+      }
+
+      .log-ts {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+
+      .log-msg {
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+
+      /* Zone card glow on active */
+      .zone-card {
+        transition: all 0.3s;
+      }
+      .zone-card.relay-on {
+        border-color: rgba(0, 200, 140, 0.3) !important;
+        background: linear-gradient(
+          135deg,
+          rgba(0, 200, 140, 0.06) 0%,
+          var(--bg-panel) 60%
+        ) !important;
+      }
+
+      /* Modal */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(4px);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .modal-box {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        max-width: 520px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      /* Input */
+      .inp {
+        width: 100%;
+        background: #0a1520;
+        border: 1px solid #1e3048;
+        color: var(--text-primary);
+        font-family: var(--mono);
+        font-size: 13px;
+        padding: 8px 12px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .inp:focus {
+        border-color: var(--accent);
+      }
+
+      input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.5);
+      }
+
+      /* Day pill */
+      .day-pill {
+        padding: 6px 4px;
+        border: 1px solid #1e3048;
+        background: #0a1520;
+        color: var(--text-muted);
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.15s;
+        border-radius: 2px;
+        user-select: none;
+      }
+
+      .day-pill.active {
+        background: rgba(0, 200, 140, 0.15);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* Ticker */
+      .ticker-strip {
+        overflow: hidden;
+        position: relative;
+      }
+
+      .ticker-inner {
+        display: flex;
+        gap: 32px;
+        animation: tickerScroll 40s linear infinite;
+        white-space: nowrap;
+      }
+
+      @keyframes tickerScroll {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-50%);
+        }
+      }
+
+      /* Slot tab */
+      .slot-tab {
+        padding: 6px 12px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        border: 1px solid transparent;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 2px;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+
+      .slot-tab.active {
+        background: rgba(0, 200, 140, 0.1);
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      .slot-tab:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text-primary);
+      }
+
+      /* Btn */
+      .btn {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 9px 16px;
+        border-radius: 2px;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: none;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #000;
+      }
+      .btn-primary:hover {
+        background: #00dfa0;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+      }
+
+      .btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text-primary);
+      }
+
+      .btn-danger {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--red);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+      }
+
+      .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.2);
+      }
+
+      .btn-amber {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--amber);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+      }
+
+      .btn-amber:hover {
+        background: rgba(245, 158, 11, 0.2);
+      }
+
+      /* Run history mini chart dots */
+      .run-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        flex-shrink: 0;
+      }
+
+      /* HEALTH BAR indicator */
+      .health-ring {
+        width: 44px;
+        height: 44px;
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .health-ring svg {
+        position: absolute;
+        inset: 0;
+        transform: rotate(-90deg);
+      }
+
+      /* Overrides for Chart.js dark */
+      canvas {
+        display: block;
+      }
+
+      /* blink */
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+      .blink {
+        animation: blink 1.2s ease-in-out infinite;
+      }
+
+      /* fade in */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .fade-in {
+        animation: fadeInUp 0.4s ease forwards;
+      }
+
+      /* tooltip */
+      [data-tooltip] {
+        position: relative;
+      }
+      [data-tooltip]:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a2a3a;
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        font-size: 10px;
+        font-family: var(--mono);
+        padding: 4px 8px;
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 99;
+      }
+
+      /* no-scrollbar for tab row */
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* ══════════════════════════════════
+         LOGIN SCREEN
+      ══════════════════════════════════ */
+      #login-screen {
+        position: fixed;
+        inset: 0;
+        background: var(--bg-base);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      /* scanline on login too */
+      #login-screen::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.04) 2px,
+          rgba(0, 0, 0, 0.04) 4px
+        );
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .login-box {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 400px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        /* corner cut */
+        clip-path: polygon(
+          0 0,
+          calc(100% - 16px) 0,
+          100% 16px,
+          100% 100%,
+          16px 100%,
+          0 calc(100% - 16px)
+        );
+      }
+
+      .login-header {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 200, 140, 0.08) 0%,
+          transparent 60%
+        );
+        border-bottom: 1px solid var(--border);
+        padding: 28px 32px 24px;
+        text-align: center;
+      }
+
+      .login-logo {
+        width: 48px;
+        height: 48px;
+        background: var(--accent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        clip-path: polygon(0 0, 80% 0, 100% 20%, 100% 100%, 20% 100%, 0 80%);
+        margin-bottom: 14px;
+      }
+
+      .login-body {
+        padding: 28px 32px 32px;
+      }
+
+      .login-field {
+        margin-bottom: 18px;
+      }
+
+      .login-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .login-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .login-input-wrap .login-icon {
+        position: absolute;
+        left: 12px;
+        color: var(--text-muted);
+        pointer-events: none;
+        display: flex;
+      }
+
+      .login-inp {
+        width: 100%;
+        background: #080c10;
+        border: 1px solid #1e3048;
+        color: var(--text-primary);
+        font-family: var(--mono);
+        font-size: 13px;
+        padding: 11px 40px 11px 38px;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        border-radius: 2px;
+      }
+
+      .login-inp:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(0, 200, 140, 0.1);
+      }
+
+      .login-inp::placeholder {
+        color: var(--text-muted);
+      }
+
+      .login-eye {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        transition: color 0.15s;
+      }
+      .login-eye:hover {
+        color: var(--accent);
+      }
+
+      .login-btn {
+        width: 100%;
+        background: var(--accent);
+        color: #000;
+        border: none;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        padding: 13px;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          transform 0.1s;
+        margin-top: 8px;
+        border-radius: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .login-btn:hover {
+        background: #00dfa0;
+      }
+      .login-btn:active {
+        transform: scale(0.99);
+      }
+      .login-btn:disabled {
+        background: #1e3048;
+        color: var(--text-muted);
+        cursor: not-allowed;
+      }
+
+      .login-error {
+        display: none;
+        margin-top: 14px;
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        padding: 10px 14px;
+        border-radius: 2px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--red);
+        display: none;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .login-attempts {
+        margin-top: 12px;
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        min-height: 16px;
+      }
+
+      .login-locked {
+        background: rgba(239, 68, 68, 0.05);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        padding: 16px;
+        border-radius: 2px;
+        text-align: center;
+        display: none;
+      }
+
+      @keyframes loginShake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        20% {
+          transform: translateX(-8px);
+        }
+        40% {
+          transform: translateX(8px);
+        }
+        60% {
+          transform: translateX(-5px);
+        }
+        80% {
+          transform: translateX(5px);
+        }
+      }
+      .login-shake {
+        animation: loginShake 0.4s ease;
+      }
+
+      @keyframes loginFadeOut {
+        to {
+          opacity: 0;
+          transform: scale(1.02);
+        }
+      }
+      .login-fade-out {
+        animation: loginFadeOut 0.4s ease forwards;
+      }
+
+      /* hide main content while login is showing */
+      #app-content {
+        display: none;
+      }
+
+      /* ══════════════════════════════════
+         SETTINGS PANEL
+      ══════════════════════════════════ */
+      .settings-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(6px);
+        z-index: 500;
+        display: flex;
+        align-items: stretch;
+        justify-content: flex-end;
+      }
+
+      .settings-panel {
+        width: 100%;
+        max-width: 520px;
+        background: var(--bg-panel);
+        border-left: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        animation: slideInRight 0.25s ease;
+        overflow: hidden;
+      }
+
+      @keyframes slideInRight {
+        from {
+          transform: translateX(40px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .settings-header {
+        padding: 20px 24px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(0, 200, 140, 0.04) 0%,
+          transparent 60%
+        );
+      }
+
+      .settings-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+        overflow-x: auto;
+      }
+
+      .settings-tab {
+        flex: 1;
+        padding: 10px 8px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+
+      .settings-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        background: rgba(0, 200, 140, 0.04);
+      }
+
+      .settings-tab:hover:not(.active) {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .settings-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 24px;
+      }
+
+      .settings-section {
+        display: none;
+      }
+      .settings-section.active {
+        display: block;
+      }
+
+      /* User table */
+      .user-row {
+        display: grid;
+        grid-template-columns: 1fr 80px 90px 36px;
+        gap: 8px;
+        align-items: center;
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--border);
+        font-size: 11px;
+      }
+      .user-row:last-child {
+        border-bottom: none;
+      }
+      .user-row:hover {
+        background: rgba(255, 255, 255, 0.02);
+      }
+
+      .user-role-badge {
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 2px 6px;
+        border-radius: 2px;
+        text-align: center;
+      }
+
+      /* Small icon btn */
+      .icon-btn {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+      }
+      .icon-btn:hover {
+        border-color: var(--red);
+        color: var(--red);
+        background: rgba(239, 68, 68, 0.06);
+      }
+
+      /* Inline form inside settings */
+      .sett-inp {
+        width: 100%;
+        background: #080c10;
+        border: 1px solid #1e3048;
+        color: var(--text-primary);
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 8px 10px;
+        outline: none;
+        border-radius: 2px;
+        transition: border-color 0.2s;
+      }
+      .sett-inp:focus {
+        border-color: var(--accent);
+      }
+      .sett-inp::placeholder {
+        color: var(--text-muted);
+      }
+
+      .sett-select {
+        width: 100%;
+        background: #080c10;
+        border: 1px solid #1e3048;
+        color: var(--text-primary);
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 8px 10px;
+        outline: none;
+        border-radius: 2px;
+        cursor: pointer;
+      }
+      .sett-select:focus {
+        border-color: var(--accent);
+      }
+
+      .sett-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        display: block;
+        margin-bottom: 6px;
+      }
+
+      .sett-field {
+        margin-bottom: 14px;
+      }
+
+      .sett-card {
+        background: #080c10;
+        border: 1px solid var(--border);
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 2px;
+      }
+
+      .sett-alert {
+        padding: 10px 12px;
+        border-radius: 2px;
+        font-family: var(--mono);
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .sett-alert-success {
+        background: rgba(0, 200, 140, 0.08);
+        border: 1px solid rgba(0, 200, 140, 0.2);
+        color: var(--accent);
+      }
+      .sett-alert-error {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: var(--red);
+      }
+      .sett-alert-info {
+        background: rgba(59, 130, 246, 0.08);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        color: var(--blue);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══════════════════════════════════════ LOGIN SCREEN ═══ -->
+    <div id="login-screen">
+      <div class="login-box">
+        <!-- Header -->
+        <div class="login-header">
+          <div class="login-logo">
+            <i
+              data-lucide="sprout"
+              style="width: 26px; height: 26px; color: #000"
+            ></i>
+          </div>
+          <div
+            style="
+              font-family: var(--mono);
+              font-size: 15px;
+              font-weight: 700;
+              letter-spacing: -0.02em;
+              color: var(--text-primary);
+            "
+          >
+            IRRIGATION<span style="color: var(--accent)">OS</span>
+          </div>
+          <div
+            style="
+              font-family: var(--mono);
+              font-size: 9px;
+              color: var(--text-muted);
+              letter-spacing: 0.2em;
+              margin-top: 4px;
+            "
+          >
+            v8.0 INDUSTRIAL · SECURE ACCESS
+          </div>
+          <!-- status strip -->
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 6px;
+              margin-top: 14px;
+            "
+          >
+            <div
+              class="led led-green led-pulse led-pulse-green"
+              style="width: 6px; height: 6px"
+            ></div>
+            <span
+              style="
+                font-family: var(--mono);
+                font-size: 9px;
+                color: var(--text-muted);
+                letter-spacing: 0.1em;
+              "
+              >SYSTEM READY · AUTHENTICATION REQUIRED</span
+            >
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="login-body">
+          <!-- Locked state (shown after 5 failed attempts) -->
+          <div class="login-locked" id="login-locked-msg">
+            <i
+              data-lucide="lock"
+              style="
+                width: 20px;
+                height: 20px;
+                color: var(--red);
+                margin-bottom: 8px;
+              "
+            ></i>
+            <div
+              style="
+                font-family: var(--mono);
+                font-size: 11px;
+                font-weight: 700;
+                color: var(--red);
+                letter-spacing: 0.1em;
+              "
+            >
+              ACCESS LOCKED
+            </div>
+            <div
+              style="font-size: 11px; color: var(--text-muted); margin-top: 6px"
+            >
+              Too many failed attempts.
+            </div>
+            <div
+              style="
+                font-family: var(--mono);
+                font-size: 11px;
+                color: var(--amber);
+                margin-top: 4px;
+              "
+            >
+              Retry in <span id="lockout-countdown">60</span>s
+            </div>
+          </div>
+
+          <!-- Login form -->
+          <div id="login-form-wrap">
+            <!-- Operator ID -->
+            <div class="login-field">
+              <label class="login-label" for="login-id">Operator ID</label>
+              <div class="login-input-wrap">
+                <span class="login-icon">
+                  <i data-lucide="user" style="width: 15px; height: 15px"></i>
+                </span>
+                <input
+                  type="text"
+                  id="login-id"
+                  class="login-inp"
+                  placeholder="Enter operator ID"
+                  autocomplete="username"
+                  spellcheck="false"
+                  maxlength="32"
+                  onkeydown="
+                    if (event.key === 'Enter')
+                      document.getElementById('login-pass').focus();
+                  "
+                />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="login-field" style="margin-bottom: 6px">
+              <label class="login-label" for="login-pass">Password</label>
+              <div class="login-input-wrap">
+                <span class="login-icon">
+                  <i
+                    data-lucide="key-round"
+                    style="width: 15px; height: 15px"
+                  ></i>
+                </span>
+                <input
+                  type="password"
+                  id="login-pass"
+                  class="login-inp"
+                  placeholder="Enter password"
+                  autocomplete="current-password"
+                  maxlength="64"
+                  onkeydown="if (event.key === 'Enter') submitLogin();"
+                />
+                <button
+                  class="login-eye"
+                  onclick="togglePassword()"
+                  type="button"
+                  id="eye-btn"
+                  title="Show/hide password"
+                >
+                  <i
+                    data-lucide="eye"
+                    style="width: 15px; height: 15px"
+                    id="eye-icon"
+                  ></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Error message -->
+            <div class="login-error" id="login-error">
+              <i
+                data-lucide="shield-alert"
+                style="width: 14px; height: 14px; flex-shrink: 0"
+              ></i>
+              <span id="login-error-text">Invalid credentials.</span>
+            </div>
+
+            <!-- Attempts counter -->
+            <div class="login-attempts" id="login-attempts-msg"></div>
+
+            <!-- Submit -->
+            <button class="login-btn" id="login-btn" onclick="submitLogin()">
+              <i data-lucide="log-in" style="width: 15px; height: 15px"></i>
+              AUTHENTICATE
+            </button>
+          </div>
+          <!-- /login-form-wrap -->
+
+          <!-- Footer info -->
+          <div
+            style="
+              margin-top: 20px;
+              padding-top: 16px;
+              border-top: 1px solid var(--border);
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
+            <span
+              style="
+                font-family: var(--mono);
+                font-size: 9px;
+                color: var(--text-muted);
+              "
+              >RUA FARMS · SECURE CONSOLE</span
+            >
+            <span
+              style="
+                font-family: var(--mono);
+                font-size: 9px;
+                color: var(--text-muted);
+              "
+              id="login-clock"
+              >--:--:--</span
+            >
+          </div>
+        </div>
+        <!-- /login-body -->
+      </div>
+      <!-- /login-box -->
+    </div>
+    <!-- /login-screen -->
+
+    <!-- ═══════════════════════════════════════ APP (hidden until login) ═══ -->
+    <div id="app-content">
+      <!-- ═══════════════════════════════════════ TOP NAV ═══ -->
+      <nav id="topnav">
+        <div
+          class="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4"
+        >
+          <!-- Brand -->
+          <div class="flex items-center gap-3 flex-shrink-0">
+            <div
+              style="
+                width: 28px;
+                height: 28px;
+                background: var(--accent);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                clip-path: polygon(
+                  0 0,
+                  85% 0,
+                  100% 15%,
+                  100% 100%,
+                  15% 100%,
+                  0 85%
+                );
+              "
+            >
+              <i
+                data-lucide="sprout"
+                style="width: 16px; height: 16px; color: #000"
+              ></i>
+            </div>
+            <div>
+              <span
+                style="
+                  font-family: var(--mono);
+                  font-size: 13px;
+                  font-weight: 700;
+                  color: var(--text-primary);
+                  letter-spacing: -0.02em;
+                "
+              >
+                IRRIGATION<span style="color: var(--accent)">OS</span>
+              </span>
+              <span
+                style="
+                  font-family: var(--mono);
+                  font-size: 9px;
+                  color: var(--text-muted);
+                  letter-spacing: 0.1em;
+                  display: block;
+                  line-height: 1;
+                "
+                >v8.0 INDUSTRIAL</span
+              >
+            </div>
+          </div>
+
+          <!-- Ticker strip -->
+          <div
+            class="ticker-strip flex-1 hidden lg:block mx-4 py-1"
+            style="
+              border-left: 1px solid var(--border);
+              border-right: 1px solid var(--border);
+              padding: 4px 12px;
+            "
+          >
+            <div class="ticker-inner section-label" id="ticker-content">
+              <span>SYSTEM ONLINE &mdash;</span>
+              <span>UPTIME: <span id="ticker-uptime">0d 0h 0m</span></span>
+              <span>ACTIVE ZONES: <span id="ticker-zones">0/8</span></span>
+              <span
+                >TOTAL RUNTIME TODAY:
+                <span id="ticker-runtime">0 min</span></span
+              >
+              <span
+                >CONTROLLER: <span id="ticker-ctrl">DISCONNECTED</span></span
+              >
+              <span
+                >NEXT SCHEDULE: <span id="ticker-next">SCANNING...</span></span
+              >
+              <span>RTC TEMP: <span id="ticker-temp">--°C</span></span>
+              <span>SYSTEM ONLINE &mdash;</span>
+              <span>UPTIME: <span id="ticker-uptime2">0d 0h 0m</span></span>
+              <span>ACTIVE ZONES: <span id="ticker-zones2">0/8</span></span>
+              <span
+                >TOTAL RUNTIME TODAY:
+                <span id="ticker-runtime2">0 min</span></span
+              >
+              <span
+                >CONTROLLER: <span id="ticker-ctrl2">DISCONNECTED</span></span
+              >
+              <span
+                >NEXT SCHEDULE: <span id="ticker-next2">SCANNING...</span></span
+              >
+              <span>RTC TEMP: <span id="ticker-temp2">--°C</span></span>
+            </div>
+          </div>
+
+          <!-- Right controls -->
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <!-- Connection badge -->
+            <div
+              class="hidden sm:flex items-center gap-2 px-3 py-1.5"
+              style="
+                border: 1px solid var(--border);
+                background: var(--bg-panel);
+              "
+            >
+              <div
+                class="led led-pulse"
+                id="nav-led"
+                style="background: #1e3048"
+              ></div>
+              <span
+                id="nav-status"
+                style="
+                  font-family: var(--mono);
+                  font-size: 10px;
+                  font-weight: 700;
+                  letter-spacing: 0.1em;
+                  color: var(--text-muted);
+                "
+                >OFFLINE</span
+              >
+            </div>
+
+            <button
+              class="btn btn-ghost"
+              onclick="openEmergencyStop()"
+              style="padding: 7px 12px"
+            >
+              <i
+                data-lucide="octagon-alert"
+                style="width: 14px; height: 14px; color: var(--red)"
+              ></i>
+              <span style="color: var(--red)">E-STOP</span>
+            </button>
+
+            <button
+              class="btn btn-ghost"
+              onclick="openSettings()"
+              style="padding: 7px 10px"
+              title="Settings"
+            >
+              <i data-lucide="settings" style="width: 15px; height: 15px"></i>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- ═══════════════════════════════════════ MAIN ═══ -->
+      <main class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        <!-- ── ROW 1: KPI Metrics ── -->
+        <section class="grid grid-cols-2 lg:grid-cols-6 gap-3">
+          <!-- RTC Temperature -->
+          <div class="panel p-4 col-span-1">
+            <div class="flex justify-between items-start mb-3">
+              <div class="section-label">RTC TEMP</div>
+              <div class="tag tag-amber">DS3231</div>
+            </div>
+            <div
+              class="data-readout"
+              style="font-size: 28px; color: var(--amber)"
+              id="kpi-temp"
+            >
+              --.-
+            </div>
+            <div
+              style="font-size: 10px; color: var(--text-muted); margin-top: 2px"
+            >
+              ° Celsius
+            </div>
+            <div class="activity-bar mt-3">
+              <div
+                class="activity-bar-fill"
+                id="kpi-temp-bar"
+                style="width: 0%; background: var(--amber)"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Active Zones -->
+          <div class="panel p-4 col-span-1 panel-accent">
+            <div class="flex justify-between items-start mb-3">
+              <div class="section-label">FLOW STATE</div>
+              <div class="tag tag-green">LIVE</div>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <div
+                class="data-readout"
+                style="font-size: 28px; color: var(--accent)"
+                id="kpi-zones"
+              >
+                0
+              </div>
+              <div
+                style="
+                  font-family: var(--mono);
+                  font-size: 14px;
+                  color: var(--text-muted);
+                "
+              >
+                /8
+              </div>
+            </div>
+            <div
+              style="font-size: 10px; color: var(--text-muted); margin-top: 2px"
+            >
+              Solenoids Open
+            </div>
+            <div class="activity-bar mt-3">
+              <div
+                class="activity-bar-fill"
+                id="kpi-zones-bar"
+                style="width: 0%; background: var(--accent)"
+              ></div>
+            </div>
+          </div>
+
+          <!-- RTC Clock -->
+          <div class="panel p-4 col-span-2">
+            <div class="flex justify-between items-start mb-3">
+              <div class="section-label">RTC CLOCK</div>
+              <div class="tag tag-blue">UTC+7</div>
+            </div>
+            <div
+              class="data-readout"
+              style="font-size: 26px; color: var(--text-primary)"
+              id="kpi-time"
+            >
+              --:--:--
+            </div>
+            <div
+              style="
+                font-family: var(--mono);
+                font-size: 10px;
+                color: var(--text-muted);
+                margin-top: 4px;
+              "
+              id="kpi-date"
+            >
+              --- --, ----
+            </div>
+          </div>
+
+          <!-- System Uptime -->
+          <div class="panel p-4 col-span-1">
+            <div class="flex justify-between items-start mb-3">
+              <div class="section-label">SYS UPTIME</div>
+              <div class="tag tag-muted" id="kpi-uptime-tag">TRACKING</div>
+            </div>
+            <div
+              class="data-readout"
+              style="font-size: 20px; color: var(--text-primary)"
+              id="kpi-uptime"
+            >
+              0d 0h 0m
+            </div>
+            <div
+              style="font-size: 10px; color: var(--text-muted); margin-top: 2px"
+            >
+              Since last connect
+            </div>
+          </div>
+
+          <!-- Network / IP -->
+          <div class="panel p-4 col-span-1">
+            <div class="flex justify-between items-start mb-3">
+              <div class="section-label">NETWORK</div>
+              <div class="tag tag-muted">DHCP</div>
+            </div>
+            <div
+              class="data-readout"
+              style="font-size: 13px; color: var(--indigo)"
+              id="kpi-ip"
+            >
+              ?.?.?.?
+            </div>
+            <div
+              style="font-size: 10px; color: var(--text-muted); margin-top: 4px"
+            >
+              Latency:
+              <span
+                id="kpi-ping"
+                class="data-readout"
+                style="font-size: 10px; color: var(--text-secondary)"
+                >-- ms</span
+              >
+            </div>
+          </div>
+        </section>
+
+        <!-- ── ROW 2: Charts + Diagnostics ── -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- Zone Activity Heatmap / Run History -->
+          <div class="panel p-5 lg:col-span-2">
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <div class="section-label mb-1">
+                  ZONE ACTIVITY — 24H RUN HISTORY
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted)">
+                  Each bar = 30-min window · Green = active
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  class="btn btn-ghost"
+                  style="padding: 5px 10px; font-size: 10px"
+                  onclick="exportRunHistory()"
+                >
+                  <i
+                    data-lucide="download"
+                    style="width: 12px; height: 12px"
+                  ></i>
+                  EXPORT
+                </button>
+                <button
+                  class="btn btn-ghost"
+                  style="padding: 5px 10px; font-size: 10px"
+                  onclick="clearRunHistory()"
+                >
+                  <i
+                    data-lucide="trash-2"
+                    style="width: 12px; height: 12px"
+                  ></i>
+                  CLEAR
+                </button>
+              </div>
+            </div>
+
+            <div id="run-history-grid" class="space-y-2">
+              <!-- Filled by JS -->
+            </div>
+
+            <!-- Stats row -->
+            <div
+              class="grid grid-cols-4 gap-3 mt-5 pt-4"
+              style="border-top: 1px solid var(--border)"
+            >
+              <div>
+                <div class="section-label mb-1">TODAY</div>
+                <div
+                  class="data-readout"
+                  style="font-size: 18px; color: var(--accent)"
+                  id="stat-today"
+                >
+                  0 min
+                </div>
+              </div>
+              <div>
+                <div class="section-label mb-1">AVG/SESSION</div>
+                <div
+                  class="data-readout"
+                  style="font-size: 18px; color: var(--text-primary)"
+                  id="stat-avg"
+                >
+                  0 min
+                </div>
+              </div>
+              <div>
+                <div class="section-label mb-1">TOTAL CYCLES</div>
+                <div
+                  class="data-readout"
+                  style="font-size: 18px; color: var(--text-primary)"
+                  id="stat-cycles"
+                >
+                  0
+                </div>
+              </div>
+              <div>
+                <div class="section-label mb-1">PEAK ZONES</div>
+                <div
+                  class="data-readout"
+                  style="font-size: 18px; color: var(--amber)"
+                  id="stat-peak"
+                >
+                  0
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Diagnostics -->
+          <div class="panel p-5 space-y-4">
+            <div class="section-label mb-2">SYSTEM DIAGNOSTICS</div>
+
+            <!-- Health indicators -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div style="font-size: 11px; color: var(--text-secondary)">
+                  Firebase Link
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="led led-off" id="diag-fb-led"></div>
+                  <span
+                    class="data-readout"
+                    style="font-size: 10px; color: var(--text-muted)"
+                    id="diag-fb"
+                    >OFFLINE</span
+                  >
+                </div>
+              </div>
+              <div class="activity-bar">
+                <div
+                  class="activity-bar-fill"
+                  id="diag-fb-bar"
+                  style="width: 0%; background: var(--accent)"
+                ></div>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div style="font-size: 11px; color: var(--text-secondary)">
+                  RTC Module
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="led led-off" id="diag-rtc-led"></div>
+                  <span
+                    class="data-readout"
+                    style="font-size: 10px; color: var(--text-muted)"
+                    id="diag-rtc"
+                    >UNKNOWN</span
+                  >
+                </div>
+              </div>
+              <div class="activity-bar">
+                <div
+                  class="activity-bar-fill"
+                  id="diag-rtc-bar"
+                  style="width: 0%; background: var(--accent)"
+                ></div>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div style="font-size: 11px; color: var(--text-secondary)">
+                  WiFi Signal
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="led led-off" id="diag-wifi-led"></div>
+                  <span
+                    class="data-readout"
+                    style="font-size: 10px; color: var(--text-muted)"
+                    id="diag-wifi"
+                    >--</span
+                  >
+                </div>
+              </div>
+              <div class="activity-bar">
+                <div
+                  class="activity-bar-fill"
+                  id="diag-wifi-bar"
+                  style="width: 0%; background: var(--blue)"
+                ></div>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div style="font-size: 11px; color: var(--text-secondary)">
+                  EEPROM Sync
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="led led-green" id="diag-eeprom-led"></div>
+                  <span
+                    class="data-readout"
+                    style="font-size: 10px; color: var(--accent)"
+                    id="diag-eeprom"
+                    >OK</span
+                  >
+                </div>
+              </div>
+              <div class="activity-bar">
+                <div
+                  class="activity-bar-fill"
+                  id="diag-eeprom-bar"
+                  style="width: 100%; background: var(--accent)"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Divider -->
+            <div style="border-top: 1px solid var(--border); padding-top: 12px">
+              <div class="section-label mb-3">QUICK ACTIONS</div>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  class="btn btn-ghost"
+                  onclick="setAllManual(false)"
+                  style="font-size: 10px; padding: 7px 8px"
+                >
+                  <i
+                    data-lucide="x-circle"
+                    style="width: 12px; height: 12px"
+                  ></i>
+                  ALL OFF
+                </button>
+                <button
+                  class="btn btn-ghost"
+                  onclick="setAllManual(true)"
+                  style="
+                    font-size: 10px;
+                    padding: 7px 8px;
+                    color: var(--accent);
+                    border-color: rgba(0, 200, 140, 0.2);
+                  "
+                >
+                  <i
+                    data-lucide="check-circle"
+                    style="width: 12px; height: 12px"
+                  ></i>
+                  ALL ON
+                </button>
+              </div>
+              <div class="grid grid-cols-1 gap-2 mt-2">
+                <button
+                  class="btn btn-ghost"
+                  onclick="downloadLogAsCSV()"
+                  style="font-size: 10px; padding: 7px 8px"
+                >
+                  <i
+                    data-lucide="file-down"
+                    style="width: 12px; height: 12px"
+                  ></i>
+                  EXPORT AUDIT LOG CSV
+                </button>
+              </div>
+            </div>
+
+            <!-- Log cache + latency metrics -->
+            <div
+              style="border-top: 1px solid var(--border); padding-top: 12px"
+              class="grid grid-cols-2 gap-3"
+            >
+              <div>
+                <div class="section-label mb-1">LOG CACHE</div>
+                <div
+                  class="data-readout"
+                  style="font-size: 16px; color: var(--text-primary)"
+                  id="diag-cache"
+                >
+                  0
+                </div>
+              </div>
+              <div>
+                <div class="section-label mb-1">SYNC LATENCY</div>
+                <div
+                  class="data-readout"
+                  style="font-size: 16px; color: var(--text-primary)"
+                  id="diag-latency"
+                >
+                  -- ms
+                </div>
+              </div>
+              <div>
+                <div class="section-label mb-1">POLL COUNT</div>
+                <div
+                  class="data-readout"
+                  style="font-size: 16px; color: var(--text-primary)"
+                  id="diag-polls"
+                >
+                  0
+                </div>
+              </div>
+              <div>
+                <div class="section-label mb-1">ERROR COUNT</div>
+                <div
+                  class="data-readout"
+                  style="font-size: 16px; color: var(--red)"
+                  id="diag-errors"
+                >
+                  0
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── ROW 3: Audit Log ── -->
+        <section>
+          <div
+            class="panel p-5"
+            style="height: 220px; display: flex; flex-direction: column"
+          >
+            <div class="flex justify-between items-center mb-3">
+              <div
+                class="text-slate-400 font-extrabold text-[10px] tracking-widest uppercase flex items-center gap-1.5"
+              >
+                <i data-lucide="scroll" class="w-4 h-4 text-emerald-400"></i>
+                LIVE AUDIT LOG STREAM
+              </div>
+              <div class="flex items-center gap-3">
+                <div
+                  id="log-status-led"
+                  class="led led-off"
+                  style="width: 6px; height: 6px"
+                ></div>
+                <span
+                  id="log-status-text"
+                  style="
+                    font-family: var(--mono);
+                    font-size: 9px;
+                    color: var(--text-muted);
+                  "
+                  >OFFLINE</span
+                >
+                <button
+                  class="btn btn-ghost"
+                  onclick="clearLogs()"
+                  style="padding: 3px 8px; font-size: 9px"
+                >
+                  CLEAR
+                </button>
+              </div>
+            </div>
+            <div
+              id="log-container"
+              style="flex: 1; overflow-y: auto; padding-right: 4px"
+            >
+              <div
+                style="
+                  color: var(--text-muted);
+                  font-size: 11px;
+                  text-align: center;
+                  padding: 32px 0;
+                  font-family: var(--mono);
+                "
+              >
+                AWAITING SYSTEM EVENTS...
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── ROW 4: Zone Controllers ── -->
+        <section>
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <div
+                style="
+                  font-size: 16px;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                <i
+                  data-lucide="grid-3x3"
+                  style="width: 18px; height: 18px; color: var(--accent)"
+                ></i>
+                VALVE CONTROL MATRIX
+              </div>
+              <div
+                style="
+                  font-size: 11px;
+                  color: var(--text-muted);
+                  margin-top: 2px;
+                "
+              >
+                8 solenoid zones · 6 independent timers each · Real-time relay
+                feedback
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="btn btn-ghost"
+                onclick="refreshAll()"
+                style="font-size: 10px; padding: 7px 10px"
+              >
+                <i
+                  data-lucide="refresh-cw"
+                  style="width: 12px; height: 12px"
+                ></i>
+                REFRESH
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="zones-grid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
+            <!-- Zone cards rendered by JS -->
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer
+          style="
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+          "
+        >
+          <div
+            style="
+              font-family: var(--mono);
+              font-size: 9px;
+              color: var(--text-muted);
+              letter-spacing: 0.1em;
+            "
+          >
+            © 2026 IRRIGATIONOS SYSTEMS · RUA FARMS AUTOMATION NETWORK · v8.0
+            INDUSTRIAL
+          </div>
+          <div
+            style="
+              font-family: var(--mono);
+              font-size: 9px;
+              color: var(--text-muted);
+              letter-spacing: 0.05em;
+              display: flex;
+              gap: 16px;
+            "
+          >
+            <span>DS3231 SYNC SERVICE</span>
+            <span>·</span>
+            <span>SSL RECOVERY ENGINE</span>
+            <span>·</span>
+            <span id="footer-time">--:--:--</span>
+          </div>
+        </footer>
+      </main>
+
+      <!-- ═══════════ SETTINGS PANEL ═══════════ -->
+      <div
+        id="settings-overlay"
+        class="settings-overlay"
+        style="display: none"
+        onclick="settingsOverlayClick(event)"
+      >
+        <div class="settings-panel" id="settings-panel">
+          <!-- Header -->
+          <div class="settings-header">
+            <div>
+              <div class="section-label mb-1">SYSTEM SETTINGS</div>
+              <div
+                style="
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                <i
+                  data-lucide="settings"
+                  style="width: 16px; height: 16px; color: var(--accent)"
+                ></i>
+                Configuration &amp; User Management
+              </div>
+            </div>
+            <button
+              onclick="closeSettings()"
+              style="
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                cursor: pointer;
+                padding: 6px;
+              "
+            >
+              <i data-lucide="x" style="width: 18px; height: 18px"></i>
+            </button>
+          </div>
+
+          <!-- Tabs -->
+          <div class="settings-tabs">
+            <button
+              class="settings-tab active"
+              id="stab-users"
+              onclick="openSettingsTab('users')"
+            >
+              <i
+                data-lucide="users"
+                style="
+                  width: 12px;
+                  height: 12px;
+                  display: inline-block;
+                  vertical-align: middle;
+                  margin-right: 4px;
+                "
+              ></i
+              >User Accounts
+            </button>
+            <button
+              class="settings-tab"
+              id="stab-firebase"
+              onclick="openSettingsTab('firebase')"
+            >
+              <i
+                data-lucide="database"
+                style="
+                  width: 12px;
+                  height: 12px;
+                  display: inline-block;
+                  vertical-align: middle;
+                  margin-right: 4px;
+                "
+              ></i
+              >Firebase
+            </button>
+            <button
+              class="settings-tab"
+              id="stab-about"
+              onclick="openSettingsTab('about')"
+            >
+              <i
+                data-lucide="info"
+                style="
+                  width: 12px;
+                  height: 12px;
+                  display: inline-block;
+                  vertical-align: middle;
+                  margin-right: 4px;
+                "
+              ></i
+              >About
+            </button>
+          </div>
+
+          <!-- Body -->
+          <div class="settings-body">
+            <!-- ── TAB: USERS ── -->
+            <div class="settings-section active" id="ssec-users">
+              <div
+                id="users-alert"
+                style="display: none"
+                class="sett-alert"
+              ></div>
+
+              <!-- Current users table -->
+              <div class="sett-card" style="padding: 0; overflow: hidden">
+                <div
+                  style="
+                    padding: 12px 14px;
+                    border-bottom: 1px solid var(--border);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                  "
+                >
+                  <div class="section-label">REGISTERED USERS</div>
+                  <span id="users-count-badge" class="tag tag-muted"
+                    >0 users</span
+                  >
+                </div>
+                <div style="padding: 0">
+                  <!-- header row -->
+                  <div
+                    style="
+                      display: grid;
+                      grid-template-columns: 1fr 80px 90px 36px;
+                      gap: 8px;
+                      padding: 7px 10px;
+                      border-bottom: 1px solid var(--border);
+                    "
+                  >
+                    <span class="section-label" style="font-size: 9px"
+                      >ID / DISPLAY</span
+                    >
+                    <span class="section-label" style="font-size: 9px"
+                      >ROLE</span
+                    >
+                    <span class="section-label" style="font-size: 9px"
+                      >PASSWORD</span
+                    >
+                    <span></span>
+                  </div>
+                  <div id="users-table-body">
+                    <!-- filled by JS -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Add / Edit user form -->
+              <div class="sett-card">
+                <div class="section-label mb-3" id="user-form-title">
+                  ADD NEW USER
+                </div>
+
+                <input type="hidden" id="edit-user-original-id" />
+
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 10px;
+                  "
+                >
+                  <div class="sett-field">
+                    <label class="sett-label">Operator ID</label>
+                    <input
+                      type="text"
+                      id="new-user-id"
+                      class="sett-inp"
+                      placeholder="e.g. john"
+                      maxlength="32"
+                      spellcheck="false"
+                    />
+                  </div>
+                  <div class="sett-field">
+                    <label class="sett-label">Display Name</label>
+                    <input
+                      type="text"
+                      id="new-user-display"
+                      class="sett-inp"
+                      placeholder="e.g. John Smith"
+                      maxlength="40"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 10px;
+                  "
+                >
+                  <div class="sett-field">
+                    <label class="sett-label">Password</label>
+                    <div style="position: relative">
+                      <input
+                        type="password"
+                        id="new-user-pass"
+                        class="sett-inp"
+                        placeholder="Min 4 characters"
+                        maxlength="64"
+                        style="padding-right: 36px"
+                      />
+                      <button
+                        onclick="toggleNewUserPass()"
+                        style="
+                          position: absolute;
+                          right: 8px;
+                          top: 50%;
+                          transform: translateY(-50%);
+                          background: none;
+                          border: none;
+                          cursor: pointer;
+                          color: var(--text-muted);
+                          display: flex;
+                        "
+                        title="Show/hide"
+                      >
+                        <i
+                          data-lucide="eye"
+                          style="width: 13px; height: 13px"
+                          id="new-pass-eye"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="sett-field">
+                    <label class="sett-label">Role</label>
+                    <select id="new-user-role" class="sett-select">
+                      <option value="ADMIN">ADMIN</option>
+                      <option value="OPERATOR" selected>OPERATOR</option>
+                      <option value="VIEWER">VIEWER</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top: 4px">
+                  <button
+                    class="btn btn-primary"
+                    onclick="saveUserForm()"
+                    style="flex: 1; font-size: 11px; padding: 9px"
+                  >
+                    <i
+                      data-lucide="user-plus"
+                      style="width: 13px; height: 13px"
+                    ></i>
+                    <span id="user-form-btn-label">ADD USER</span>
+                  </button>
+                  <button
+                    class="btn btn-ghost"
+                    onclick="resetUserForm()"
+                    id="cancel-edit-user-btn"
+                    style="display: none; font-size: 10px; padding: 9px 12px"
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </div>
+
+              <!-- Danger zone -->
+              <div
+                class="sett-card"
+                style="border-color: rgba(239, 68, 68, 0.15)"
+              >
+                <div class="section-label mb-2" style="color: var(--red)">
+                  DANGER ZONE
+                </div>
+                <div
+                  style="
+                    font-size: 11px;
+                    color: var(--text-muted);
+                    margin-bottom: 10px;
+                  "
+                >
+                  Reset all users back to factory defaults. This cannot be
+                  undone.
+                </div>
+                <button
+                  class="btn btn-danger"
+                  onclick="resetUsersToDefault()"
+                  style="font-size: 10px; padding: 8px 14px"
+                >
+                  <i
+                    data-lucide="rotate-ccw"
+                    style="width: 12px; height: 12px"
+                  ></i>
+                  RESET TO DEFAULT USERS
+                </button>
+              </div>
+            </div>
+            <!-- /ssec-users -->
+
+            <!-- ── TAB: FIREBASE ── -->
+            <div class="settings-section" id="ssec-firebase">
+              <div id="fb-alert" style="display: none" class="sett-alert"></div>
+
+              <!-- Current URL display -->
+              <div class="sett-card">
+                <div class="section-label mb-2">ACTIVE DATABASE URL</div>
+                <div
+                  style="
+                    font-family: var(--mono);
+                    font-size: 11px;
+                    color: var(--accent);
+                    word-break: break-all;
+                    padding: 10px;
+                    background: #080c10;
+                    border: 1px solid var(--border);
+                    border-radius: 2px;
+                  "
+                  id="fb-active-url"
+                >
+                  —
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    margin-top: 8px;
+                  "
+                >
+                  <div
+                    class="led"
+                    id="fb-status-led"
+                    style="background: #1e3048; width: 6px; height: 6px"
+                  ></div>
+                  <span
+                    style="
+                      font-family: var(--mono);
+                      font-size: 10px;
+                      color: var(--text-muted);
+                    "
+                    id="fb-status-text"
+                    >NOT TESTED</span
+                  >
+                </div>
+              </div>
+
+              <!-- Change URL form -->
+              <div class="sett-card">
+                <div class="section-label mb-3">CONFIGURE DATABASE URL</div>
+
+                <div class="sett-field">
+                  <label class="sett-label"
+                    >Firebase Realtime Database URL</label
+                  >
+                  <input
+                    type="url"
+                    id="new-fb-url"
+                    class="sett-inp"
+                    placeholder="https://your-project-default-rtdb.region.firebasedatabase.app"
+                    spellcheck="false"
+                  />
+                  <div
+                    style="
+                      font-size: 10px;
+                      color: var(--text-muted);
+                      margin-top: 5px;
+                      font-family: var(--mono);
+                    "
+                  >
+                    Include https:// · No trailing slash · Must allow public
+                    read/write or provide auth token
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 8px">
+                  <button
+                    class="btn btn-ghost"
+                    onclick="testFirebaseURL()"
+                    style="font-size: 10px; padding: 9px 12px"
+                  >
+                    <i data-lucide="wifi" style="width: 12px; height: 12px"></i>
+                    TEST CONNECTION
+                  </button>
+                  <button
+                    class="btn btn-primary"
+                    onclick="applyFirebaseURL()"
+                    style="flex: 1; font-size: 11px; padding: 9px"
+                  >
+                    <i data-lucide="save" style="width: 13px; height: 13px"></i>
+                    SAVE &amp; RECONNECT
+                  </button>
+                </div>
+              </div>
+
+              <!-- Known regions info -->
+              <div
+                class="sett-card"
+                style="border-color: rgba(59, 130, 246, 0.15)"
+              >
+                <div class="section-label mb-2" style="color: var(--blue)">
+                  FIREBASE URL FORMAT
+                </div>
+                <div
+                  style="
+                    font-size: 11px;
+                    color: var(--text-muted);
+                    line-height: 1.7;
+                    font-family: var(--mono);
+                  "
+                >
+                  US default:<br />
+                  <span style="color: var(--text-secondary)"
+                    >https://PROJECT-default-rtdb.firebaseio.com</span
+                  ><br /><br />
+                  Asia / Southeast Asia:<br />
+                  <span style="color: var(--text-secondary)"
+                    >https://PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app</span
+                  ><br /><br />
+                  Europe:<br />
+                  <span style="color: var(--text-secondary)"
+                    >https://PROJECT-default-rtdb.europe-west1.firebasedatabase.app</span
+                  >
+                </div>
+              </div>
+
+              <!-- Danger: reset -->
+              <div
+                class="sett-card"
+                style="border-color: rgba(239, 68, 68, 0.15)"
+              >
+                <div class="section-label mb-2" style="color: var(--red)">
+                  RESET URL
+                </div>
+                <div
+                  style="
+                    font-size: 11px;
+                    color: var(--text-muted);
+                    margin-bottom: 10px;
+                  "
+                >
+                  Restore the factory default Firebase URL (RUA Farm).
+                </div>
+                <button
+                  class="btn btn-danger"
+                  onclick="resetFirebaseURL()"
+                  style="font-size: 10px; padding: 8px 14px"
+                >
+                  <i
+                    data-lucide="rotate-ccw"
+                    style="width: 12px; height: 12px"
+                  ></i>
+                  RESTORE DEFAULT URL
+                </button>
+              </div>
+            </div>
+            <!-- /ssec-firebase -->
+
+            <!-- ── TAB: ABOUT ── -->
+            <div class="settings-section" id="ssec-about">
+              <div
+                class="sett-card"
+                style="text-align: center; padding: 28px 20px"
+              >
+                <div
+                  style="
+                    width: 52px;
+                    height: 52px;
+                    background: var(--accent);
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    clip-path: polygon(
+                      0 0,
+                      80% 0,
+                      100% 20%,
+                      100% 100%,
+                      20% 100%,
+                      0 80%
+                    );
+                    margin-bottom: 14px;
+                  "
+                >
+                  <i
+                    data-lucide="sprout"
+                    style="width: 28px; height: 28px; color: #000"
+                  ></i>
+                </div>
+                <div
+                  style="
+                    font-family: var(--mono);
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: var(--text-primary);
+                  "
+                >
+                  IRRIGATION<span style="color: var(--accent)">OS</span>
+                </div>
+                <div
+                  style="
+                    font-family: var(--mono);
+                    font-size: 10px;
+                    color: var(--text-muted);
+                    letter-spacing: 0.2em;
+                    margin-top: 4px;
+                  "
+                >
+                  v8.0 INDUSTRIAL
+                </div>
+                <div
+                  style="
+                    font-size: 12px;
+                    color: var(--text-secondary);
+                    margin-top: 14px;
+                    line-height: 1.7;
+                  "
+                >
+                  Firebase RTDB · DS3231 RTC · 8 Relay Zones<br />
+                  6 Timer Slots per Zone · Run History Analytics<br />
+                  Industrial Command Dashboard
+                </div>
+              </div>
+              <div class="sett-card">
+                <div class="section-label mb-3">SYSTEM INFO</div>
+                <div
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    font-family: var(--mono);
+                    font-size: 11px;
+                  "
+                >
+                  <div style="display: flex; justify-content: space-between">
+                    <span style="color: var(--text-muted)">Dashboard Ver</span
+                    ><span style="color: var(--text-primary)">v8.0.0</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between">
+                    <span style="color: var(--text-muted)">Firebase SDK</span
+                    ><span style="color: var(--text-primary)"
+                      >10.7.1 compat</span
+                    >
+                  </div>
+                  <div style="display: flex; justify-content: space-between">
+                    <span style="color: var(--text-muted)">Storage</span
+                    ><span style="color: var(--text-primary)"
+                      >localStorage</span
+                    >
+                  </div>
+                  <div style="display: flex; justify-content: space-between">
+                    <span style="color: var(--text-muted)"
+                      >Registered Users</span
+                    ><span style="color: var(--accent)" id="about-user-count"
+                      >—</span
+                    >
+                  </div>
+                  <div style="display: flex; justify-content: space-between">
+                    <span style="color: var(--text-muted)">Firebase URL</span
+                    ><span style="color: var(--accent)" id="about-fb-region"
+                      >—</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- /ssec-about -->
+          </div>
+          <!-- /settings-body -->
+        </div>
+        <!-- /settings-panel -->
+      </div>
+      <!-- /settings-overlay -->
+
+      <!-- ═══════════ EMERGENCY STOP MODAL ═══════════ -->
+      <div id="modal-emergency" class="modal-overlay" style="display: none">
+        <div
+          class="modal-box p-6 space-y-5"
+          style="max-width: 400px; border-color: rgba(239, 68, 68, 0.3)"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              style="
+                padding: 10px;
+                background: rgba(239, 68, 68, 0.1);
+                border: 1px solid rgba(239, 68, 68, 0.2);
+              "
+            >
+              <i
+                data-lucide="octagon-alert"
+                style="width: 24px; height: 24px; color: var(--red)"
+              ></i>
+            </div>
+            <div>
+              <div
+                style="
+                  font-family: var(--mono);
+                  font-size: 13px;
+                  font-weight: 700;
+                  color: var(--red);
+                  letter-spacing: 0.1em;
+                "
+              >
+                EMERGENCY STOP
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted)">
+                All relay channels + active timers
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              background: rgba(239, 68, 68, 0.05);
+              border: 1px solid rgba(239, 68, 68, 0.1);
+              padding: 12px;
+              font-size: 11px;
+              color: var(--text-secondary);
+              line-height: 1.6;
+            "
+          >
+            This will immediately cut power to all 8 solenoid valves and disable
+            every scheduled timer slot. Manual override required to resume
+            operation.
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button class="btn btn-ghost" onclick="closeEmergencyStop()">
+              CANCEL
+            </button>
+            <button class="btn btn-danger" onclick="executeEmergencyShutdown()">
+              <i data-lucide="zap-off" style="width: 13px; height: 13px"></i>
+              EXECUTE SHUTDOWN
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ SCHEDULE MODAL ═══════════ -->
+      <div id="modal-schedule" class="modal-overlay" style="display: none">
+        <div class="modal-box p-6 space-y-4" style="max-width: 640px">
+          <!-- Header -->
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: start;
+            "
+          >
+            <div>
+              <div class="section-label mb-1">CONFIGURE TIMERS</div>
+              <div
+                style="
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: var(--text-primary);
+                "
+                id="schedule-title"
+              >
+                Zone —
+              </div>
+              <div style="font-size: 10px; color: var(--text-muted)">
+                6 independent trigger slots · select a slot tab to edit
+              </div>
+            </div>
+            <button
+              onclick="closeScheduleModal()"
+              style="
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                cursor: pointer;
+                padding: 4px;
+              "
+            >
+              <i data-lucide="x" style="width: 18px; height: 18px"></i>
+            </button>
+          </div>
+
+          <!-- All-slots overview table -->
+          <div style="background: #080c10; border: 1px solid var(--border)">
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 60px 80px 60px 1fr 56px;
+                gap: 0;
+                font-family: var(--mono);
+                font-size: 9px;
+                color: var(--text-muted);
+                letter-spacing: 0.1em;
+                border-bottom: 1px solid var(--border);
+                padding: 6px 10px;
+              "
+            >
+              <span>SLOT</span><span>START</span><span>MINS</span
+              ><span>DAYS</span><span style="text-align: right">STATUS</span>
+            </div>
+            <div id="slots-overview">
+              <!-- Filled by JS when modal opens -->
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid var(--border)"></div>
+
+          <!-- Slot tabs -->
+          <div>
+            <div class="section-label mb-2">EDIT SLOT</div>
+            <div class="flex gap-1 overflow-x-auto no-scrollbar">
+              <button
+                class="slot-tab"
+                id="slot-tab-0"
+                onclick="selectTimerSlot(0)"
+              >
+                SLOT 1
+              </button>
+              <button
+                class="slot-tab"
+                id="slot-tab-1"
+                onclick="selectTimerSlot(1)"
+              >
+                SLOT 2
+              </button>
+              <button
+                class="slot-tab"
+                id="slot-tab-2"
+                onclick="selectTimerSlot(2)"
+              >
+                SLOT 3
+              </button>
+              <button
+                class="slot-tab"
+                id="slot-tab-3"
+                onclick="selectTimerSlot(3)"
+              >
+                SLOT 4
+              </button>
+              <button
+                class="slot-tab"
+                id="slot-tab-4"
+                onclick="selectTimerSlot(4)"
+              >
+                SLOT 5
+              </button>
+              <button
+                class="slot-tab"
+                id="slot-tab-5"
+                onclick="selectTimerSlot(5)"
+              >
+                SLOT 6
+              </button>
+            </div>
+          </div>
+
+          <input type="hidden" id="edit-zone-id" />
+
+          <!-- Form fields -->
+          <div
+            style="
+              background: #080c10;
+              border: 1px solid var(--border);
+              padding: 16px;
+              display: flex;
+              flex-direction: column;
+              gap: 14px;
+            "
+          >
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px"
+            >
+              <div>
+                <div class="section-label mb-2">START TIME (24H)</div>
+                <input type="time" id="edit-start-time" class="inp" required />
+              </div>
+              <div>
+                <div class="section-label mb-2">DURATION (MINUTES)</div>
+                <input
+                  type="number"
+                  id="edit-duration"
+                  class="inp"
+                  min="1"
+                  max="1440"
+                  placeholder="10"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Enable toggle -->
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #0a1520;
+                border: 1px solid #1e3048;
+                padding: 10px 12px;
+              "
+            >
+              <div>
+                <div
+                  style="
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: var(--text-primary);
+                  "
+                >
+                  Enable This Slot
+                </div>
+                <div
+                  style="
+                    font-size: 10px;
+                    color: var(--text-muted);
+                    margin-top: 2px;
+                  "
+                >
+                  Auto-trigger on selected days below
+                </div>
+              </div>
+              <label class="valve-toggle">
+                <input type="checkbox" id="edit-enabled" />
+                <div class="valve-track"></div>
+              </label>
+            </div>
+
+            <!-- Day selector -->
+            <div>
+              <div class="section-label mb-2">ACTIVE WATERING DAYS</div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(7, 1fr);
+                  gap: 5px;
+                "
+              >
+                <div class="day-pill" id="day-btn-0" onclick="toggleEditDay(0)">
+                  MON
+                </div>
+                <div class="day-pill" id="day-btn-1" onclick="toggleEditDay(1)">
+                  TUE
+                </div>
+                <div class="day-pill" id="day-btn-2" onclick="toggleEditDay(2)">
+                  WED
+                </div>
+                <div class="day-pill" id="day-btn-3" onclick="toggleEditDay(3)">
+                  THU
+                </div>
+                <div class="day-pill" id="day-btn-4" onclick="toggleEditDay(4)">
+                  FRI
+                </div>
+                <div class="day-pill" id="day-btn-5" onclick="toggleEditDay(5)">
+                  SAT
+                </div>
+                <div class="day-pill" id="day-btn-6" onclick="toggleEditDay(6)">
+                  SUN
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save row -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 10px;
+              padding-top: 6px;
+              border-top: 1px solid var(--border);
+            "
+          >
+            <button class="btn btn-ghost" onclick="closeScheduleModal()">
+              CANCEL
+            </button>
+            <button class="btn btn-primary" onclick="saveScheduleSettings()">
+              <i data-lucide="save" style="width: 13px; height: 13px"></i>
+              SAVE ALL 6 SLOTS
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ RENAME MODAL ═══════════ -->
+      <div id="modal-rename" class="modal-overlay" style="display: none">
+        <div class="modal-box p-6 space-y-4" style="max-width: 360px">
+          <div class="section-label">RENAME ZONE</div>
+          <input type="hidden" id="rename-zone-id" />
+          <input
+            type="text"
+            id="rename-input"
+            maxlength="25"
+            class="inp"
+            placeholder="Zone name..."
+          />
+          <div class="grid grid-cols-2 gap-3">
+            <button class="btn btn-ghost" onclick="closeRenameModal()">
+              CANCEL
+            </button>
+            <button class="btn btn-primary" onclick="saveZoneName()">
+              SAVE
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════ SCRIPT ═══ -->
+      <script>
+        /* ═══════════ PERSISTENT CONFIG (localStorage) ═══════════ */
+        const STORAGE_USERS_KEY = "irrigationos_users";
+        const STORAGE_FIREBASE_KEY = "irrigationos_firebase_url";
+
+        const DEFAULT_FIREBASE_URL =
+          "https://rua-farm-default-rtdb.asia-southeast1.firebasedatabase.app";
+
+        const DEFAULT_USERS = [
+          {
+            id: "admin",
+            password: "rua2024",
+            role: "ADMIN",
+            display: "Administrator",
+          },
+          {
+            id: "operator",
+            password: "farm1234",
+            role: "OPERATOR",
+            display: "Operator",
+          },
+          {
+            id: "viewer",
+            password: "view0000",
+            role: "VIEWER",
+            display: "Read-Only Viewer",
+          },
+        ];
+
+        function loadUsers() {
+          try {
+            const raw = localStorage.getItem(STORAGE_USERS_KEY);
+            if (raw) return JSON.parse(raw);
+          } catch (e) {}
+          return JSON.parse(JSON.stringify(DEFAULT_USERS));
+        }
+
+        function saveUsers(users) {
+          localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+        }
+
+        function loadFirebaseURL() {
+          return (
+            localStorage.getItem(STORAGE_FIREBASE_KEY) || DEFAULT_FIREBASE_URL
+          );
+        }
+
+        function saveFirebaseURL(url) {
+          localStorage.setItem(STORAGE_FIREBASE_KEY, url);
+        }
+
+        /* ═══════════ FIREBASE — dynamic init ═══════════ */
+        let db = null;
+        let firebaseApp = null;
+
+        function initFirebase(url) {
+          try {
+            if (firebaseApp) {
+              firebaseApp.database().goOffline();
+            }
+          } catch (e) {}
+          try {
+            firebaseApp = firebase.initializeApp(
+              { databaseURL: url },
+              "main_" + Date.now(),
+            );
+            db = firebaseApp.database();
+            return true;
+          } catch (e) {
+            console.error("Firebase init error:", e);
+            return false;
+          }
+        }
+
+        // Initialize with saved or default URL
+        initFirebase(loadFirebaseURL());
+
+        /* ═══════════ STATE ═══════════ */
+        let zonesData = [];
+        let systemLogs = [];
+        const MAX_LOGS = 200;
+        let currentEditZoneIndex = null;
+        let currentEditSlotIndex = 0;
+        let tempTimersBuffer = [];
+        let editDaysBuffer = new Array(7).fill(false);
+
+        // Connection parameters
+        let esp32LastSeen = 0; // Epoch seconds of the last heartbeat
+        let isDeviceOnline = false;
+
+        // Persistent metrics
+        let sessionStartTime = Date.now();
+        let pollCount = 0;
+        let errorCount = 0;
+        let totalRuntimeMinutes = 0;
+        let totalCycles = 0;
+        let peakZones = 0;
+
+        // Run history: 48 half-hour slots (last 24h), per zone
+        // runHistory[zoneIdx][slotIdx] = minutes active in that slot
+        const HISTORY_SLOTS = 48;
+        let runHistory = Array.from({ length: 8 }, () =>
+          new Array(HISTORY_SLOTS).fill(0),
+        );
+        let sessionActiveSince = {}; // zoneIdx -> timestamp when relay went on
+
+        /* ═══════════ LOGGING ═══════════ */
+        function appendLog(msg, type = "info") {
+          const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
+          systemLogs.unshift({ ts, msg, type });
+          if (systemLogs.length > MAX_LOGS) systemLogs.pop();
+          renderLogs();
+          document.getElementById("diag-cache").textContent = systemLogs.length;
+        }
+
+        function renderLogs() {
+          const c = document.getElementById("log-container");
+          if (!c) return;
+          c.innerHTML = systemLogs
+            .slice(0, 60)
+            .map((log) => {
+              let tagClass = "tag-blue";
+              if (log.type === "success") tagClass = "tag-green";
+              else if (log.type === "warning") tagClass = "tag-amber";
+              else if (log.type === "danger") tagClass = "tag-red";
+              return `<div class="log-line">
+      <span class="log-ts">${log.ts}</span>
+      <span class="tag ${tagClass}" style="align-self:start">${log.type.toUpperCase()}</span>
+      <span class="log-msg">${log.msg}</span>
+    </div>`;
+            })
+            .join("");
+        }
+
+        function clearLogs() {
+          systemLogs = [];
+          renderLogs();
+          document.getElementById("diag-cache").textContent = 0;
+          appendLog("Log cache cleared by operator", "info");
+        }
+
+        /* ═══════════ RUN HISTORY ═══════════ */
+        function currentHistorySlot() {
+          const now = new Date();
+          const minuteOfDay = now.getHours() * 60 + now.getMinutes();
+          return Math.floor(minuteOfDay / 30);
+        }
+
+        function recordZoneActivity(zoneIdx, isOn) {
+          if (isOn && sessionActiveSince[zoneIdx] === undefined) {
+            sessionActiveSince[zoneIdx] = Date.now();
+          } else if (!isOn && sessionActiveSince[zoneIdx] !== undefined) {
+            const durationMin =
+              (Date.now() - sessionActiveSince[zoneIdx]) / 60000;
+            const slot = currentHistorySlot();
+            runHistory[zoneIdx][slot] = Math.min(
+              30,
+              (runHistory[zoneIdx][slot] || 0) + durationMin,
+            );
+            totalRuntimeMinutes += durationMin;
+            totalCycles++;
+            delete sessionActiveSince[zoneIdx];
+            persistHistory();
+          }
+        }
+
+        function persistHistory() {
+          try {
+            const payload = {
+              runHistory,
+              totalRuntime: totalRuntimeMinutes,
+              totalCycles,
+              savedAt: Date.now(),
+            };
+            localStorage.setItem(
+              "irrigationos_history",
+              JSON.stringify(payload),
+            );
+          } catch (e) {}
+        }
+
+        function loadPersistedHistory() {
+          try {
+            const raw = localStorage.getItem("irrigationos_history");
+            if (raw) {
+              const p = JSON.parse(raw);
+              if (p.runHistory) runHistory = p.runHistory;
+              if (p.totalRuntime) totalRuntimeMinutes = p.totalRuntime;
+              if (p.totalCycles) totalCycles = p.totalCycles;
+            }
+          } catch (e) {}
+        }
+
+        function clearRunHistory() {
+          runHistory = Array.from({ length: 8 }, () =>
+            new Array(HISTORY_SLOTS).fill(0),
+          );
+          totalRuntimeMinutes = 0;
+          totalCycles = 0;
+          persistHistory();
+          renderRunHistory();
+          appendLog("Run history cleared", "warning");
+        }
+
+        /* ═══════════ RENDER RUN HISTORY ═══════════ */
+        function renderRunHistory() {
+          const grid = document.getElementById("run-history-grid");
+          if (!grid) return;
+
+          const timeLabels = [];
+          for (let i = 0; i < HISTORY_SLOTS; i++) {
+            const h = Math.floor(i / 2);
+            const m = (i % 2) * 30;
+            timeLabels.push(
+              `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`,
+            );
+          }
+
+          const currentSlot = currentHistorySlot();
+
+          grid.innerHTML = zonesData
+            .map((zone, zi) => {
+              const cells = runHistory[zi]
+                .map((mins, si) => {
+                  const intensity = Math.min(1, mins / 30);
+                  let bg = "var(--bg-panel-2)";
+                  let tooltip = `${timeLabels[si]} — ${mins.toFixed(1)} min`;
+                  if (si > currentSlot) {
+                    bg = "#0a1520"; // future
+                  } else if (intensity > 0.6) {
+                    bg = `rgba(0,200,140,${0.4 + intensity * 0.6})`;
+                  } else if (intensity > 0) {
+                    bg = `rgba(0,200,140,${0.15 + intensity * 0.4})`;
+                  }
+                  return `<div class="uptime-cell" style="background:${bg}" title="${tooltip}"></div>`;
+                })
+                .join("");
+
+              const isOn = zone.relayOn;
+              const totalMin = runHistory[zi].reduce((a, b) => a + b, 0);
+
+              return `<div style="display:flex;align-items:center;gap:8px">
+      <div style="width:64px;flex-shrink:0;display:flex;align-items:center;gap:5px">
+        <div class="led ${isOn && isDeviceOnline ? "led-green led-pulse led-pulse-green" : "led-off"}" style="width:6px;height:6px"></div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);white-space:nowrap">Z${zi + 1}</span>
+      </div>
+      <div style="display:flex;gap:2px;flex:1;overflow:hidden">${cells}</div>
+      <div style="width:40px;text-align:right;flex-shrink:0">
+        <span style="font-family:var(--mono);font-size:9px;color:var(--text-muted)">${totalMin.toFixed(0)}m</span>
+      </div>
+    </div>`;
+            })
+            .join("");
+
+          // Update stats
+          const todayTotal = runHistory.flat().reduce((a, b) => a + b, 0);
+          const avgSession =
+            totalCycles > 0 ? totalRuntimeMinutes / totalCycles : 0;
+          const maxActive = Math.max(
+            ...zonesData.map(
+              (_, i) => runHistory[i].filter((m) => m > 0).length,
+            ),
+          );
+
+          document.getElementById("stat-today").textContent =
+            `${todayTotal.toFixed(0)} min`;
+          document.getElementById("stat-avg").textContent =
+            `${avgSession.toFixed(1)} min`;
+          document.getElementById("stat-cycles").textContent = totalCycles;
+          document.getElementById("stat-peak").textContent = `${peakZones}`;
+        }
+
+        /* ═══════════ DETAILED CONNECTION WATCHDOG ═══════════ */
+        function evaluateConnectionStatus() {
+          const nowSec = Math.floor(Date.now() / 1000);
+          const lastSeen = esp32LastSeen || 0;
+          const online = nowSec - lastSeen < 30; // 30-second window
+
+          if (online === isDeviceOnline) return; // Status did not change
+
+          isDeviceOnline = online;
+
+          const navLed = document.getElementById("nav-led");
+          const navStatus = document.getElementById("nav-status");
+          const fbLed = document.getElementById("diag-fb-led");
+          const fbLabel = document.getElementById("diag-fb");
+          const fbBar = document.getElementById("diag-fb-bar");
+          const logLed = document.getElementById("log-status-led");
+          const logText = document.getElementById("log-status-text");
+
+          if (online) {
+            if (navLed)
+              navLed.className = "led led-green led-pulse led-pulse-green";
+            if (navStatus) {
+              navStatus.textContent = "ONLINE";
+              navStatus.style.color = "var(--accent)";
+            }
+            if (fbLed) fbLed.className = "led led-green";
+            if (fbLabel) {
+              fbLabel.textContent = "CONNECTED";
+              fbLabel.style.color = "var(--accent)";
+            }
+            if (fbBar) fbBar.style.width = "100%";
+            if (logLed) logLed.className = "led led-green blink";
+            if (logText) {
+              logText.textContent = "ONLINE";
+              logText.className = "text-emerald-400 font-extrabold";
+              logText.style.fontFamily = "var(--mono)";
+              logText.style.fontSize = "9px";
+            }
+
+            document.getElementById("ticker-ctrl").textContent = "ONLINE";
+            document.getElementById("ticker-ctrl2").textContent = "ONLINE";
+            appendLog(
+              "ESP32 link re-established · system heartbeats active",
+              "success",
+            );
+          } else {
+            if (navLed)
+              navLed.className = "led led-red led-pulse led-pulse-red";
+            if (navStatus) {
+              navStatus.textContent = "OFFLINE";
+              navStatus.style.color = "var(--red)";
+            }
+            if (fbLed) fbLed.className = "led led-red";
+            if (fbLabel) {
+              fbLabel.textContent = "DISCONNECTED";
+              fbLabel.style.color = "var(--red)";
+            }
+            if (fbBar) fbBar.style.width = "20%";
+            if (logLed) logLed.className = "led led-off";
+            if (logText) {
+              logText.textContent = "OFFLINE";
+              logText.className = "text-slate-500 font-extrabold";
+              logText.style.fontFamily = "var(--mono)";
+              logText.style.fontSize = "9px";
+            }
+
+            document.getElementById("ticker-ctrl").textContent = "OFFLINE";
+            document.getElementById("ticker-ctrl2").textContent = "OFFLINE";
+            appendLog(
+              "Connection lost · ESP32 is offline (electric/wifi outage)",
+              "danger",
+            );
+          }
+
+          // Redraw matrix and history cells to update indicator glows
+          renderZones();
+          renderRunHistory();
+        }
+
+        /* ═══════════ MEASURE REAL LATENCY ═══════════ */
+        function measureDatabaseLatency() {
+          if (db) {
+            const t0 = Date.now();
+            // Using simple read from current status node to avoid unnecessary write costs
+            db.ref("/irrigation/esp32")
+              .once("value")
+              .then(() => {
+                const latency = Date.now() - t0;
+                const kpiPing = document.getElementById("kpi-ping");
+                const diagLat = document.getElementById("diag-latency");
+                if (kpiPing) kpiPing.textContent = `${latency} ms`;
+                if (diagLat) diagLat.textContent = `${latency} ms`;
+
+                // Draw Wi-Fi indicators based on true RTDB socket roundtrip
+                const signal =
+                  latency < 150 ? "STRONG" : latency < 350 ? "FAIR" : "WEAK";
+                const wifiPct = latency < 150 ? 95 : latency < 350 ? 60 : 30;
+                const dWifi = document.getElementById("diag-wifi");
+                const dWifiBar = document.getElementById("diag-wifi-bar");
+                const dWifiLed = document.getElementById("diag-wifi-led");
+
+                if (dWifi) dWifi.textContent = signal;
+                if (dWifiBar) dWifiBar.style.width = `${wifiPct}%`;
+                if (dWifiLed) {
+                  dWifiLed.className =
+                    latency < 150
+                      ? "led led-green"
+                      : latency < 350
+                        ? "led led-amber"
+                        : "led led-red";
+                }
+              })
+              .catch(() => {});
+          }
+        }
+
+        /* ═══════════ FIREBASE LISTENERS ═══════════ */
+        function startFirebaseListeners() {
+          appendLog(
+            "Initializing Firebase RTDB link to rua-farm database",
+            "info",
+          );
+
+          db.ref("/irrigation/esp32").on(
+            "value",
+            (snap) => {
+              pollCount++;
+              document.getElementById("diag-polls").textContent = pollCount;
+
+              const data = snap.val();
+              if (!data) return;
+
+              // Track the last seen epoch timestamp to compare in the watchdog timer loop
+              esp32LastSeen = data.lastSeen || 0;
+
+              // Temp
+              const temp = data.rtcTemp ? data.rtcTemp.toFixed(1) : "--.-";
+              document.getElementById("kpi-temp").textContent = temp;
+              document.getElementById("ticker-temp").textContent = `${temp}°C`;
+              document.getElementById("ticker-temp2").textContent = `${temp}°C`;
+              const tempPct = data.rtcTemp
+                ? Math.min(100, (data.rtcTemp / 50) * 100)
+                : 0;
+              document.getElementById("kpi-temp-bar").style.width =
+                `${tempPct}%`;
+
+              // Time
+              if (data.rtcTime) {
+                const parts = data.rtcTime.split(" ");
+                const timePart = parts[1] || "--:--:--";
+                const datePart = parts[0] || "";
+                document.getElementById("kpi-time").textContent = timePart;
+                document.getElementById("footer-time").textContent = timePart;
+                if (datePart) {
+                  const d = new Date(datePart);
+                  document.getElementById("kpi-date").textContent =
+                    d.toLocaleDateString("en-US", {
+                      weekday: "short",
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    });
+                }
+              }
+
+              // IP
+              document.getElementById("kpi-ip").textContent =
+                data.ip || "?.?.?.?";
+
+              // RTC diag
+              if (data.rtcTime) {
+                document.getElementById("diag-rtc").textContent = "LOCKED";
+                document.getElementById("diag-rtc-led").className =
+                  "led led-green";
+                document.getElementById("diag-rtc-bar").style.width = "100%";
+              }
+
+              // Process immediate state evaluation
+              evaluateConnectionStatus();
+            },
+            (err) => {
+              errorCount++;
+              document.getElementById("diag-errors").textContent = errorCount;
+              appendLog(`Telemetry read error: ${err.message}`, "danger");
+            },
+          );
+
+          db.ref("/irrigation/zones").on("value", (snap) => {
+            const data = snap.val();
+            if (data) {
+              const prev = zonesData.map((z) => z.relayOn);
+              zonesData = Array.isArray(data) ? data : Object.values(data);
+
+              // Track relay state changes for history
+              zonesData.forEach((zone, i) => {
+                if (prev[i] !== undefined && prev[i] !== zone.relayOn) {
+                  recordZoneActivity(i, zone.relayOn);
+                }
+              });
+
+              renderZones();
+              renderRunHistory();
+              updateTicker();
+            } else {
+              appendLog(
+                "Zones not found. Seeding initial structures.",
+                "warning",
+              );
+              seedInitialData();
+            }
+          });
+        }
+
+        /* ═══════════ TICKER UPDATE ═══════════ */
+        function updateTicker() {
+          const active = zonesData.filter((z) => z.relayOn).length;
+          const str = `${active}/8`;
+          document.getElementById("ticker-zones").textContent = str;
+          document.getElementById("ticker-zones2").textContent = str;
+
+          const runStr = `${totalRuntimeMinutes.toFixed(0)} min`;
+          document.getElementById("ticker-runtime").textContent = runStr;
+          document.getElementById("ticker-runtime2").textContent = runStr;
+
+          // Next schedule
+          let nextSchedule = null;
+          const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+          zonesData.forEach((zone, zi) => {
+            if (!zone.timers) return;
+            zone.timers.forEach((t) => {
+              if (!t.enabled) return;
+              const parts = (t.startTime || "").split(":");
+              if (parts.length < 2) return;
+              const schedMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+              const diff =
+                schedMins > nowMins
+                  ? schedMins - nowMins
+                  : 1440 - nowMins + schedMins;
+              if (nextSchedule === null || diff < nextSchedule.diff) {
+                nextSchedule = { diff, label: `Z${zi + 1} @${t.startTime}` };
+              }
+            });
+          });
+          const nextStr = nextSchedule
+            ? `${nextSchedule.label} (${nextSchedule.diff}m)`
+            : "NONE";
+          document.getElementById("ticker-next").textContent = nextStr;
+          document.getElementById("ticker-next2").textContent = nextStr;
+        }
+
+        /* ═══════════ UPTIME ═══════════ */
+        function updateUptime() {
+          const elapsed = Date.now() - sessionStartTime;
+          const d = Math.floor(elapsed / 86400000);
+          const h = Math.floor((elapsed % 86400000) / 3600000);
+          const m = Math.floor((elapsed % 3600000) / 60000);
+          const str = `${d}d ${h}h ${m}m`;
+          document.getElementById("kpi-uptime").textContent = str;
+          document.getElementById("ticker-uptime").textContent = str;
+          document.getElementById("ticker-uptime2").textContent = str;
+        }
+
+        /* ═══════════ SEED DATA ═══════════ */
+        function seedInitialData() {
+          const seed = [];
+          for (let i = 0; i < 8; i++) {
+            const timers = [];
+            const defaults = [
+              "06:00",
+              "12:00",
+              "18:00",
+              "21:00",
+              "00:00",
+              "03:00",
+            ];
+            for (let t = 0; t < 6; t++) {
+              timers.push({
+                enabled: false,
+                startTime: defaults[t],
+                duration: 10,
+                days: [1, 1, 1, 1, 1, 1, 1],
+              });
+            }
+            seed.push({
+              id: i + 1,
+              name: `Zone ${i + 1}`,
+              manualOn: false,
+              relayOn: false,
+              timers,
+            });
+          }
+          db.ref("/irrigation/zones")
+            .set(seed)
+            .then(() =>
+              appendLog(
+                "Database initialized with default zone structure",
+                "success",
+              ),
+            )
+            .catch((err) => appendLog(`Seed error: ${err.message}`, "danger"));
+        }
+
+        /* ═══════════ RENDER ZONES ═══════════ */
+        function renderZones() {
+          const grid = document.getElementById("zones-grid");
+          if (!grid) return;
+
+          let activeCount = 0;
+          let activeZones = [];
+
+          grid.innerHTML = zonesData
+            .map((zone, i) => {
+              if (zone.relayOn) {
+                activeCount++;
+                activeZones.push(i + 1);
+              }
+              if (activeCount > peakZones) peakZones = activeCount;
+
+              const activeTimers = zone.timers
+                ? zone.timers.filter((t) => t.enabled)
+                : [];
+              const timerStr =
+                activeTimers.length > 0
+                  ? `${activeTimers.length} timer${activeTimers.length > 1 ? "s" : ""} active`
+                  : "No active schedules";
+              const nextTimer = activeTimers[0];
+              const relayClass =
+                zone.relayOn && isDeviceOnline ? "relay-on" : "";
+
+              return `<div class="panel zone-card ${relayClass}" style="padding:16px;display:flex;flex-direction:column;gap:12px" id="zone-card-${i}">
+
+      <!-- Header -->
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="led ${zone.relayOn && isDeviceOnline ? "led-green led-pulse led-pulse-green" : "led-off"}" style="width:7px;height:7px"></div>
+            <span style="font-weight:600;font-size:13px;color:var(--text-primary)">${zone.name || `Zone ${i + 1}`}</span>
+            <button onclick="openRenameModal(${i}, '${(zone.name || `Zone ${i + 1}`).replace(/'/g, "\\'")}');" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;opacity:0.5" title="Rename zone">
+              <i data-lucide="edit-3" style="width:11px;height:11px"></i>
+            </button>
+          </div>
+          <span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.1em">RELAY OUTPUT ${i + 1}</span>
+        </div>
+        <span class="tag ${zone.relayOn && isDeviceOnline ? "tag-green" : "tag-muted"}">${zone.relayOn && isDeviceOnline ? "OPEN" : "CLOSED"}</span>
+      </div>
+
+      <!-- Schedule info -->
+      <div style="background:#0a1520;border:1px solid #1e3048;padding:10px;display:flex;flex-direction:column;gap:5px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.1em">AUTO SCHEDULE</span>
+          <span style="font-family:var(--mono);font-size:9px;color:${activeTimers.length > 0 ? "var(--accent)" : "var(--text-muted)"}">
+            ${activeTimers.length > 0 ? "● ARMED" : "○ MUTED"}
+          </span>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:var(--text-primary)">${timerStr}</div>
+        ${nextTimer ? `<div style="font-family:var(--mono);font-size:9px;color:var(--text-muted)">Next: ${nextTimer.startTime} · ${nextTimer.duration} min</div>` : ""}
+
+        <!-- Mini run bar for this zone -->
+        <div style="margin-top:4px">
+          <div class="activity-bar">
+            <div class="activity-bar-fill" style="width:${Math.min(100, (runHistory[i].reduce((a, b) => a + b, 0) / 30) * 100)}%;background:var(--accent)"></div>
+          </div>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--text-muted)">Today: ${runHistory[i].reduce((a, b) => a + b, 0).toFixed(0)} min runtime</div>
+      </div>
+
+      <!-- Controls -->
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <button onclick="openScheduleModal(${i})" style="background:none;border:none;cursor:pointer;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--accent);display:flex;align-items:center;gap:5px">
+          <i data-lucide="sliders" style="width:12px;height:12px"></i> TIMERS
+        </button>
+        <label class="valve-toggle">
+          <input type="checkbox" ${zone.manualOn ? "checked" : ""} onchange="toggleManualValve(${i}, this)">
+          <div class="valve-track"></div>
+        </label>
+      </div>
+    </div>`;
+            })
+            .join("");
+
+          document.getElementById("kpi-zones").textContent = activeCount;
+          document.getElementById("kpi-zones-bar").style.width =
+            `${(activeCount / 8) * 100}%`;
+
+          lucide.createIcons();
+        }
+
+        /* ═══════════ VALVE CONTROLS ═══════════ */
+        function toggleManualValve(index, cb) {
+          const state = cb.checked;
+          appendLog(
+            `Manual override: Zone ${index + 1} → ${state ? "ON" : "OFF"}`,
+            "info",
+          );
+          db.ref(`/irrigation/zones/${index}/manualOn`)
+            .set(state)
+            .then(() =>
+              appendLog(`Zone ${index + 1} relay confirmed`, "success"),
+            )
+            .catch((err) => {
+              errorCount++;
+              document.getElementById("diag-errors").textContent = errorCount;
+              appendLog(`Override write error: ${err.message}`, "danger");
+              cb.checked = !state;
+            });
+        }
+
+        function setAllManual(state) {
+          appendLog(
+            `Global preset: ALL ZONES → ${state ? "ON" : "OFF"}`,
+            "warning",
+          );
+          const updates = {};
+          zonesData.forEach((_, i) => {
+            updates[`/irrigation/zones/${i}/manualOn`] = state;
+          });
+          db.ref()
+            .update(updates)
+            .then(() => appendLog("Global preset executed", "success"))
+            .catch((err) =>
+              appendLog(`Global override failure: ${err.message}`, "danger"),
+            );
+        }
+
+        function refreshAll() {
+          appendLog("Manual data refresh triggered", "info");
+          renderZones();
+          renderRunHistory();
+        }
+
+        /* ═══════════ EMERGENCY STOP ═══════════ */
+        function openEmergencyStop() {
+          document.getElementById("modal-emergency").style.display = "flex";
+        }
+        function closeEmergencyStop() {
+          document.getElementById("modal-emergency").style.display = "none";
+        }
+
+        function executeEmergencyShutdown() {
+          appendLog(
+            "⚠ EMERGENCY SHUTDOWN EXECUTED — all valves + timers disabled",
+            "danger",
+          );
+          const updates = {};
+          zonesData.forEach((zone, i) => {
+            updates[`/irrigation/zones/${i}/manualOn`] = false;
+            if (zone.timers && Array.isArray(zone.timers)) {
+              zone.timers.forEach((_, ti) => {
+                updates[`/irrigation/zones/${i}/timers/${ti}/enabled`] = false;
+              });
+            }
+          });
+          db.ref()
+            .update(updates)
+            .then(() => {
+              appendLog(
+                "All valves and timer loops safely terminated",
+                "success",
+              );
+              closeEmergencyStop();
+            })
+            .catch((err) => {
+              errorCount++;
+              document.getElementById("diag-errors").textContent = errorCount;
+              appendLog(`Emergency shutdown error: ${err.message}`, "danger");
+            });
+        }
+
+        /* ═══════════ SCHEDULE MODAL ═══════════ */
+        const DAY_SHORT = ["M", "T", "W", "T", "F", "S", "S"];
+
+        function renderSlotsOverview() {
+          const el = document.getElementById("slots-overview");
+          if (!el) return;
+          el.innerHTML = tempTimersBuffer
+            .map((s, i) => {
+              const isActive = i === currentEditSlotIndex;
+              const daysStr = s.days
+                ? s.days
+                    .map((d, di) =>
+                      d === 1 || d === true
+                        ? `<span style="color:var(--accent)">${DAY_SHORT[di]}</span>`
+                        : `<span style="color:var(--text-muted)">${DAY_SHORT[di]}</span>`,
+                    )
+                    .join(" ")
+                : "— — — — — — —";
+              const bg = isActive ? "rgba(0,200,140,0.05)" : "transparent";
+              const border = isActive
+                ? "border-left:2px solid var(--accent)"
+                : "border-left:2px solid transparent";
+              return `<div onclick="selectTimerSlot(${i})" style="display:grid;grid-template-columns:60px 80px 60px 1fr 56px;gap:0;padding:7px 10px;cursor:pointer;background:${bg};${border};transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='${bg}'">
+      <span style="font-family:var(--mono);font-size:10px;color:${s.enabled ? "var(--accent)" : "var(--text-muted)"};font-weight:700">SLOT ${i + 1}</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--text-primary)">${s.startTime || "--:--"}</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--text-secondary)">${s.duration || "--"} min</span>
+      <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.05em">${daysStr}</span>
+      <span style="font-family:var(--mono);font-size:9px;text-align:right">
+        <span class="tag ${s.enabled ? "tag-green" : "tag-muted"}">${s.enabled ? "ON" : "OFF"}</span>
+      </span>
+    </div>`;
+            })
+            .join("");
+        }
+
+        function openScheduleModal(index) {
+          currentEditZoneIndex = index;
+          const zone = zonesData[index];
+          if (!zone) return;
+
+          document.getElementById("edit-zone-id").value = index;
+          document.getElementById("schedule-title").textContent =
+            `${zone.name || `Zone ${index + 1}`} — Timer Configuration`;
+
+          tempTimersBuffer = [];
+          const defaults = [
+            "06:00",
+            "12:00",
+            "18:00",
+            "21:00",
+            "00:00",
+            "03:00",
+          ];
+          for (let t = 0; t < 6; t++) {
+            const slot = (zone.timers && zone.timers[t]) || {};
+            tempTimersBuffer.push({
+              enabled: slot.enabled || false,
+              startTime: slot.startTime || defaults[t],
+              duration: slot.duration || 10,
+              days: Array.isArray(slot.days)
+                ? [...slot.days]
+                : [1, 1, 1, 1, 1, 1, 1],
+            });
+          }
+
+          currentEditSlotIndex = 0;
+          renderSlotsOverview();
+          selectTimerSlot(0);
+          document.getElementById("modal-schedule").style.display = "flex";
+          lucide.createIcons();
+        }
+
+        function selectTimerSlot(idx) {
+          saveCurrentInputsToBuffer();
+          currentEditSlotIndex = idx;
+
+          for (let i = 0; i < 6; i++) {
+            const tab = document.getElementById(`slot-tab-${i}`);
+            if (tab) tab.className = i === idx ? "slot-tab active" : "slot-tab";
+          }
+
+          const slot = tempTimersBuffer[idx];
+          document.getElementById("edit-start-time").value = slot.startTime;
+          document.getElementById("edit-duration").value = slot.duration;
+          document.getElementById("edit-enabled").checked = slot.enabled;
+
+          editDaysBuffer = Array.isArray(slot.days)
+            ? slot.days.map((d) => d === 1 || d === true)
+            : new Array(7).fill(true);
+          updateDaysUI();
+          renderSlotsOverview(); // keep overview in sync with current selection highlight
+        }
+
+        function saveCurrentInputsToBuffer() {
+          if (
+            currentEditZoneIndex === null ||
+            !tempTimersBuffer[currentEditSlotIndex]
+          )
+            return;
+          const s = tempTimersBuffer[currentEditSlotIndex];
+          s.startTime = document.getElementById("edit-start-time").value;
+          s.duration =
+            parseInt(document.getElementById("edit-duration").value) || 10;
+          s.enabled = document.getElementById("edit-enabled").checked;
+          s.days = editDaysBuffer.map((v) => (v ? 1 : 0));
+        }
+
+        function toggleEditDay(i) {
+          editDaysBuffer[i] = !editDaysBuffer[i];
+          updateDaysUI();
+        }
+
+        function updateDaysUI() {
+          editDaysBuffer.forEach((active, i) => {
+            const btn = document.getElementById(`day-btn-${i}`);
+            if (btn) btn.className = active ? "day-pill active" : "day-pill";
+          });
+        }
+
+        function saveScheduleSettings() {
+          saveCurrentInputsToBuffer();
+          renderSlotsOverview();
+          const zi = currentEditZoneIndex;
+          appendLog(`Saving 6 timer slots for Zone ${zi + 1}`, "info");
+
+          const updates = {};
+          updates[`/irrigation/zones/${zi}/timers`] = tempTimersBuffer;
+
+          const firstActive = tempTimersBuffer.find((t) => t.enabled);
+          if (firstActive) {
+            updates[`/irrigation/zones/${zi}/startTime`] =
+              firstActive.startTime;
+            updates[`/irrigation/zones/${zi}/duration`] = firstActive.duration;
+            updates[`/irrigation/zones/${zi}/enabled`] = true;
+            updates[`/irrigation/zones/${zi}/days`] = firstActive.days;
+          } else {
+            updates[`/irrigation/zones/${zi}/enabled`] = false;
+          }
+
+          db.ref()
+            .update(updates)
+            .then(() => {
+              appendLog(
+                `Timers saved and synced for Zone ${zi + 1}`,
+                "success",
+              );
+              closeScheduleModal();
+            })
+            .catch((err) => {
+              errorCount++;
+              document.getElementById("diag-errors").textContent = errorCount;
+              appendLog(`Schedule save error: ${err.message}`, "danger");
+            });
+        }
+
+        function closeScheduleModal() {
+          document.getElementById("modal-schedule").style.display = "none";
+          currentEditZoneIndex = null;
+        }
+
+        /* ═══════════ RENAME MODAL ═══════════ */
+        function openRenameModal(index, currentName) {
+          document.getElementById("rename-zone-id").value = index;
+          document.getElementById("rename-input").value = currentName;
+          document.getElementById("modal-rename").style.display = "flex";
+        }
+        function closeRenameModal() {
+          document.getElementById("modal-rename").style.display = "none";
+        }
+        function saveZoneName() {
+          const index = document.getElementById("rename-zone-id").value;
+          const name = document.getElementById("rename-input").value.trim();
+          if (!name) return;
+          db.ref(`/irrigation/zones/${index}/name`)
+            .set(name)
+            .then(() => {
+              appendLog(
+                `Zone ${parseInt(index) + 1} renamed to "${name}"`,
+                "success",
+              );
+              closeRenameModal();
+            })
+            .catch((err) =>
+              appendLog(`Rename error: ${err.message}`, "danger"),
+            );
+        }
+
+        /* ═══════════ CSV EXPORT ═══════════ */
+        function downloadLogAsCSV() {
+          if (systemLogs.length === 0) {
+            appendLog("No logs to export", "warning");
+            return;
+          }
+          const rows = systemLogs.map((l) => [
+            `"${l.ts}"`,
+            l.type.toUpperCase(),
+            `"${l.msg.replace(/"/g, '""')}"`,
+          ]);
+          const csv = [
+            "Timestamp,Type,Message",
+            ...rows.map((r) => r.join(",")),
+          ].join("\n");
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `irrigationos_audit_${new Date().toISOString().split("T")[0]}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          appendLog("Audit log exported as CSV", "success");
+        }
+
+        function exportRunHistory() {
+          const rows = ["Zone,Slot,Time,Minutes"];
+          const timeLabels = [];
+          for (let i = 0; i < HISTORY_SLOTS; i++) {
+            const h = Math.floor(i / 2);
+            const m = (i % 2) * 30;
+            timeLabels.push(
+              `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`,
+            );
+          }
+          zonesData.forEach((zone, zi) => {
+            runHistory[zi].forEach((mins, si) => {
+              if (mins > 0)
+                rows.push(
+                  `"${zone.name || `Zone ${zi + 1}`}",${si + 1},${timeLabels[si]},${mins.toFixed(2)}`,
+                );
+            });
+          });
+          const csv = rows.join("\n");
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `irrigationos_runhistory_${new Date().toISOString().split("T")[0]}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          appendLog("Run history exported as CSV", "success");
+        }
+
+        /* ═══════════ LONG-TERM WATCHDOG ═══════════ */
+        // Periodic health checks every 60s to catch stale data, memory leaks, etc.
+        function startWatchdog() {
+          // Rapid Watchdog specifically evaluating if the ESP32 is offline (power outage or Wi-Fi drops)
+          setInterval(evaluateConnectionStatus, 2000);
+
+          // Periodic latency measurement (round-trip database connection ping speed)
+          setInterval(measureDatabaseLatency, 10000);
+
+          setInterval(() => {
+            // Persist history every minute
+            persistHistory();
+
+            // Trim log cache
+            if (systemLogs.length > MAX_LOGS) {
+              systemLogs = systemLogs.slice(0, MAX_LOGS);
+              document.getElementById("diag-cache").textContent =
+                systemLogs.length;
+            }
+
+            // Update run history render
+            renderRunHistory();
+            updateTicker();
+
+            // Check for stale active sessions (safety: auto-close if >4h)
+            Object.entries(sessionActiveSince).forEach(([zi, ts]) => {
+              if (Date.now() - ts > 4 * 3600 * 1000) {
+                appendLog(
+                  `Watchdog: Zone ${parseInt(zi) + 1} stale session auto-closed after 4h`,
+                  "warning",
+                );
+                recordZoneActivity(parseInt(zi), false);
+              }
+            });
+          }, 60000);
+
+          // History slot rollover — clear oldest slot when day wraps
+          setInterval(() => {
+            const slot = currentHistorySlot();
+            // Zero out the next slot to avoid stale data
+            const nextSlot = (slot + 1) % HISTORY_SLOTS;
+            if (nextSlot === 0) {
+              // Day rolled over — archive and clear
+              appendLog(
+                "24h history window rolled over — run totals archived",
+                "info",
+              );
+            }
+          }, 1800000); // every 30 min
+        }
+
+        /* ═══════════ APP BOOT — called after successful login ═══════════ */
+        let currentUser = null; // always reflects the logged-in user
+
+        function bootApp(user) {
+          currentUser = user;
+          loadPersistedHistory();
+          startFirebaseListeners();
+          startWatchdog();
+
+          setTimeout(measureDatabaseLatency, 1000);
+
+          setInterval(updateUptime, 30000);
+          updateUptime();
+
+          setInterval(() => {
+            const t = new Date().toLocaleTimeString("en-GB", { hour12: false });
+            const footer = document.getElementById("footer-time");
+            if (
+              footer &&
+              document.getElementById("kpi-time").textContent === "--:--:--"
+            ) {
+              footer.textContent = t;
+            }
+          }, 1000);
+
+          appendLog(`IrrigationOS v8.0 Industrial initialized`, "success");
+          appendLog(
+            `Authenticated as ${user.display} (${user.role}) · Firebase listeners active`,
+            "info",
+          );
+        }
+
+        /* ═══════════ INIT ═══════════ */
+        window.onload = () => {
+          lucide.createIcons();
+
+          // Check if a session is already active (survives page refresh)
+          const savedSession = sessionStorage.getItem("irrigationos_session");
+          if (savedSession) {
+            try {
+              const user = JSON.parse(savedSession);
+              // Valid session — skip login screen, go straight to dashboard
+              document.getElementById("login-screen").style.display = "none";
+              document.getElementById("app-content").style.display = "block";
+              injectOperatorBadge(user);
+              bootApp(user);
+              return;
+            } catch (e) {
+              sessionStorage.removeItem("irrigationos_session");
+            }
+          }
+
+          // No session — show login screen, do NOT start Firebase yet
+          document.getElementById("login-screen").style.display = "flex";
+          document.getElementById("app-content").style.display = "none";
+
+          // Live clock on login screen
+          setInterval(() => {
+            const el = document.getElementById("login-clock");
+            if (el)
+              el.textContent = new Date().toLocaleTimeString("en-GB", {
+                hour12: false,
+              });
+          }, 1000);
+        };
+
+        /* ══════════════════════════════════════════════════════
+         LOGIN SYSTEM  — credentials come from localStorage
+      ══════════════════════════════════════════════════════ */
+
+        const MAX_ATTEMPTS = 5;
+        const LOCKOUT_SEC = 60;
+
+        let loginAttempts = 0;
+        let lockoutTimer = null;
+        let lockoutRemaining = 0;
+        let eyeVisible = false;
+
+        function togglePassword() {
+          const inp = document.getElementById("login-pass");
+          const icon = document.getElementById("eye-icon");
+          eyeVisible = !eyeVisible;
+          inp.type = eyeVisible ? "text" : "password";
+          icon.setAttribute("data-lucide", eyeVisible ? "eye-off" : "eye");
+          lucide.createIcons();
+        }
+
+        function showLoginError(msg) {
+          const box = document.getElementById("login-error");
+          const text = document.getElementById("login-error-text");
+          text.textContent = msg;
+          box.style.display = "flex";
+        }
+
+        function hideLoginError() {
+          document.getElementById("login-error").style.display = "none";
+        }
+
+        function submitLogin() {
+          if (loginAttempts >= MAX_ATTEMPTS) return;
+
+          const idVal = document.getElementById("login-id").value.trim();
+          const passVal = document.getElementById("login-pass").value;
+          const btn = document.getElementById("login-btn");
+
+          if (!idVal || !passVal) {
+            showLoginError("Operator ID and password are required.");
+            shakeLoginBox();
+            return;
+          }
+
+          // Disable button briefly
+          btn.disabled = true;
+          btn.innerHTML =
+            '<i data-lucide="loader" style="width:15px;height:15px"></i> VERIFYING...';
+          lucide.createIcons();
+
+          // Small artificial delay for UX realism
+          setTimeout(() => {
+            const match = loadUsers().find(
+              (u) => u.id === idVal && u.password === passVal,
+            );
+
+            if (match) {
+              // ✓ Success
+              hideLoginError();
+              document.getElementById("login-btn").innerHTML =
+                '<i data-lucide="check-circle" style="width:15px;height:15px"></i> ACCESS GRANTED';
+              lucide.createIcons();
+              document.getElementById("login-btn").style.background =
+                "var(--accent)";
+
+              setTimeout(() => {
+                document
+                  .getElementById("login-screen")
+                  .classList.add("login-fade-out");
+                setTimeout(() => {
+                  document.getElementById("login-screen").style.display =
+                    "none";
+                  document.getElementById("app-content").style.display =
+                    "block";
+                  // Save session so refresh doesn't require re-login
+                  sessionStorage.setItem(
+                    "irrigationos_session",
+                    JSON.stringify(match),
+                  );
+                  injectOperatorBadge(match);
+                  bootApp(match);
+                }, 420);
+              }, 600);
+            } else {
+              // ✗ Failed
+              loginAttempts++;
+              shakeLoginBox();
+              btn.disabled = false;
+              btn.innerHTML =
+                '<i data-lucide="log-in" style="width:15px;height:15px"></i> AUTHENTICATE';
+              lucide.createIcons();
+
+              const remaining = MAX_ATTEMPTS - loginAttempts;
+
+              if (loginAttempts >= MAX_ATTEMPTS) {
+                startLockout();
+              } else {
+                showLoginError(
+                  `Invalid credentials. ${remaining} attempt${remaining !== 1 ? "s" : ""} remaining.`,
+                );
+                document.getElementById("login-attempts-msg").textContent =
+                  `Failed attempt ${loginAttempts} of ${MAX_ATTEMPTS}`;
+              }
+            }
+          }, 600);
+        }
+
+        function shakeLoginBox() {
+          const box = document.querySelector(".login-box");
+          box.classList.remove("login-shake");
+          // Force reflow
+          void box.offsetWidth;
+          box.classList.add("login-shake");
+        }
+
+        function startLockout() {
+          lockoutRemaining = LOCKOUT_SEC;
+          document.getElementById("login-form-wrap").style.display = "none";
+          document.getElementById("login-locked-msg").style.display = "block";
+          document.getElementById("login-error").style.display = "none";
+          document.getElementById("login-attempts-msg").textContent = "";
+
+          lockoutTimer = setInterval(() => {
+            lockoutRemaining--;
+            document.getElementById("lockout-countdown").textContent =
+              lockoutRemaining;
+            if (lockoutRemaining <= 0) {
+              clearInterval(lockoutTimer);
+              loginAttempts = 0;
+              document.getElementById("login-locked-msg").style.display =
+                "none";
+              document.getElementById("login-form-wrap").style.display =
+                "block";
+              document.getElementById("login-id").value = "";
+              document.getElementById("login-pass").value = "";
+              document.getElementById("login-btn").disabled = false;
+              document.getElementById("login-attempts-msg").textContent = "";
+              hideLoginError();
+            }
+          }, 1000);
+        }
+
+        function injectOperatorBadge(user) {
+          // Add a small operator badge to the top nav right side
+          const nav = document.querySelector(
+            "#topnav .max-w-screen-2xl > div:last-child",
+          );
+          if (!nav) return;
+          const roleColor =
+            user.role === "ADMIN"
+              ? "var(--accent)"
+              : user.role === "OPERATOR"
+                ? "var(--amber)"
+                : "var(--blue)";
+          const badge = document.createElement("div");
+          badge.style.cssText = `
+          display:flex;align-items:center;gap:8px;
+          padding:6px 10px;border:1px solid var(--border);
+          background:var(--bg-panel);flex-shrink:0;
+        `;
+          badge.innerHTML = `
+          <i data-lucide="user-check" style="width:13px;height:13px;color:${roleColor}"></i>
+          <div style="text-align:left">
+            <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:${roleColor};letter-spacing:0.08em">${user.role}</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text-muted)">${user.display}</div>
+          </div>
+          <button onclick="handleLogout()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;margin-left:4px" title="Logout">
+            <i data-lucide="log-out" style="width:13px;height:13px"></i>
+          </button>
+        `;
+          nav.prepend(badge);
+          lucide.createIcons();
+        }
+
+        function handleLogout() {
+          if (!confirm("Log out of IrrigationOS?")) return;
+          // Clear session so next page load shows login
+          sessionStorage.removeItem("irrigationos_session");
+          loginAttempts = 0;
+          document.getElementById("login-id").value = "";
+          document.getElementById("login-pass").value = "";
+          document.getElementById("login-btn").disabled = false;
+          document.getElementById("login-btn").innerHTML =
+            '<i data-lucide="log-in" style="width:15px;height:15px"></i> AUTHENTICATE';
+          hideLoginError();
+          document.getElementById("login-attempts-msg").textContent = "";
+          document.getElementById("login-screen").style.display = "flex";
+          document.getElementById("login-screen").style.opacity = "1";
+          document.getElementById("login-screen").style.transform = "none";
+          document.getElementById("app-content").style.display = "none";
+          lucide.createIcons();
+        }
+
+        /* ══════════════════════════════════════════════════════
+         SETTINGS PANEL JS
+      ══════════════════════════════════════════════════════ */
+
+        let currentSettingsTab = "users";
+
+        function openSettings() {
+          const role = currentUser ? currentUser.role : "VIEWER";
+          const isAdmin = role === "ADMIN";
+
+          const usersTab = document.getElementById("stab-users");
+          const firebaseTab = document.getElementById("stab-firebase");
+          const aboutTab = document.getElementById("stab-about");
+          const ssecUsers = document.getElementById("ssec-users");
+          const ssecFb = document.getElementById("ssec-firebase");
+
+          if (isAdmin) {
+            // ADMIN — show all tabs
+            usersTab.style.display = "";
+            firebaseTab.style.display = "";
+            aboutTab.style.display = "";
+            aboutTab.innerHTML =
+              '<i data-lucide="info" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px"></i>About';
+            // Make sure sections are visible (may have been hidden from a prior non-admin session)
+            ssecUsers.style.display = "";
+            ssecFb.style.display = "";
+            renderUsersTable();
+            renderFirebaseTab();
+            renderAboutTab();
+            openSettingsTab("users");
+          } else {
+            // OPERATOR / VIEWER — completely hide and blank out sensitive sections
+            usersTab.style.display = "none";
+            firebaseTab.style.display = "none";
+            // Wipe users table content so it cannot be read via DOM inspect
+            ssecUsers.innerHTML = "";
+            ssecUsers.style.display = "none";
+            ssecFb.style.display = "none";
+            // Rename About tab to "My Account"
+            aboutTab.style.display = "";
+            aboutTab.innerHTML =
+              '<i data-lucide="user" style="width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px"></i>My Account';
+            openSettingsTab("myaccount");
+          }
+
+          document.getElementById("settings-overlay").style.display = "flex";
+          lucide.createIcons();
+        }
+
+        function closeSettings() {
+          document.getElementById("settings-overlay").style.display = "none";
+        }
+
+        function settingsOverlayClick(e) {
+          if (e.target === document.getElementById("settings-overlay"))
+            closeSettings();
+        }
+
+        function openSettingsTab(tab) {
+          currentSettingsTab = tab;
+          const isAdmin = currentUser && currentUser.role === "ADMIN";
+
+          // Tab button highlights
+          ["users", "firebase", "about"].forEach((t) => {
+            const btn = document.getElementById(`stab-${t}`);
+            if (btn) {
+              const active =
+                tab === t || (tab === "myaccount" && t === "about");
+              btn.classList.toggle("active", active);
+            }
+          });
+
+          // Section visibility — non-admins can NEVER see users or firebase sections
+          const ssecUsers = document.getElementById("ssec-users");
+          const ssecFb = document.getElementById("ssec-firebase");
+          const ssecAbout = document.getElementById("ssec-about");
+
+          if (isAdmin) {
+            if (ssecUsers)
+              ssecUsers.classList.toggle("active", tab === "users");
+            if (ssecFb) ssecFb.classList.toggle("active", tab === "firebase");
+            if (ssecAbout)
+              ssecAbout.classList.toggle("active", tab === "about");
+          } else {
+            // Force non-admin: only about/myaccount section visible, others locked off
+            if (ssecUsers) {
+              ssecUsers.classList.remove("active");
+              ssecUsers.style.display = "none";
+            }
+            if (ssecFb) {
+              ssecFb.classList.remove("active");
+              ssecFb.style.display = "none";
+            }
+            if (ssecAbout) ssecAbout.classList.add("active");
+          }
+
+          if (tab === "firebase" && isAdmin) renderFirebaseTab();
+          if (tab === "about" && isAdmin) renderAboutTab();
+          if (tab === "myaccount") renderMyAccountTab();
+        }
+
+        /* ─── USERS TAB (ADMIN only) ─── */
+        function renderUsersTable() {
+          if (!currentUser || currentUser.role !== "ADMIN") return; // hard guard
+          const users = loadUsers();
+          const badge = document.getElementById("users-count-badge");
+          badge.textContent = `${users.length} user${users.length !== 1 ? "s" : ""}`;
+
+          const ROLE_COLORS = {
+            ADMIN: {
+              bg: "rgba(0,200,140,0.1)",
+              color: "var(--accent)",
+              border: "rgba(0,200,140,0.2)",
+            },
+            OPERATOR: {
+              bg: "rgba(245,158,11,0.1)",
+              color: "var(--amber)",
+              border: "rgba(245,158,11,0.2)",
+            },
+            VIEWER: {
+              bg: "rgba(59,130,246,0.1)",
+              color: "var(--blue)",
+              border: "rgba(59,130,246,0.2)",
+            },
+          };
+
+          const tbody = document.getElementById("users-table-body");
+          if (users.length === 0) {
+            tbody.innerHTML = `<div style="padding:20px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text-muted)">No users registered</div>`;
+            return;
+          }
+
+          // Admin always has full edit/delete access
+          tbody.innerHTML = users
+            .map((u, i) => {
+              const rc = ROLE_COLORS[u.role] || ROLE_COLORS.VIEWER;
+              const masked = "•".repeat(Math.min(u.password.length, 8));
+              const actions = `<div style="display:flex;gap:3px">
+              <button class="icon-btn" onclick="editUserForm(${i})" title="Edit" style="color:var(--blue);border-color:rgba(59,130,246,0.2)">
+                <i data-lucide="pencil" style="width:11px;height:11px"></i>
+              </button>
+              <button class="icon-btn" onclick="deleteUser(${i})" title="Delete">
+                <i data-lucide="trash-2" style="width:11px;height:11px"></i>
+              </button>
+            </div>`;
+              return `<div class="user-row" style="grid-template-columns:1fr 80px 90px 60px">
+            <div>
+              <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text-primary)">${escHtml(u.id)}</div>
+              <div style="font-size:10px;color:var(--text-muted)">${escHtml(u.display)}</div>
+            </div>
+            <div>
+              <span class="user-role-badge" style="background:${rc.bg};color:${rc.color};border:1px solid ${rc.border}">${u.role}</span>
+            </div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text-muted)">${masked}</div>
+            ${actions}
+          </div>`;
+            })
+            .join("");
+          lucide.createIcons();
+        }
+
+        function editUserForm(index) {
+          const users = loadUsers();
+          const u = users[index];
+          document.getElementById("edit-user-original-id").value = u.id;
+          document.getElementById("new-user-id").value = u.id;
+          document.getElementById("new-user-display").value = u.display;
+          document.getElementById("new-user-pass").value = u.password;
+          document.getElementById("new-user-role").value = u.role;
+          document.getElementById("user-form-title").textContent = "EDIT USER";
+          document.getElementById("user-form-btn-label").textContent =
+            "UPDATE USER";
+          document.getElementById("cancel-edit-user-btn").style.display =
+            "inline-flex";
+          document.getElementById("new-user-id").focus();
+          // Scroll form into view
+          document
+            .getElementById("new-user-id")
+            .scrollIntoView({ behavior: "smooth", block: "center" });
+          showUsersAlert(
+            "Editing user: " + u.id + ". Make changes and click UPDATE USER.",
+            "info",
+          );
+        }
+
+        function resetUserForm() {
+          document.getElementById("edit-user-original-id").value = "";
+          document.getElementById("new-user-id").value = "";
+          document.getElementById("new-user-display").value = "";
+          document.getElementById("new-user-pass").value = "";
+          document.getElementById("new-user-role").value = "OPERATOR";
+          document.getElementById("user-form-title").textContent =
+            "ADD NEW USER";
+          document.getElementById("user-form-btn-label").textContent =
+            "ADD USER";
+          document.getElementById("cancel-edit-user-btn").style.display =
+            "none";
+          hideUsersAlert();
+        }
+
+        function saveUserForm() {
+          if (!currentUser || currentUser.role !== "ADMIN") {
+            showUsersAlert("Admin access required.", "error");
+            return;
+          }
+          const newId = document.getElementById("new-user-id").value.trim();
+          const newDisplay = document
+            .getElementById("new-user-display")
+            .value.trim();
+          const newPass = document.getElementById("new-user-pass").value;
+          const newRole = document.getElementById("new-user-role").value;
+          const origId = document.getElementById("edit-user-original-id").value;
+
+          if (!newId) {
+            showUsersAlert("Operator ID is required.", "error");
+            return;
+          }
+          if (!newDisplay) {
+            showUsersAlert("Display name is required.", "error");
+            return;
+          }
+          if (!newPass || newPass.length < 4) {
+            showUsersAlert("Password must be at least 4 characters.", "error");
+            return;
+          }
+          if (!/^[a-zA-Z0-9_.-]+$/.test(newId)) {
+            showUsersAlert(
+              "Operator ID: only letters, numbers, _ . - allowed.",
+              "error",
+            );
+            return;
+          }
+
+          let users = loadUsers();
+          const isEdit = origId !== "";
+
+          // Duplicate check
+          const dupIdx = users.findIndex((u) => u.id === newId);
+          if (dupIdx !== -1 && (!isEdit || users[dupIdx].id !== origId)) {
+            showUsersAlert(`Operator ID "${newId}" is already taken.`, "error");
+            return;
+          }
+
+          if (isEdit) {
+            const idx = users.findIndex((u) => u.id === origId);
+            if (idx !== -1) {
+              users[idx] = {
+                id: newId,
+                display: newDisplay,
+                password: newPass,
+                role: newRole,
+              };
+              showUsersAlert(
+                `User "${newId}" updated successfully.`,
+                "success",
+              );
+              appendLog(
+                `Settings: user "${origId}" updated → "${newId}" (${newRole})`,
+                "success",
+              );
+            }
+          } else {
+            users.push({
+              id: newId,
+              display: newDisplay,
+              password: newPass,
+              role: newRole,
+            });
+            showUsersAlert(
+              `User "${newId}" registered successfully.`,
+              "success",
+            );
+            appendLog(
+              `Settings: new user registered "${newId}" (${newRole})`,
+              "success",
+            );
+          }
+
+          saveUsers(users);
+          resetUserForm();
+          renderUsersTable();
+        }
+
+        function deleteUser(index) {
+          if (!currentUser || currentUser.role !== "ADMIN") return;
+          const users = loadUsers();
+          const u = users[index];
+          if (!confirm(`Delete user "${u.id}"? This cannot be undone.`)) return;
+          users.splice(index, 1);
+          saveUsers(users);
+          showUsersAlert(`User "${u.id}" deleted.`, "success");
+          appendLog(`Settings: user "${u.id}" deleted`, "warning");
+          renderUsersTable();
+        }
+
+        function resetUsersToDefault() {
+          if (!currentUser || currentUser.role !== "ADMIN") return;
+          if (
+            !confirm(
+              "Reset ALL users to factory defaults? All custom accounts will be lost.",
+            )
+          )
+            return;
+          saveUsers(JSON.parse(JSON.stringify(DEFAULT_USERS)));
+          showUsersAlert("Users reset to factory defaults.", "success");
+          appendLog("Settings: users reset to factory defaults", "warning");
+          resetUserForm();
+          renderUsersTable();
+        }
+
+        function toggleNewUserPass() {
+          const inp = document.getElementById("new-user-pass");
+          const eye = document.getElementById("new-pass-eye");
+          const show = inp.type === "password";
+          inp.type = show ? "text" : "password";
+          eye.setAttribute("data-lucide", show ? "eye-off" : "eye");
+          lucide.createIcons();
+        }
+
+        function showUsersAlert(msg, type) {
+          const el = document.getElementById("users-alert");
+          el.className = `sett-alert sett-alert-${type}`;
+          const icon =
+            type === "success"
+              ? "check-circle"
+              : type === "error"
+                ? "alert-circle"
+                : "info";
+          el.innerHTML = `<i data-lucide="${icon}" style="width:14px;height:14px;flex-shrink:0"></i><span>${escHtml(msg)}</span>`;
+          el.style.display = "flex";
+          lucide.createIcons();
+          if (type === "success") setTimeout(hideUsersAlert, 3500);
+        }
+
+        function hideUsersAlert() {
+          document.getElementById("users-alert").style.display = "none";
+        }
+
+        /* ─── MY ACCOUNT TAB (OPERATOR / VIEWER) ─── */
+        function renderMyAccountTab() {
+          const sec = document.getElementById("ssec-about");
+          if (!sec || !currentUser) return;
+          const u = currentUser;
+          const isViewer = u.role === "VIEWER";
+          const roleColor =
+            u.role === "OPERATOR" ? "var(--amber)" : "var(--blue)";
+          const currentFbURL = loadFirebaseURL();
+
+          // Firebase card — same for both roles
+          const firebaseCard = `
+          <div class="sett-card">
+            <div class="section-label mb-1" style="color:var(--accent)">FIREBASE DATABASE URL</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;line-height:1.6">
+              Set the Realtime Database URL for this dashboard to connect to.
+            </div>
+
+            <!-- Active URL display -->
+            <div style="font-family:var(--mono);font-size:10px;color:var(--accent);word-break:break-all;padding:8px 10px;background:#080c10;border:1px solid var(--border);border-radius:2px;margin-bottom:10px" id="my-fb-active-url">${escHtml(currentFbURL)}</div>
+
+            <!-- Status row -->
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+              <div class="led" id="my-fb-led" style="background:#1e3048;width:6px;height:6px"></div>
+              <span style="font-family:var(--mono);font-size:10px;color:var(--text-muted)" id="my-fb-status">NOT TESTED</span>
+            </div>
+
+            <div class="sett-field">
+              <label class="sett-label">New Database URL</label>
+              <input type="url" id="my-fb-url" class="sett-inp"
+                value="${escHtml(currentFbURL)}"
+                placeholder="https://your-project-default-rtdb.region.firebasedatabase.app"
+                spellcheck="false">
+              <div style="font-size:10px;color:var(--text-muted);margin-top:5px;font-family:var(--mono)">
+                Include https:// · No trailing slash
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost" onclick="testMyFirebaseURL()" style="font-size:10px;padding:9px 10px;flex-shrink:0">
+                <i data-lucide="wifi" style="width:12px;height:12px"></i> TEST
+              </button>
+              <button class="btn btn-primary" onclick="saveMyFirebaseURL()" style="flex:1;font-size:11px;padding:9px">
+                <i data-lucide="save" style="width:13px;height:13px"></i> SAVE &amp; RECONNECT
+              </button>
+            </div>
+          </div>
+        `;
+
+          sec.innerHTML = `
+          <div id="myaccount-alert" style="display:none" class="sett-alert"></div>
+
+          <!-- Profile card -->
+          <div class="sett-card" style="text-align:center;padding:24px 20px 20px">
+            <div style="width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid ${roleColor};margin-bottom:12px;opacity:0.9">
+              <i data-lucide="user" style="width:22px;height:22px;color:${roleColor}"></i>
+            </div>
+            <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text-primary)">${escHtml(u.display)}</div>
+            <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.15em;margin-top:4px;color:${roleColor}">${u.role}</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-top:4px">${escHtml(u.id)}</div>
+          </div>
+
+          ${
+            isViewer
+              ? `
+            <!-- Viewer: read-only notice for account, but CAN set Firebase URL -->
+            <div class="sett-alert sett-alert-info" style="display:flex;margin-bottom:14px">
+              <i data-lucide="eye" style="width:14px;height:14px;flex-shrink:0"></i>
+              <span>Read-only access — contact an Admin to change your account details.</span>
+            </div>
+            ${firebaseCard}
+          `
+              : `
+            <!-- Operator: display name + password + Firebase URL -->
+            <div class="sett-card">
+              <div class="section-label mb-3">CHANGE DISPLAY NAME</div>
+              <div class="sett-field">
+                <label class="sett-label">Display Name</label>
+                <input type="text" id="my-display" class="sett-inp" value="${escHtml(u.display)}" maxlength="40">
+              </div>
+              <button class="btn btn-primary" onclick="saveMyDisplayName()" style="font-size:11px;padding:9px;width:100%">
+                <i data-lucide="save" style="width:13px;height:13px"></i> SAVE DISPLAY NAME
+              </button>
+            </div>
+
+            <div class="sett-card">
+              <div class="section-label mb-3">CHANGE PASSWORD</div>
+              <div class="sett-field">
+                <label class="sett-label">Current Password</label>
+                <input type="password" id="my-pass-current" class="sett-inp" placeholder="Enter current password" maxlength="64">
+              </div>
+              <div class="sett-field">
+                <label class="sett-label">New Password</label>
+                <input type="password" id="my-pass-new" class="sett-inp" placeholder="Min 4 characters" maxlength="64">
+              </div>
+              <div class="sett-field" style="margin-bottom:4px">
+                <label class="sett-label">Confirm New Password</label>
+                <input type="password" id="my-pass-confirm" class="sett-inp" placeholder="Repeat new password" maxlength="64">
+              </div>
+              <button class="btn btn-primary" onclick="saveMyPassword()" style="font-size:11px;padding:9px;width:100%;margin-top:4px">
+                <i data-lucide="key-round" style="width:13px;height:13px"></i> UPDATE PASSWORD
+              </button>
+            </div>
+
+            ${firebaseCard}
+          `
+          }
+        `;
+          lucide.createIcons();
+        }
+
+        /* ─── Firebase URL helpers for My Account tab ─── */
+        async function testMyFirebaseURL() {
+          const url = document.getElementById("my-fb-url").value.trim();
+          if (!url) {
+            showMyAccountAlert("Enter a URL to test.", "error");
+            return;
+          }
+          if (!url.startsWith("https://")) {
+            showMyAccountAlert("URL must start with https://", "error");
+            return;
+          }
+
+          showMyAccountAlert("Testing connection…", "info");
+          const led = document.getElementById("my-fb-led");
+          const status = document.getElementById("my-fb-status");
+          led.style.background = "var(--amber)";
+          status.textContent = "TESTING…";
+
+          try {
+            const testUrl =
+              url.replace(/\/$/, "") + "/irrigation/esp32/lastSeen.json";
+            const t0 = Date.now();
+            const resp = await fetch(testUrl, {
+              signal: AbortSignal.timeout(8000),
+            });
+            const latency = Date.now() - t0;
+            if (resp.ok) {
+              showMyAccountAlert(
+                `Connection OK — ${latency}ms. Click SAVE & RECONNECT to apply.`,
+                "success",
+              );
+              led.className = "led led-green";
+              led.style.background = "var(--accent)";
+              status.textContent = `ONLINE · ${latency}ms`;
+            } else {
+              showMyAccountAlert(
+                `Server responded HTTP ${resp.status}. Check URL or database rules.`,
+                "error",
+              );
+              led.style.background = "var(--red)";
+              status.textContent = `HTTP ${resp.status}`;
+            }
+          } catch (e) {
+            showMyAccountAlert(`Connection failed: ${e.message}`, "error");
+            led.style.background = "var(--red)";
+            status.textContent = "UNREACHABLE";
+          }
+        }
+
+        function saveMyFirebaseURL() {
+          const url = document
+            .getElementById("my-fb-url")
+            .value.trim()
+            .replace(/\/$/, "");
+          if (!url) {
+            showMyAccountAlert("URL cannot be empty.", "error");
+            return;
+          }
+          if (!url.startsWith("https://")) {
+            showMyAccountAlert("URL must start with https://", "error");
+            return;
+          }
+
+          saveFirebaseURL(url);
+          document.getElementById("my-fb-active-url").textContent = url;
+          showMyAccountAlert("URL saved — reconnecting to Firebase…", "info");
+          appendLog(
+            `Firebase URL updated by ${currentUser.id} (${currentUser.role}): ${url}`,
+            "success",
+          );
+
+          const ok = initFirebase(url);
+          if (ok) {
+            setTimeout(() => {
+              startFirebaseListeners();
+              showMyAccountAlert(
+                "Reconnected successfully. Listeners restarted.",
+                "success",
+              );
+              appendLog(
+                "Firebase listeners restarted on new database",
+                "success",
+              );
+            }, 800);
+          } else {
+            showMyAccountAlert(
+              "Firebase init failed. Check the URL format.",
+              "error",
+            );
+          }
+        }
+
+        function saveMyDisplayName() {
+          const newDisplay = document.getElementById("my-display").value.trim();
+          if (!newDisplay) {
+            showMyAccountAlert("Display name cannot be empty.", "error");
+            return;
+          }
+          let users = loadUsers();
+          const idx = users.findIndex((u) => u.id === currentUser.id);
+          if (idx === -1) {
+            showMyAccountAlert("Account not found.", "error");
+            return;
+          }
+          users[idx].display = newDisplay;
+          saveUsers(users);
+          currentUser.display = newDisplay;
+          sessionStorage.setItem(
+            "irrigationos_session",
+            JSON.stringify(currentUser),
+          );
+          showMyAccountAlert("Display name updated.", "success");
+          appendLog(
+            `${currentUser.id} updated display name to "${newDisplay}"`,
+            "success",
+          );
+        }
+
+        function saveMyPassword() {
+          const current = document.getElementById("my-pass-current").value;
+          const newPass = document.getElementById("my-pass-new").value;
+          const confirm = document.getElementById("my-pass-confirm").value;
+          if (!current) {
+            showMyAccountAlert("Enter your current password.", "error");
+            return;
+          }
+          if (current !== currentUser.password) {
+            showMyAccountAlert("Current password is incorrect.", "error");
+            return;
+          }
+          if (!newPass || newPass.length < 4) {
+            showMyAccountAlert(
+              "New password must be at least 4 characters.",
+              "error",
+            );
+            return;
+          }
+          if (newPass !== confirm) {
+            showMyAccountAlert("New passwords do not match.", "error");
+            return;
+          }
+          let users = loadUsers();
+          const idx = users.findIndex((u) => u.id === currentUser.id);
+          if (idx === -1) {
+            showMyAccountAlert("Account not found.", "error");
+            return;
+          }
+          users[idx].password = newPass;
+          saveUsers(users);
+          currentUser.password = newPass;
+          sessionStorage.setItem(
+            "irrigationos_session",
+            JSON.stringify(currentUser),
+          );
+          document.getElementById("my-pass-current").value = "";
+          document.getElementById("my-pass-new").value = "";
+          document.getElementById("my-pass-confirm").value = "";
+          showMyAccountAlert("Password updated successfully.", "success");
+          appendLog(`${currentUser.id} changed their password`, "success");
+        }
+
+        function showMyAccountAlert(msg, type) {
+          const el = document.getElementById("myaccount-alert");
+          if (!el) return;
+          el.className = `sett-alert sett-alert-${type}`;
+          const icon =
+            type === "success"
+              ? "check-circle"
+              : type === "error"
+                ? "alert-circle"
+                : "info";
+          el.innerHTML = `<i data-lucide="${icon}" style="width:14px;height:14px;flex-shrink:0"></i><span>${escHtml(msg)}</span>`;
+          el.style.display = "flex";
+          lucide.createIcons();
+          if (type === "success")
+            setTimeout(() => {
+              if (el) el.style.display = "none";
+            }, 3500);
+        }
+
+        /* ─── FIREBASE TAB ─── */
+        function renderFirebaseTab() {
+          const url = loadFirebaseURL();
+          document.getElementById("fb-active-url").textContent = url;
+          document.getElementById("new-fb-url").value = url;
+          hideFbAlert();
+          document.getElementById("fb-status-led").className = "led";
+          document.getElementById("fb-status-led").style.background = "#1e3048";
+          document.getElementById("fb-status-text").textContent = "NOT TESTED";
+        }
+
+        async function testFirebaseURL() {
+          const url = document.getElementById("new-fb-url").value.trim();
+          if (!url) {
+            showFbAlert("Enter a URL to test.", "error");
+            return;
+          }
+          if (!url.startsWith("https://")) {
+            showFbAlert("URL must start with https://", "error");
+            return;
+          }
+
+          showFbAlert("Testing connection…", "info");
+          document.getElementById("fb-status-led").style.background =
+            "var(--amber)";
+          document.getElementById("fb-status-text").textContent = "TESTING…";
+
+          try {
+            const testUrl =
+              url.replace(/\/$/, "") + "/irrigation/esp32/lastSeen.json";
+            const t0 = Date.now();
+            const resp = await fetch(testUrl, {
+              signal: AbortSignal.timeout(8000),
+            });
+            const latency = Date.now() - t0;
+            if (resp.ok) {
+              showFbAlert(
+                `Connection OK — ${latency}ms latency. Click SAVE & RECONNECT to apply.`,
+                "success",
+              );
+              document.getElementById("fb-status-led").style.background =
+                "var(--accent)";
+              document.getElementById("fb-status-led").className =
+                "led led-green";
+              document.getElementById("fb-status-text").textContent =
+                `ONLINE · ${latency}ms`;
+            } else {
+              showFbAlert(
+                `Server responded with HTTP ${resp.status}. Check your URL or database rules.`,
+                "error",
+              );
+              document.getElementById("fb-status-led").style.background =
+                "var(--red)";
+              document.getElementById("fb-status-text").textContent =
+                `HTTP ${resp.status}`;
+            }
+          } catch (e) {
+            showFbAlert(`Connection failed: ${e.message}`, "error");
+            document.getElementById("fb-status-led").style.background =
+              "var(--red)";
+            document.getElementById("fb-status-text").textContent =
+              "UNREACHABLE";
+          }
+        }
+
+        function applyFirebaseURL() {
+          if (!currentUser || currentUser.role !== "ADMIN") {
+            showFbAlert("Admin access required.", "error");
+            return;
+          }
+          const url = document
+            .getElementById("new-fb-url")
+            .value.trim()
+            .replace(/\/$/, "");
+          if (!url) {
+            showFbAlert("URL cannot be empty.", "error");
+            return;
+          }
+          if (!url.startsWith("https://")) {
+            showFbAlert("URL must start with https://", "error");
+            return;
+          }
+
+          saveFirebaseURL(url);
+          document.getElementById("fb-active-url").textContent = url;
+          showFbAlert("URL saved. Reconnecting to Firebase…", "info");
+          appendLog(`Settings: Firebase URL updated — ${url}`, "success");
+
+          const ok = initFirebase(url);
+          if (ok) {
+            showFbAlert(
+              "Reconnected successfully. Restarting listeners…",
+              "success",
+            );
+            // Restart listeners on the new db instance
+            setTimeout(() => {
+              startFirebaseListeners();
+              appendLog(
+                "Firebase listeners restarted on new database",
+                "success",
+              );
+            }, 800);
+          } else {
+            showFbAlert("Firebase init failed. Check the URL format.", "error");
+          }
+          renderAboutTab();
+        }
+
+        function resetFirebaseURL() {
+          if (!currentUser || currentUser.role !== "ADMIN") return;
+          if (!confirm("Restore the default Firebase URL?")) return;
+          saveFirebaseURL(DEFAULT_FIREBASE_URL);
+          document.getElementById("new-fb-url").value = DEFAULT_FIREBASE_URL;
+          applyFirebaseURL();
+          appendLog("Settings: Firebase URL reset to default", "warning");
+        }
+
+        function showFbAlert(msg, type) {
+          const el = document.getElementById("fb-alert");
+          el.className = `sett-alert sett-alert-${type}`;
+          const icon =
+            type === "success"
+              ? "check-circle"
+              : type === "error"
+                ? "alert-circle"
+                : "info";
+          el.innerHTML = `<i data-lucide="${icon}" style="width:14px;height:14px;flex-shrink:0"></i><span>${escHtml(msg)}</span>`;
+          el.style.display = "flex";
+          lucide.createIcons();
+          if (type === "success") setTimeout(hideFbAlert, 4000);
+        }
+
+        function hideFbAlert() {
+          document.getElementById("fb-alert").style.display = "none";
+        }
+
+        /* ─── ABOUT TAB ─── */
+        function renderAboutTab() {
+          const users = loadUsers();
+          const url = loadFirebaseURL();
+          let region = "custom";
+          if (url.includes("firebaseio.com")) region = "us-central1";
+          else if (url.includes("asia-southeast1")) region = "asia-southeast1";
+          else if (url.includes("europe-west1")) region = "europe-west1";
+          document.getElementById("about-user-count").textContent =
+            users.length;
+          document.getElementById("about-fb-region").textContent = region;
+        }
+
+        /* ─── UTILITY ─── */
+        function escHtml(str) {
+          return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+      </script>
+    </div>
+    <!-- /#app-content -->
+  </body>
+</html>
