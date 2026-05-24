@@ -1082,9 +1082,14 @@
                   class="login-inp"
                   placeholder="Enter operator ID"
                   autocomplete="username"
+                  autocapitalize="none"
+                  autocorrect="off"
+                  autocomplete="off"
                   spellcheck="false"
+                  inputmode="text"
                   maxlength="32"
                   onkeydown="if(event.key==='Enter') document.getElementById('login-pass').focus()"
+                  onkeyup="if(event.key==='Enter') document.getElementById('login-pass').focus()"
                 />
               </div>
             </div>
@@ -1101,9 +1106,13 @@
                   id="login-pass"
                   class="login-inp"
                   placeholder="Enter password"
-                  autocomplete="current-password"
+                  autocomplete="off"
+                  autocapitalize="none"
+                  autocorrect="off"
+                  spellcheck="false"
                   maxlength="64"
                   onkeydown="if(event.key==='Enter') submitLogin()"
+                  onkeyup="if(event.key==='Enter') submitLogin()"
                 />
                 <button class="login-eye" onclick="togglePassword()" type="button" id="eye-btn" title="Show/hide password">
                   <i data-lucide="eye" style="width:15px;height:15px" id="eye-icon"></i>
@@ -1121,7 +1130,7 @@
             <div class="login-attempts" id="login-attempts-msg"></div>
 
             <!-- Submit -->
-            <button class="login-btn" id="login-btn" onclick="submitLogin()">
+            <button class="login-btn" id="login-btn" onclick="submitLogin()" ontouchend="event.preventDefault();submitLogin()">
               <i data-lucide="log-in" style="width:15px;height:15px"></i>
               AUTHENTICATE
             </button>
@@ -3421,23 +3430,37 @@
         appendLog(`Authenticated as ${user.display} (${user.role}) · Firebase listeners active`, "info");
       }
 
+      /* ═══════════ SESSION STORAGE — safe wrapper for private/incognito ═══════════ */
+      function sessionGet(key) {
+        try { return sessionStorage.getItem(key); } catch(e) { return null; }
+      }
+      function sessionSet(key, val) {
+        try { sessionStorage.setItem(key, val); } catch(e) {}
+      }
+      function sessionRemove(key) {
+        try { sessionStorage.removeItem(key); } catch(e) {}
+      }
+
       /* ═══════════ INIT ═══════════ */
       window.onload = () => {
         lucide.createIcons();
 
         // Check if a session is already active (survives page refresh)
-        const savedSession = sessionStorage.getItem("irrigationos_session");
+        // sessionGet() is safe even in iOS private browsing
+        const savedSession = sessionGet("irrigationos_session");
         if (savedSession) {
           try {
             const user = JSON.parse(savedSession);
-            // Valid session — skip login screen, go straight to dashboard
-            document.getElementById("login-screen").style.display = "none";
-            document.getElementById("app-content").style.display  = "block";
-            injectOperatorBadge(user);
-            bootApp(user);
-            return;
+            if (user && user.id && user.role) {
+              // Valid session — skip login screen, go straight to dashboard
+              document.getElementById("login-screen").style.display = "none";
+              document.getElementById("app-content").style.display  = "block";
+              injectOperatorBadge(user);
+              bootApp(user);
+              return;
+            }
           } catch(e) {
-            sessionStorage.removeItem("irrigationos_session");
+            sessionRemove("irrigationos_session");
           }
         }
 
@@ -3484,11 +3507,14 @@
         document.getElementById("login-error").style.display = "none";
       }
 
+      let _loginInProgress = false;
       function submitLogin() {
         if (loginAttempts >= MAX_ATTEMPTS) return;
+        if (_loginInProgress) return;   // prevent double-fire on mobile (touch + click)
+        _loginInProgress = true;
 
-        const idVal   = document.getElementById("login-id").value.trim();
-        const passVal = document.getElementById("login-pass").value;
+        const idVal   = document.getElementById("login-id").value.trim().toLowerCase();
+        const passVal = document.getElementById("login-pass").value.trim();
         const btn     = document.getElementById("login-btn");
 
         if (!idVal || !passVal) {
@@ -3508,7 +3534,7 @@
           console.log('[login] Checking', allUsers.length, 'users for id:', idVal);
 
           const match = allUsers.find(u => {
-            const idMatch   = u.id       === idVal;
+            const idMatch   = u.id.toLowerCase() === idVal;
             const passMatch = u.password === passVal;
             console.log(`[login] → "${u.id}" id:${idMatch} pass:${passMatch}`);
             return idMatch && passMatch;
@@ -3528,7 +3554,7 @@
                 document.getElementById("login-screen").style.display = "none";
                 document.getElementById("app-content").style.display  = "block";
                 // Save session so refresh doesn't require re-login
-                sessionStorage.setItem("irrigationos_session", JSON.stringify(match));
+                sessionSet("irrigationos_session", JSON.stringify(match));
                 injectOperatorBadge(match);
                 bootApp(match);
               }, 420);
@@ -3536,6 +3562,7 @@
 
           } else {
             // ✗ Failed
+            _loginInProgress = false;
             loginAttempts++;
             shakeLoginBox();
             btn.disabled = false;
@@ -3615,7 +3642,7 @@
       function handleLogout() {
         if (!confirm("Log out of IrrigationOS?")) return;
         // Clear session so next page load shows login
-        sessionStorage.removeItem("irrigationos_session");
+        sessionRemove("irrigationos_session");
         loginAttempts = 0;
         document.getElementById("login-id").value   = "";
         document.getElementById("login-pass").value = "";
@@ -4076,7 +4103,7 @@
         users[idx].display = newDisplay;
         saveUsers(users);
         currentUser.display = newDisplay;
-        sessionStorage.setItem('irrigationos_session', JSON.stringify(currentUser));
+        sessionSet('irrigationos_session', JSON.stringify(currentUser));
         showMyAccountAlert('Display name updated.', 'success');
         appendLog(`${currentUser.id} updated display name to "${newDisplay}"`, 'success');
       }
@@ -4095,7 +4122,7 @@
         users[idx].password = newPass;
         saveUsers(users);
         currentUser.password = newPass;
-        sessionStorage.setItem('irrigationos_session', JSON.stringify(currentUser));
+        sessionSet('irrigationos_session', JSON.stringify(currentUser));
         document.getElementById('my-pass-current').value = '';
         document.getElementById('my-pass-new').value     = '';
         document.getElementById('my-pass-confirm').value = '';
