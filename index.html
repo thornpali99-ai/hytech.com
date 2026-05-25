@@ -1354,7 +1354,7 @@
           class="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4"
         >
           <!-- Brand -->
-          <div class="flex items-center gap-3 flex-shrink-0">
+          <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <div
               style="
                 width: 28px;
@@ -1391,6 +1391,7 @@
                 IRRIGATION<span style="color: var(--accent)">OS</span>
               </span>
               <span
+                class="hidden sm:block"
                 style="
                   font-family: var(--mono);
                   font-size: 9px;
@@ -1446,7 +1447,7 @@
           </div>
 
           <!-- Right controls -->
-          <div class="flex items-center gap-2 flex-shrink-0">
+          <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <!-- Connection badge -->
             <div
               class="hidden sm:flex items-center gap-2 px-3 py-1.5"
@@ -1476,13 +1477,13 @@
             <button
               class="btn btn-ghost"
               onclick="openEmergencyStop()"
-              style="padding: 7px 12px"
+              style="padding: 7px 10px"
             >
               <i
                 data-lucide="octagon-alert"
                 style="width: 14px; height: 14px; color: var(--red)"
               ></i>
-              <span style="color: var(--red)">E-STOP</span>
+              <span class="hidden md:inline" style="color: var(--red)">E-STOP</span>
             </button>
 
             <button
@@ -2426,9 +2427,7 @@
                 <div class="section-label mb-3">CONFIGURE DATABASE URL</div>
 
                 <div class="sett-field">
-                  <label class="sett-label"
-                    >Firebase Realtime Database URL</label
-                  >
+                  <label class="sett-label">Firebase Realtime Database URL</label>
                   <input
                     type="url"
                     id="new-fb-url"
@@ -3356,243 +3355,243 @@
                 }
               })
               .catch(() => {});
+          }
         }
-      }
 
-      /* ═══════════ FIREBASE LISTENERS ═══════════ */
-      function startFirebaseListeners() {
-        appendLog(
-          "Initializing Firebase RTDB link to rua-farm database",
-          "info",
-        );
+        /* ═══════════ FIREBASE LISTENERS ═══════════ */
+        function startFirebaseListeners() {
+          appendLog(
+            "Initializing Firebase RTDB link to rua-farm database",
+            "info",
+          );
 
-        db.ref("/irrigation/esp32").on(
-          "value",
-          (snap) => {
-            pollCount++;
-            const diagPolls = document.getElementById("diag-polls");
-            if (diagPolls) diagPolls.textContent = pollCount;
+          db.ref("/irrigation/esp32").on(
+            "value",
+            (snap) => {
+              pollCount++;
+              const diagPolls = document.getElementById("diag-polls");
+              if (diagPolls) diagPolls.textContent = pollCount;
 
-            const data = snap.val();
-            if (!data) return;
+              const data = snap.val();
+              if (!data) return;
 
-            // Track the last seen epoch timestamp to compare in the watchdog timer loop
-            esp32LastSeen = data.lastSeen || 0;
+              // Track the last seen epoch timestamp to compare in the watchdog timer loop
+              esp32LastSeen = data.lastSeen || 0;
 
-            // Temp
-            const temp = data.rtcTemp ? data.rtcTemp.toFixed(1) : "--.-";
-            const kpiTemp = document.getElementById("kpi-temp");
-            const tickerTemp = document.getElementById("ticker-temp");
-            const tickerTemp2 = document.getElementById("ticker-temp2");
-            if (kpiTemp) kpiTemp.textContent = temp;
-            if (tickerTemp) tickerTemp.textContent = `${temp}°C`;
-            if (tickerTemp2) tickerTemp2.textContent = `${temp}°C`;
-            const tempPct = data.rtcTemp
-              ? Math.min(100, (data.rtcTemp / 50) * 100)
-              : 0;
-            const tempBar = document.getElementById("kpi-temp-bar");
-            if (tempBar) tempBar.style.width = `${tempPct}%`;
+              // Temp
+              const temp = data.rtcTemp ? data.rtcTemp.toFixed(1) : "--.-";
+              const kpiTemp = document.getElementById("kpi-temp");
+              const tickerTemp = document.getElementById("ticker-temp");
+              const tickerTemp2 = document.getElementById("ticker-temp2");
+              if (kpiTemp) kpiTemp.textContent = temp;
+              if (tickerTemp) tickerTemp.textContent = `${temp}°C`;
+              if (tickerTemp2) tickerTemp2.textContent = `${temp}°C`;
+              const tempPct = data.rtcTemp
+                ? Math.min(100, (data.rtcTemp / 50) * 100)
+                : 0;
+              const tempBar = document.getElementById("kpi-temp-bar");
+              if (tempBar) tempBar.style.width = `${tempPct}%`;
 
-            // Time
-            if (data.rtcTime) {
-              const parts = data.rtcTime.split(" ");
-              const timePart = parts[1] || "--:--:--";
-              const datePart = parts[0] || "";
-              const kpiTime = document.getElementById("kpi-time");
-              const footerTime = document.getElementById("footer-time");
-              if (kpiTime) kpiTime.textContent = timePart;
-              if (footerTime) footerTime.textContent = timePart;
-              if (datePart) {
-                const d = new Date(datePart);
-                const kpiDate = document.getElementById("kpi-date");
-                if (kpiDate) {
-                  kpiDate.textContent =
-                    d.toLocaleDateString("en-US", {
-                      weekday: "short",
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    });
+              // Time
+              if (data.rtcTime) {
+                const parts = data.rtcTime.split(" ");
+                const timePart = parts[1] || "--:--:--";
+                const datePart = parts[0] || "";
+                const kpiTime = document.getElementById("kpi-time");
+                const footerTime = document.getElementById("footer-time");
+                if (kpiTime) kpiTime.textContent = timePart;
+                if (footerTime) footerTime.textContent = timePart;
+                if (datePart) {
+                  const d = new Date(datePart);
+                  const kpiDate = document.getElementById("kpi-date");
+                  if (kpiDate) {
+                    kpiDate.textContent =
+                      d.toLocaleDateString("en-US", {
+                        weekday: "short",
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      });
+                  }
                 }
               }
-            }
 
-            // IP
-            const kpiIp = document.getElementById("kpi-ip");
-            if (kpiIp) kpiIp.textContent = data.ip || "?.?.?.?";
+              // IP
+              const kpiIp = document.getElementById("kpi-ip");
+              if (kpiIp) kpiIp.textContent = data.ip || "?.?.?.?";
 
-            // RTC diag
-            if (data.rtcTime) {
-              const diagRtc = document.getElementById("diag-rtc");
-              const diagRtcLed = document.getElementById("diag-rtc-led");
-              const diagRtcBar = document.getElementById("diag-rtc-bar");
-              if (diagRtc) diagRtc.textContent = "LOCKED";
-              if (diagRtcLed) diagRtcLed.className = "led led-green";
-              if (diagRtcBar) diagRtcBar.style.width = "100%";
-            }
-
-            // Process immediate state evaluation
-            evaluateConnectionStatus();
-          },
-          (err) => {
-            errorCount++;
-            const diagErrors = document.getElementById("diag-errors");
-            if (diagErrors) diagErrors.textContent = errorCount;
-            appendLog(`Telemetry read error: ${err.message}`, "danger");
-          },
-        );
-
-        db.ref("/irrigation/zones").on("value", (snap) => {
-          const data = snap.val();
-          if (data) {
-            const prev = zonesData.map((z) => z.relayOn);
-            zonesData = Array.isArray(data) ? data : Object.values(data);
-
-            // Track relay state changes for history
-            zonesData.forEach((zone, i) => {
-              if (prev[i] !== undefined && prev[i] !== zone.relayOn) {
-                recordZoneActivity(i, zone.relayOn);
+              // RTC diag
+              if (data.rtcTime) {
+                const diagRtc = document.getElementById("diag-rtc");
+                const diagRtcLed = document.getElementById("diag-rtc-led");
+                const diagRtcBar = document.getElementById("diag-rtc-bar");
+                if (diagRtc) diagRtc.textContent = "LOCKED";
+                if (diagRtcLed) diagRtcLed.className = "led led-green";
+                if (diagRtcBar) diagRtcBar.style.width = "100%";
               }
-            });
 
-            renderZones();
-            renderRunHistory();
-            updateTicker();
-          } else {
-            appendLog(
-              "Zones not found. Seeding initial structures.",
-              "warning",
-            );
-            seedInitialData();
-          }
-        });
-      }
+              // Process immediate state evaluation
+              evaluateConnectionStatus();
+            },
+            (err) => {
+              errorCount++;
+              const diagErrors = document.getElementById("diag-errors");
+              if (diagErrors) diagErrors.textContent = errorCount;
+              appendLog(`Telemetry read error: ${err.message}`, "danger");
+            },
+          );
 
-      /* ═══════════ TICKER UPDATE ═══════════ */
-      function updateTicker() {
-        const active = zonesData.filter((z) => z.relayOn).length;
-        const str = `${active}/8`;
-        const tZones = document.getElementById("ticker-zones");
-        const tZones2 = document.getElementById("ticker-zones2");
-        if (tZones) tZones.textContent = str;
-        if (tZones2) tZones2.textContent = str;
+          db.ref("/irrigation/zones").on("value", (snap) => {
+            const data = snap.val();
+            if (data) {
+              const prev = zonesData.map((z) => z.relayOn);
+              zonesData = Array.isArray(data) ? data : Object.values(data);
 
-        const runStr = `${totalRuntimeMinutes.toFixed(0)} min`;
-        const tRuntime = document.getElementById("ticker-runtime");
-        const tRuntime2 = document.getElementById("ticker-runtime2");
-        if (tRuntime) tRuntime.textContent = runStr;
-        if (tRuntime2) tRuntime2.textContent = runStr;
+              // Track relay state changes for history
+              zonesData.forEach((zone, i) => {
+                if (prev[i] !== undefined && prev[i] !== zone.relayOn) {
+                  recordZoneActivity(i, zone.relayOn);
+                }
+              });
 
-        // Next schedule
-        let nextSchedule = null;
-        const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
-        zonesData.forEach((zone, zi) => {
-          if (!zone.timers) return;
-          zone.timers.forEach((t) => {
-            if (!t.enabled) return;
-            const parts = (t.startTime || "").split(":");
-            if (parts.length < 2) return;
-            const schedMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-            const diff =
-              schedMins > nowMins
-                ? schedMins - nowMins
-                : 1440 - nowMins + schedMins;
-            if (nextSchedule === null || diff < nextSchedule.diff) {
-              nextSchedule = { diff, label: `Z${zi + 1} @${t.startTime}` };
+              renderZones();
+              renderRunHistory();
+              updateTicker();
+            } else {
+              appendLog(
+                "Zones not found. Seeding initial structures.",
+                "warning",
+              );
+              seedInitialData();
             }
-          });
-        });
-        const nextStr = nextSchedule
-          ? `${nextSchedule.label} (${nextSchedule.diff}m)`
-          : "NONE";
-        const tNext = document.getElementById("ticker-next");
-        const tNext2 = document.getElementById("ticker-next2");
-        if (tNext) tNext.textContent = nextStr;
-        if (tNext2) tNext2.textContent = nextStr;
-      }
-
-      /* ═══════════ UPTIME ═══════════ */
-      function updateUptime() {
-        const elapsed = Date.now() - sessionStartTime;
-        const d = Math.floor(elapsed / 86400000);
-        const h = Math.floor((elapsed % 86400000) / 3600000);
-        const m = Math.floor((elapsed % 3600000) / 60000);
-        const str = `${d}d ${h}h ${m}m`;
-        const kpiUptime = document.getElementById("kpi-uptime");
-        const tUptime = document.getElementById("ticker-uptime");
-        const tUptime2 = document.getElementById("ticker-uptime2");
-        if (kpiUptime) kpiUptime.textContent = str;
-        if (tUptime) tUptime.textContent = str;
-        if (tUptime2) tUptime2.textContent = str;
-      }
-
-      /* ═══════════ SEED DATA ═══════════ */
-      function seedInitialData() {
-        const seed = [];
-        for (let i = 0; i < 8; i++) {
-          const timers = [];
-          const defaults = [
-            "06:00",
-            "12:00",
-            "18:00",
-            "21:00",
-            "00:00",
-            "03:00",
-          ];
-          for (let t = 0; t < 6; t++) {
-            timers.push({
-              enabled: false,
-              startTime: defaults[t],
-              duration: 10,
-              days: [1, 1, 1, 1, 1, 1, 1],
-            });
-          }
-          seed.push({
-            id: i + 1,
-            name: `Zone ${i + 1}`,
-            manualOn: false,
-            relayOn: false,
-            timers,
           });
         }
-        db.ref("/irrigation/zones")
-          .set(seed)
-          .then(() =>
-            appendLog(
-              "Database initialized with default zone structure",
-              "success",
-            ),
-          )
-          .catch((err) => appendLog(`Seed error: ${err.message}`, "danger"));
-      }
 
-      /* ═══════════ RENDER ZONES ═══════════ */
-      function renderZones() {
-        const grid = document.getElementById("zones-grid");
-        if (!grid) return;
+        /* ═══════════ TICKER UPDATE ═══════════ */
+        function updateTicker() {
+          const active = zonesData.filter((z) => z.relayOn).length;
+          const str = `${active}/8`;
+          const tZones = document.getElementById("ticker-zones");
+          const tZones2 = document.getElementById("ticker-zones2");
+          if (tZones) tZones.textContent = str;
+          if (tZones2) tZones2.textContent = str;
 
-        let activeCount = 0;
-        let activeZones = [];
+          const runStr = `${totalRuntimeMinutes.toFixed(0)} min`;
+          const tRuntime = document.getElementById("ticker-runtime");
+          const tRuntime2 = document.getElementById("ticker-runtime2");
+          if (tRuntime) tRuntime.textContent = runStr;
+          if (tRuntime2) tRuntime2.textContent = runStr;
 
-        grid.innerHTML = zonesData
-          .map((zone, i) => {
-            if (zone.relayOn) {
-              activeCount++;
-              activeZones.push(i + 1);
+          // Next schedule
+          let nextSchedule = null;
+          const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+          zonesData.forEach((zone, zi) => {
+            if (!zone.timers) return;
+            zone.timers.forEach((t) => {
+              if (!t.enabled) return;
+              const parts = (t.startTime || "").split(":");
+              if (parts.length < 2) return;
+              const schedMins = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+              const diff =
+                schedMins > nowMins
+                  ? schedMins - nowMins
+                  : 1440 - nowMins + schedMins;
+              if (nextSchedule === null || diff < nextSchedule.diff) {
+                nextSchedule = { diff, label: `Z${zi + 1} @${t.startTime}` };
+              }
+            });
+          });
+          const nextStr = nextSchedule
+            ? `${nextSchedule.label} (${nextSchedule.diff}m)`
+            : "NONE";
+          const tNext = document.getElementById("ticker-next");
+          const tNext2 = document.getElementById("ticker-next2");
+          if (tNext) tNext.textContent = nextStr;
+          if (tNext2) tNext2.textContent = nextStr;
+        }
+
+        /* ═══════════ UPTIME ═══════════ */
+        function updateUptime() {
+          const elapsed = Date.now() - sessionStartTime;
+          const d = Math.floor(elapsed / 86400000);
+          const h = Math.floor((elapsed % 86400000) / 3600000);
+          const m = Math.floor((elapsed % 3600000) / 60000);
+          const str = `${d}d ${h}h ${m}m`;
+          const kpiUptime = document.getElementById("kpi-uptime");
+          const tUptime = document.getElementById("ticker-uptime");
+          const tUptime2 = document.getElementById("ticker-uptime2");
+          if (kpiUptime) kpiUptime.textContent = str;
+          if (tUptime) tUptime.textContent = str;
+          if (tUptime2) tUptime2.textContent = str;
+        }
+
+        /* ═══════════ SEED DATA ═══════════ */
+        function seedInitialData() {
+          const seed = [];
+          for (let i = 0; i < 8; i++) {
+            const timers = [];
+            const defaults = [
+              "06:00",
+              "12:00",
+              "18:00",
+              "21:00",
+              "00:00",
+              "03:00",
+            ];
+            for (let t = 0; t < 6; t++) {
+              timers.push({
+                enabled: false,
+                startTime: defaults[t],
+                duration: 10,
+                days: [1, 1, 1, 1, 1, 1, 1],
+              });
             }
-            if (activeCount > peakZones) peakZones = activeCount;
+            seed.push({
+              id: i + 1,
+              name: `Zone ${i + 1}`,
+              manualOn: false,
+              relayOn: false,
+              timers,
+            });
+          }
+          db.ref("/irrigation/zones")
+            .set(seed)
+            .then(() =>
+              appendLog(
+                "Database initialized with default zone structure",
+                "success",
+              ),
+            )
+            .catch((err) => appendLog(`Seed error: ${err.message}`, "danger"));
+        }
 
-            const activeTimers = zone.timers
-              ? zone.timers.filter((t) => t.enabled)
-              : [];
-            const timerStr =
-              activeTimers.length > 0
-                ? `${activeTimers.length} timer${activeTimers.length > 1 ? "s" : ""} active`
-                : "No active schedules";
-            const nextTimer = activeTimers[0];
-            const relayClass = zone.relayOn && isDeviceOnline ? "relay-on" : "";
+        /* ═══════════ RENDER ZONES ═══════════ */
+        function renderZones() {
+          const grid = document.getElementById("zones-grid");
+          if (!grid) return;
 
-            return `<div class="panel zone-card ${relayClass}" style="padding:16px;display:flex;flex-direction:column;gap:12px" id="zone-card-${i}">
+          let activeCount = 0;
+          let activeZones = [];
+
+          grid.innerHTML = zonesData
+            .map((zone, i) => {
+              if (zone.relayOn) {
+                activeCount++;
+                activeZones.push(i + 1);
+              }
+              if (activeCount > peakZones) peakZones = activeCount;
+
+              const activeTimers = zone.timers
+                ? zone.timers.filter((t) => t.enabled)
+                : [];
+              const timerStr =
+                activeTimers.length > 0
+                  ? `${activeTimers.length} timer${activeTimers.length > 1 ? "s" : ""} active`
+                  : "No active schedules";
+              const nextTimer = activeTimers[0];
+              const relayClass = zone.relayOn && isDeviceOnline ? "relay-on" : "";
+
+              return `<div class="panel zone-card ${relayClass}" style="padding:16px;display:flex;flex-direction:column;gap:12px" id="zone-card-${i}">
 
       <!-- Header -->
       <div style="display:flex;justify-content:space-between;align-items:start">
@@ -3670,6 +3669,7 @@
           });
       }
 
+      // Quick-override preset
       function setAllManual(state) {
         appendLog(
           `Global preset: ALL ZONES → ${state ? "ON" : "OFF"}`,
@@ -4232,6 +4232,11 @@
           "#topnav .max-w-screen-2xl > div:last-child",
         );
         if (!nav) return;
+
+        // Remove old badge if exists
+        const oldBadge = nav.querySelector(".operator-badge");
+        if (oldBadge) oldBadge.remove();
+
         const roleColor =
           user.role === "ADMIN"
             ? "var(--accent)"
@@ -4239,21 +4244,21 @@
               ? "var(--amber)"
               : "var(--blue)";
         const badge = document.createElement("div");
+        badge.className = "operator-badge flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1.5 flex-shrink-0";
         badge.style.cssText = `
-        display:flex;align-items:center;gap:8px;
-        padding:6px 10px;border:1px solid var(--border);
-        background:var(--bg-panel);flex-shrink:0;
-      `;
+          border: 1px solid var(--border);
+          background: var(--bg-panel);
+        `;
         badge.innerHTML = `
-        <i data-lucide="user-check" style="width:13px;height:13px;color:${roleColor}"></i>
-        <div style="text-align:left">
-          <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:${roleColor};letter-spacing:0.08em">${user.role}</div>
-          <div style="font-family:var(--mono);font-size:9px;color:var(--text-muted)">${user.display}</div>
-        </div>
-        <button onclick="handleLogout()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;margin-left:4px" title="Logout">
-          <i data-lucide="log-out" style="width:13px;height:13px"></i>
-        </button>
-      `;
+          <i data-lucide="user-check" style="width:13px;height:13px;color:${roleColor}"></i>
+          <div style="text-align:left" class="hidden sm:block">
+            <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:${roleColor};letter-spacing:0.08em">${user.role}</div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);white-space:nowrap" class="max-w-[70px] truncate">${user.display}</div>
+          </div>
+          <button onclick="handleLogout()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;margin-left:2px" title="Logout">
+            <i data-lucide="log-out" style="width:13px;height:13px"></i>
+          </button>
+        `;
         nav.prepend(badge);
         lucide.createIcons();
       }
@@ -5136,6 +5141,7 @@
         if (type === "success") setTimeout(hideFbAlert, 4000);
       }
 
+      // Hide Alert
       function hideFbAlert() {
         const alertEl = document.getElementById("fb-alert");
         if (alertEl) alertEl.style.display = "none";
