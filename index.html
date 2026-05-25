@@ -14,7 +14,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Noto+Sans+Khmer:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -538,7 +538,9 @@
       .chart-diag-grid { display:grid; grid-template-columns:1fr; gap:16px; }
       @media (min-width:1024px) { .chart-diag-grid { grid-template-columns:2fr 1fr; } }
 
-      /* Hide ticker on small screens */
+      /* hide on very small phones */
+      @media (max-width:360px) { .hidden-xs { display:none !important; } }
+      /* hide ticker on non-desktop */
       @media (max-width:1023px) { .ticker-strip { display:none; } }
 
       /* Compact nav on tablet */
@@ -1552,12 +1554,12 @@
             IRRIGATION<span style="color:var(--accent)">OS</span>
           </div>
           <div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.2em;margin-top:4px">
-            v8.0 INDUSTRIAL · SECURE ACCESS
+            v8.0 INDUSTRIAL · <span data-i18n="login_title">SECURE ACCESS</span>
           </div>
           <!-- status strip -->
           <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px">
             <div class="led led-green led-pulse led-pulse-green" style="width:6px;height:6px"></div>
-            <span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.1em">SYSTEM READY · AUTHENTICATION REQUIRED</span>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.1em"><span data-i18n="login_ready">SYSTEM READY · AUTHENTICATION REQUIRED</span></span>
           </div>
         </div>
 
@@ -1567,8 +1569,8 @@
           <!-- Locked state (shown after 5 failed attempts) -->
           <div class="login-locked" id="login-locked-msg">
             <i data-lucide="lock" style="width:20px;height:20px;color:var(--red);margin-bottom:8px"></i>
-            <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--red);letter-spacing:0.1em">ACCESS LOCKED</div>
-            <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Too many failed attempts.</div>
+            <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--red);letter-spacing:0.1em"><span data-i18n="login_locked">ACCESS LOCKED</span></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:6px"><span data-i18n="login_locked_sub">Too many failed attempts.</span></div>
             <div style="font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:4px">Retry in <span id="lockout-countdown">60</span>s</div>
           </div>
 
@@ -1577,7 +1579,7 @@
 
             <!-- Operator ID -->
             <div class="login-field">
-              <label class="login-label" for="login-id">Operator ID</label>
+              <label class="login-label" for="login-id"><span data-i18n="op_id">Operator ID</span></label>
               <div class="login-input-wrap">
                 <span class="login-icon">
                   <i data-lucide="user" style="width:15px;height:15px"></i>
@@ -1602,7 +1604,7 @@
 
             <!-- Password -->
             <div class="login-field" style="margin-bottom:6px">
-              <label class="login-label" for="login-pass">Password</label>
+              <label class="login-label" for="login-pass"><span data-i18n="password">Password</span></label>
               <div class="login-input-wrap">
                 <span class="login-icon">
                   <i data-lucide="key-round" style="width:15px;height:15px"></i>
@@ -1638,7 +1640,7 @@
             <!-- Submit -->
             <button class="login-btn" id="login-btn" onclick="submitLogin()" ontouchend="event.preventDefault();submitLogin()">
               <i data-lucide="log-in" style="width:15px;height:15px"></i>
-              AUTHENTICATE
+              <span data-i18n="authenticate">AUTHENTICATE</span>
             </button>
 
           </div><!-- /login-form-wrap -->
@@ -1658,155 +1660,85 @@
 
     <!-- ═══════════════════════════════════════ TOP NAV ═══ -->
     <nav id="topnav">
-      <div
-        class="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4"
-      >
+      <div class="max-w-screen-2xl mx-auto px-3 sm:px-5" style="height:var(--nav-h);display:flex;align-items:center;gap:10px">
+
         <!-- Brand -->
-        <div class="flex items-center gap-3 flex-shrink-0">
-          <div
-            style="
-              width: 28px;
-              height: 28px;
-              background: var(--accent);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              clip-path: polygon(
-                0 0,
-                85% 0,
-                100% 15%,
-                100% 100%,
-                15% 100%,
-                0 85%
-              );
-            "
-          >
-            <i
-              data-lucide="sprout"
-              style="width: 16px; height: 16px; color: #000"
-            ></i>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <div style="width:26px;height:26px;background:var(--accent);display:flex;align-items:center;justify-content:center;clip-path:polygon(0 0,85% 0,100% 15%,100% 100%,15% 100%,0 85%);flex-shrink:0">
+            <i data-lucide="sprout" style="width:14px;height:14px;color:#000"></i>
           </div>
           <div>
-            <span
-              style="
-                font-family: var(--mono);
-                font-size: 13px;
-                font-weight: 700;
-                color: var(--text-primary);
-                letter-spacing: -0.02em;
-              "
-            >
-              IRRIGATION<span style="color: var(--accent)">OS</span>
-            </span>
-            <span
-              style="
-                font-family: var(--mono);
-                font-size: 9px;
-                color: var(--text-muted);
-                letter-spacing: 0.1em;
-                display: block;
-                line-height: 1;
-              "
-              >v8.0 INDUSTRIAL</span
-            >
+            <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-primary);letter-spacing:-.02em;line-height:1.2">
+              IRRIGATION<span style="color:var(--accent)">OS</span>
+            </div>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--text-muted);letter-spacing:.1em;line-height:1" class="hidden-xs">v8.0</div>
           </div>
         </div>
 
-        <!-- Ticker strip -->
-        <div
-          class="ticker-strip flex-1 hidden lg:block mx-4 py-1"
-          style="
-            border-left: 1px solid var(--border);
-            border-right: 1px solid var(--border);
-            padding: 4px 12px;
-          "
-        >
+        <!-- Ticker — desktop only -->
+        <div class="ticker-strip" style="flex:1;border-left:1px solid var(--border);border-right:1px solid var(--border);padding:3px 10px;margin:0 4px;overflow:hidden">
           <div class="ticker-inner section-label" id="ticker-content">
-            <span>SYSTEM ONLINE &mdash;</span>
-            <span>UPTIME: <span id="ticker-uptime">0d 0h 0m</span></span>
-            <span>ACTIVE ZONES: <span id="ticker-zones">0/8</span></span>
-            <span
-              >TOTAL RUNTIME TODAY: <span id="ticker-runtime">0 min</span></span
-            >
-            <span>CONTROLLER: <span id="ticker-ctrl">DISCONNECTED</span></span>
-            <span
-              >NEXT SCHEDULE: <span id="ticker-next">SCANNING...</span></span
-            >
-            <span>RTC TEMP: <span id="ticker-temp">--°C</span></span>
-            <span>SYSTEM ONLINE &mdash;</span>
-            <span>UPTIME: <span id="ticker-uptime2">0d 0h 0m</span></span>
-            <span>ACTIVE ZONES: <span id="ticker-zones2">0/8</span></span>
-            <span
-              >TOTAL RUNTIME TODAY:
-              <span id="ticker-runtime2">0 min</span></span
-            >
-            <span>CONTROLLER: <span id="ticker-ctrl2">DISCONNECTED</span></span>
-            <span
-              >NEXT SCHEDULE: <span id="ticker-next2">SCANNING...</span></span
-            >
-            <span>RTC TEMP: <span id="ticker-temp2">--°C</span></span>
+            <span data-i18n-ticker="system_online">SYSTEM ONLINE</span>
+            <span>— <span id="ticker-uptime">0d 0h 0m</span></span>
+            <span id="ticker-zones-wrap">ZONES: <span id="ticker-zones">0/8</span></span>
+            <span>CTRL: <span id="ticker-ctrl">OFFLINE</span></span>
+            <span>TEMP: <span id="ticker-temp">--°C</span></span>
+            <span>NEXT: <span id="ticker-next">—</span></span>
+            <span data-i18n-ticker="system_online">SYSTEM ONLINE</span>
+            <span>— <span id="ticker-uptime2">0d 0h 0m</span></span>
+            <span>ZONES: <span id="ticker-zones2">0/8</span></span>
+            <span>CTRL: <span id="ticker-ctrl2">OFFLINE</span></span>
+            <span>TEMP: <span id="ticker-temp2">--°C</span></span>
+            <span>NEXT: <span id="ticker-next2">—</span></span>
           </div>
         </div>
 
         <!-- Right controls -->
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <!-- Connection badge -->
-          <div
-            class="hidden sm:flex items-center gap-2 px-3 py-1.5"
-            style="border: 1px solid var(--border); background: var(--bg-panel)"
-          >
-            <div
-              class="led led-pulse"
-              id="nav-led"
-              style="background: #1e3048"
-            ></div>
-            <span
-              id="nav-status"
-              style="
-                font-family: var(--mono);
-                font-size: 10px;
-                font-weight: 700;
-                letter-spacing: 0.1em;
-                color: var(--text-muted);
-              "
-              >OFFLINE</span
-            >
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+
+          <!-- Connection LED badge -->
+          <div style="display:flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--border);background:var(--bg-panel);flex-shrink:0">
+            <div class="led led-pulse" id="nav-led" style="background:#1e3048;width:6px;height:6px"></div>
+            <span id="nav-status" style="font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--text-muted)">OFFLINE</span>
           </div>
 
-          <button
-            class="btn btn-ghost"
-            onclick="openEmergencyStop()"
-            style="padding: 7px 12px"
-          >
-            <i
-              data-lucide="octagon-alert"
-              style="width: 14px; height: 14px; color: var(--red)"
-            ></i>
-            <span class="nav-estop-label" style="color: var(--red)">E-STOP</span>
+          <!-- Language toggle -->
+          <button id="lang-btn" onclick="toggleLanguage()" style="
+            display:flex;align-items:center;gap:4px;
+            background:var(--bg-panel);border:1px solid var(--border);
+            color:var(--text-secondary);font-family:var(--mono);font-size:10px;
+            font-weight:700;letter-spacing:.06em;padding:5px 8px;
+            cursor:pointer;border-radius:2px;flex-shrink:0;min-height:32px;
+            -webkit-tap-highlight-color:transparent;transition:all .15s;
+          " title="Switch language">
+            <span id="lang-flag" style="font-size:14px">🇺🇸</span>
+            <span id="lang-label">EN</span>
           </button>
 
-          <!-- Settings — hidden on mobile (use bottom nav instead) -->
-          <button
-            class="btn btn-ghost"
-            onclick="openSettings()"
-            style="padding: 7px 10px; display:none"
-            id="nav-settings-btn"
-            title="Settings"
-          >
-            <i data-lucide="settings" style="width: 15px; height: 15px"></i>
+          <!-- E-STOP -->
+          <button class="btn btn-ghost" onclick="openEmergencyStop()" style="padding:6px 10px;min-height:36px;border-color:rgba(239,68,68,0.2)">
+            <i data-lucide="octagon-alert" style="width:14px;height:14px;color:var(--red)"></i>
+            <span class="nav-estop-label" style="color:var(--red)" data-i18n="estop">E-STOP</span>
           </button>
+
+          <!-- Settings (desktop only) -->
+          <button class="btn btn-ghost" onclick="openSettings()" style="padding:6px 8px;min-height:36px;display:none" id="nav-settings-btn">
+            <i data-lucide="settings" style="width:15px;height:15px"></i>
+          </button>
+
+          <!-- Operator badge (injected on login) -->
+          <div id="operator-badge-slot"></div>
+
         </div>
       </div>
     </nav>
 
     <script>
-      // Show desktop settings button on large screens, hide on mobile
       (function() {
         var btn = document.getElementById('nav-settings-btn');
-        if (btn && window.innerWidth >= 768) btn.style.display = '';
-        window.addEventListener('resize', function() {
-          if (btn) btn.style.display = window.innerWidth >= 768 ? '' : 'none';
-        });
+        function check() { if(btn) btn.style.display = window.innerWidth >= 768 ? '' : 'none'; }
+        check();
+        window.addEventListener('resize', check);
       })();
     </script>
 
@@ -1817,7 +1749,7 @@
         <!-- RTC Temperature -->
         <div class="panel p-4 col-span-1">
           <div class="flex justify-between items-start mb-3">
-            <div class="section-label">RTC TEMP</div>
+            <div class="section-label"><span data-i18n="rtc_temp">RTC TEMP</span></div>
             <div class="tag tag-amber">DS3231</div>
           </div>
           <div
@@ -1844,7 +1776,7 @@
         <!-- Active Zones -->
         <div class="panel p-4 col-span-1 panel-accent">
           <div class="flex justify-between items-start mb-3">
-            <div class="section-label">FLOW STATE</div>
+            <div class="section-label"><span data-i18n="flow_state">FLOW STATE</span></div>
             <div class="tag tag-green">LIVE</div>
           </div>
           <div class="flex items-baseline gap-1">
@@ -1868,7 +1800,7 @@
           <div
             style="font-size: 10px; color: var(--text-muted); margin-top: 2px"
           >
-            Solenoids Open
+            <span data-i18n="solenoids_open">Solenoids Open</span>
           </div>
           <div class="activity-bar mt-3">
             <div
@@ -1882,7 +1814,7 @@
         <!-- RTC Clock -->
         <div class="panel p-4 col-span-2">
           <div class="flex justify-between items-start mb-3">
-            <div class="section-label">RTC CLOCK</div>
+            <div class="section-label"><span data-i18n="rtc_clock">RTC CLOCK</span></div>
             <div class="tag tag-blue">UTC+7</div>
           </div>
           <div
@@ -1908,7 +1840,7 @@
         <!-- System Uptime -->
         <div class="panel p-4 col-span-1">
           <div class="flex justify-between items-start mb-3">
-            <div class="section-label">SYS UPTIME</div>
+            <div class="section-label"><span data-i18n="sys_uptime">SYS UPTIME</span></div>
             <div class="tag tag-muted" id="kpi-uptime-tag">TRACKING</div>
           </div>
           <div
@@ -1921,14 +1853,14 @@
           <div
             style="font-size: 10px; color: var(--text-muted); margin-top: 2px"
           >
-            Since last connect
+            <span data-i18n="since_connect">Since last connect</span>
           </div>
         </div>
 
         <!-- Network / IP -->
         <div class="panel p-4 col-span-1">
           <div class="flex justify-between items-start mb-3">
-            <div class="section-label">NETWORK</div>
+            <div class="section-label"><span data-i18n="network">NETWORK</span></div>
             <div class="tag tag-muted">DHCP</div>
           </div>
           <div
@@ -2039,7 +1971,7 @@
 
         <!-- System Diagnostics -->
         <div class="panel p-5 space-y-4">
-          <div class="section-label mb-2">SYSTEM DIAGNOSTICS</div>
+          <div class="section-label mb-2"><span data-i18n="sys_diag">SYSTEM DIAGNOSTICS</span></div>
 
           <!-- Health indicators -->
           <div class="space-y-3">
@@ -2134,7 +2066,7 @@
 
           <!-- Divider -->
           <div style="border-top: 1px solid var(--border); padding-top: 12px">
-            <div class="section-label mb-3">QUICK ACTIONS</div>
+            <div class="section-label mb-3"><span data-i18n="quick_actions">QUICK ACTIONS</span></div>
             <div class="grid grid-cols-2 gap-2">
               <button
                 class="btn btn-ghost"
@@ -2299,7 +2231,7 @@
                 data-lucide="grid-3x3"
                 style="width: 18px; height: 18px; color: var(--accent)"
               ></i>
-              VALVE CONTROL MATRIX
+              <span data-i18n="valve_matrix">VALVE CONTROL MATRIX</span>
             </div>
             <div
               style="font-size: 11px; color: var(--text-muted); margin-top: 2px"
@@ -2911,6 +2843,202 @@
 
     <!-- ═══════════════════════════════════════ SCRIPT ═══ -->
     <script>
+      /* ═══════════════════════════════════════════════════════════
+         i18n — English / Khmer (Cambodia)
+      ═══════════════════════════════════════════════════════════ */
+      const LANG_KEY = 'irrigationos_lang';
+      let currentLang = localStorage.getItem(LANG_KEY) || 'en';
+
+      const TRANSLATIONS = {
+        en: {
+          // Nav
+          estop: 'E-STOP',
+          offline: 'OFFLINE', online: 'ONLINE',
+          // KPI
+          rtc_temp: 'RTC TEMP', flow_state: 'FLOW STATE', live: 'LIVE',
+          rtc_clock: 'RTC CLOCK', sys_uptime: 'SYS UPTIME', network: 'NETWORK',
+          solenoids_open: 'Solenoids Open', since_connect: 'Since last connect',
+          tracking: 'TRACKING',
+          // Run History
+          zone_activity: 'ZONE ACTIVITY — 24H RUN HISTORY',
+          half_hour: 'Each bar = 30-min window · Green = active',
+          export: 'EXPORT', clear: 'CLEAR',
+          today: 'TODAY', avg_session: 'AVG/SESSION', total_cycles: 'TOTAL CYCLES', peak_zones: 'PEAK ZONES',
+          // Diagnostics
+          sys_diag: 'SYSTEM DIAGNOSTICS',
+          firebase_link: 'Firebase Link', rtc_module: 'RTC Module',
+          wifi_signal: 'WiFi Signal', eeprom_sync: 'EEPROM Sync',
+          quick_actions: 'QUICK ACTIONS',
+          all_off: 'ALL OFF', all_on: 'ALL ON',
+          export_log: 'EXPORT AUDIT LOG CSV',
+          log_cache: 'LOG CACHE', sync_lat: 'SYNC LATENCY',
+          poll_count: 'POLL COUNT', error_count: 'ERROR COUNT',
+          // Audit Log
+          audit_log: '<span data-i18n="audit_log">LIVE AUDIT LOG STREAM</span>', streaming: 'STREAMING',
+          // Zones
+          valve_matrix: 'VALVE CONTROL MATRIX',
+          valve_sub: '8 solenoid zones · 6 independent timers each · Real-time relay feedback',
+          refresh: 'REFRESH',
+          relay_out: 'RELAY OUTPUT',
+          auto_schedule: 'AUTO SCHEDULE', armed: 'ARMED', muted: 'MUTED',
+          timers_active: 'timer active', timers_actives: 'timers active',
+          no_schedule: 'No active schedules',
+          next: 'Next', today_min: 'Today', runtime: 'min runtime',
+          timers: 'TIMERS', open: 'OPEN', closed: 'CLOSED',
+          // Schedule modal
+          configure_timers: 'CONFIGURE TIMERS',
+          slot_tabs: ['SLOT 1','SLOT 2','SLOT 3','SLOT 4','SLOT 5','SLOT 6'],
+          edit_slot: 'EDIT SLOT',
+          start_time: 'START TIME (24H)', duration_min: 'DURATION (MINUTES)',
+          enable_slot: 'Enable This Slot', enable_sub: 'Auto-trigger on selected days below',
+          watering_days: 'ACTIVE WATERING DAYS',
+          days: ['MON','TUE','WED','THU','FRI','SAT','SUN'],
+          cancel: 'CANCEL', save_slots: 'SAVE ALL 6 SLOTS',
+          // Mobile nav
+          mnav_overview: 'Overview', mnav_zones: 'Zones',
+          mnav_history: 'History', mnav_log: 'Log', mnav_settings: 'Settings',
+          // Login
+          login_title: 'SECURE ACCESS',
+          login_ready: 'SYSTEM READY · AUTHENTICATION REQUIRED',
+          login_locked: 'ACCESS LOCKED',
+          login_locked_sub: 'Too many failed attempts.',
+          login_retry: 'Retry in',
+          op_id: 'Operator ID', password: 'Password',
+          enter_id: 'Enter operator ID', enter_pass: 'Enter password',
+          authenticate: 'AUTHENTICATE',
+          // Settings
+          settings_title: 'Configuration & User Management',
+          tab_users: 'User Accounts', tab_firebase: 'Firebase', tab_about: 'About',
+          registered_users: 'REGISTERED USERS',
+          add_user: 'ADD NEW USER', edit_user: 'EDIT USER',
+          op_id_field: 'Operator ID', display_name: 'Display Name',
+          role: 'Role', add_btn: 'ADD USER', update_btn: 'UPDATE USER',
+          danger_zone: 'DANGER ZONE',
+          reset_users: 'RESET TO DEFAULT USERS',
+          reset_users_sub: 'Reset all users back to factory defaults.',
+          active_db: 'ACTIVE DATABASE URL',
+          configure_db: 'CONFIGURE DATABASE URL',
+          firebase_url_label: 'Firebase Realtime Database URL',
+          test_conn: 'TEST CONNECTION', save_reconnect: 'SAVE & RECONNECT',
+          restore_default: 'RESTORE DEFAULT URL',
+          my_account: 'My Account',
+          system_online: 'SYSTEM ONLINE',
+        },
+        km: {
+          // Nav
+          estop: 'ឈប់បន្ទាន់',
+          offline: 'គ្មានសញ្ញា', online: 'អនឡាញ',
+          // KPI
+          rtc_temp: 'សីតុណ្ហភាព', flow_state: 'ស្ថានភាព', live: 'រស់',
+          rtc_clock: 'នាឡិការ', sys_uptime: 'ដំណើរការ', network: 'បណ្តាញ',
+          solenoids_open: 'វ៉ាល់បើក', since_connect: 'តាំងពីភ្ជាប់',
+          tracking: 'តាមដាន',
+          // Run History
+          zone_activity: 'សកម្មភាព — ប្រវត្តិ ២៤ម៉ោង',
+          half_hour: 'ក្រឡាមួយ = ៣០នាទី · បخضر = ដំណើរការ',
+          export: 'នាំចេញ', clear: 'លុប',
+          today: 'ថ្ងៃនេះ', avg_session: 'មធ្យម', total_cycles: 'ចំនួន', peak_zones: 'ខ្ពស់បំផុត',
+          // Diagnostics
+          sys_diag: 'ការធ្វើរោគវិនិច្ឆ័យ',
+          firebase_link: 'Firebase', rtc_module: 'ម៉ូឌុល RTC',
+          wifi_signal: 'សញ្ញា WiFi', eeprom_sync: 'ធ្វើសមកាលកម្ម',
+          quick_actions: 'សកម្មភាពរហ័ស',
+          all_off: 'បិទទាំងអស់', all_on: 'បើកទាំងអស់',
+          export_log: 'នាំចេញកំណត់ហេតុ',
+          log_cache: 'ឃ្លាំងស្ដាស', sync_lat: 'ភាពយឺតយ៉ាវ',
+          poll_count: 'ចំនួនស្គែន', error_count: 'ចំនួនកំហុស',
+          // Audit Log
+          audit_log: 'កំណត់ហេតុផ្ទាល់', streaming: 'ផ្សាយ',
+          // Zones
+          valve_matrix: 'បញ្ជាក្រឡាវ៉ាល់',
+          valve_sub: '៨ តំបន់ · ១ ម៉ោងកំណត់ ៦ · ផ្ញើរយក Real-time',
+          refresh: 'ធ្វើបច្ចុប្បន្ន',
+          relay_out: 'លទ្ធផល',
+          auto_schedule: 'កំណត់ពេល', armed: 'សកម្ម', muted: 'ស្ងាត់',
+          timers_active: 'ម៉ោងកំណត់', timers_actives: 'ម៉ោងកំណត់',
+          no_schedule: 'គ្មានពេលកំណត់',
+          next: 'បន្ទាប់', today_min: 'ថ្ងៃនេះ', runtime: 'នាទីដំណើរ',
+          timers: 'ម៉ោង', open: 'បើក', closed: 'បិទ',
+          // Schedule modal
+          configure_timers: 'កំណត់ម៉ោង',
+          slot_tabs: ['ពេល ១','ពេល ២','ពេល ៣','ពេល ៤','ពេល ៥','ពេល ៦'],
+          edit_slot: 'កែសម្រួលពេល',
+          start_time: 'ម៉ោងចាប់ផ្ដើម', duration_min: 'រយៈពេល (នាទី)',
+          enable_slot: 'បើកប្រើពេលនេះ', enable_sub: 'ដំណើរការដោយស្វ័យប្រវត្តិ',
+          watering_days: 'ថ្ងៃស្រោចទឹក',
+          days: ['ច','អ','ព','ព','ស','ស','អ'],
+          cancel: 'បោះបង់', save_slots: 'រក្សាទុក ៦ ពេល',
+          // Mobile nav
+          mnav_overview: 'ទិដ្ឋភាព', mnav_zones: 'តំបន់',
+          mnav_history: 'ប្រវត្តិ', mnav_log: 'កំណត់', mnav_settings: 'ការកំណត់',
+          // Login
+          login_title: 'ចូលប្រើប្រព័ន្ធ',
+          login_ready: 'ប្រព័ន្ធត្រៀមរួចរាល់ · ត្រូវការការផ្ទៀងផ្ទាត់',
+          login_locked: 'ការចូលត្រូវបានរារាំង',
+          login_locked_sub: 'ព្យាយាមច្រើនពេក។',
+          login_retry: 'ព្យាយាមមើលទៀតក្នុង',
+          op_id: 'លេខសម្គាល់', password: 'ពាក្យសម្ងាត់',
+          enter_id: 'បញ្ចូលលេខសម្គាល់', enter_pass: 'បញ្ចូលពាក្យសម្ងាត់',
+          authenticate: 'ចូលប្រើ',
+          // Settings
+          settings_title: 'ការកំណត់ & គ្រប់គ្រងអ្នកប្រើ',
+          tab_users: 'គណនីអ្នកប្រើ', tab_firebase: 'Firebase', tab_about: 'អំពី',
+          registered_users: 'អ្នកប្រើប្រាស់',
+          add_user: 'បន្ថែមអ្នកប្រើ', edit_user: 'កែអ្នកប្រើ',
+          op_id_field: 'លេខសម្គាល់', display_name: 'ឈ្មោះ',
+          role: 'តួនាទី', add_btn: 'បន្ថែម', update_btn: 'ធ្វើបច្ចុប្បន្ន',
+          danger_zone: 'តំបន់គ្រោះថ្នាក់',
+          reset_users: 'កំណត់ឡើងវិញ',
+          reset_users_sub: 'ត្រឡប់ទៅការកំណត់លំនាំដើម',
+          active_db: 'URL ឃ្លាំងទិន្នន័យ',
+          configure_db: 'កំណត់ URL',
+          firebase_url_label: 'Firebase Realtime Database URL',
+          test_conn: 'សាកល្បង', save_reconnect: 'រក្សាទុក & ភ្ជាប់ឡើងវិញ',
+          restore_default: 'ស្ដារ URL លំនាំដើម',
+          my_account: 'គណនីខ្ញុំ',
+          system_online: 'ប្រព័ន្ធដំណើរការ',
+        }
+      };
+
+      function t(key) {
+        const lang = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
+        return lang[key] || TRANSLATIONS.en[key] || key;
+      }
+
+      function toggleLanguage() {
+        currentLang = currentLang === 'en' ? 'km' : 'en';
+        localStorage.setItem(LANG_KEY, currentLang);
+        applyLanguage();
+      }
+
+      function applyLanguage() {
+        const isKm = currentLang === 'km';
+        // Update flag + label
+        document.getElementById('lang-flag').textContent = isKm ? '🇰🇭' : '🇺🇸';
+        document.getElementById('lang-label').textContent = isKm ? 'ខ្មែរ' : 'EN';
+        // Khmer font needs a different font for readability
+        document.documentElement.style.setProperty('--sans',
+          isKm ? '"Noto Sans Khmer", "Hanuman", sans-serif' : '"IBM Plex Sans", sans-serif');
+
+        // Apply data-i18n attributes
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          el.textContent = t(key);
+        });
+
+        // Mobile nav labels
+        const mnavKeys = ['overview','zones','history','log','settings'];
+        mnavKeys.forEach(k => {
+          const el = document.querySelector(`#mnav-${k} span`);
+          if (el) el.textContent = t(`mnav_${k}`);
+        });
+
+        // Re-render dynamic sections with new language
+        if (typeof renderZones === 'function') renderZones();
+        if (typeof renderRunHistory === 'function') renderRunHistory();
+        if (typeof renderLogs === 'function') renderLogs();
+      }
+
       /* ═══════════ PERSISTENT CONFIG (localStorage) ═══════════ */
       const STORAGE_USERS_KEY    = "irrigationos_users";
       const STORAGE_FIREBASE_KEY = "irrigationos_firebase_url";
@@ -3948,8 +4076,7 @@
 
         appendLog(`IrrigationOS v8.0 Industrial initialized`, "success");
         appendLog(`Authenticated as ${user.display} (${user.role}) · Firebase listeners active`, "info");
-        // Initialize section visibility (shows all on desktop, overview on mobile)
-        setTimeout(() => mobileNav('overview'), 100);
+        setTimeout(() => { mobileNav('overview'); applyLanguage(); }, 100);
       }
 
       /* ═══════════ SESSION STORAGE — safe wrapper for private/incognito ═══════════ */
@@ -3966,6 +4093,7 @@
       /* ═══════════ INIT ═══════════ */
       window.onload = () => {
         lucide.createIcons();
+        applyLanguage(); // apply saved language immediately
 
         // Check if a session is already active (survives page refresh)
         // sessionGet() is safe even in iOS private browsing
@@ -4137,27 +4265,20 @@
       }
 
       function injectOperatorBadge(user) {
-        // Add a small operator badge to the top nav right side
-        const nav = document.querySelector("#topnav .max-w-screen-2xl > div:last-child");
-        if (!nav) return;
-        const roleColor = user.role === "ADMIN" ? "var(--accent)" : user.role === "OPERATOR" ? "var(--amber)" : "var(--blue)";
-        const badge = document.createElement("div");
-        badge.style.cssText = `
-          display:flex;align-items:center;gap:8px;
-          padding:6px 10px;border:1px solid var(--border);
-          background:var(--bg-panel);flex-shrink:0;
-        `;
-        badge.innerHTML = `
-          <i data-lucide="user-check" style="width:13px;height:13px;color:${roleColor}"></i>
-          <div style="text-align:left">
-            <div style="font-family:var(--mono);font-size:9px;font-weight:700;color:${roleColor};letter-spacing:0.08em">${user.role}</div>
-            <div style="font-family:var(--mono);font-size:9px;color:var(--text-muted)">${user.display}</div>
-          </div>
-          <button onclick="handleLogout()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;margin-left:4px" title="Logout">
-            <i data-lucide="log-out" style="width:13px;height:13px"></i>
-          </button>
-        `;
-        nav.prepend(badge);
+        const slot = document.getElementById('operator-badge-slot');
+        if (!slot) return;
+        const roleColor = user.role === 'ADMIN' ? 'var(--accent)' : user.role === 'OPERATOR' ? 'var(--amber)' : 'var(--blue)';
+        slot.innerHTML = `
+          <div style="display:flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--border);background:var(--bg-panel);flex-shrink:0">
+            <i data-lucide="user-check" style="width:12px;height:12px;color:${roleColor}"></i>
+            <div style="line-height:1.3">
+              <div style="font-family:var(--mono);font-size:8px;font-weight:700;color:${roleColor};letter-spacing:.08em">${user.role}</div>
+              <div style="font-family:var(--mono);font-size:8px;color:var(--text-muted);max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${user.display}</div>
+            </div>
+            <button onclick="handleLogout()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:2px;display:flex;-webkit-tap-highlight-color:transparent" title="Logout">
+              <i data-lucide="log-out" style="width:12px;height:12px"></i>
+            </button>
+          </div>`;
         lucide.createIcons();
       }
 
