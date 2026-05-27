@@ -2969,54 +2969,89 @@
 
       <!-- ═══════════════════════════════════════ SCRIPT ═══ -->
       <script>
-        /* ═══════════ PERSISTENT CONFIG (localStorage) ═══════════ */
-        const STORAGE_USERS_KEY = "irrigationos_users";
-        const STORAGE_FIREBASE_KEY = "irrigationos_firebase_url";
+        /* ═══════════ CLOUDFLARE WORKER KV STORAGE ═══════════
+         *
+         * Replace CF_WORKER_URL with your deployed Worker URL, e.g.:
+         *   https://irrigationos-storage.YOUR-SUBDOMAIN.workers.dev
+         *
+         * Replace CF_API_KEY with the secret you set as the API_KEY
+         * environment variable in your Worker's settings.
+         * Leave CF_API_KEY as "" if you haven't set one yet (dev mode).
+         * ════════════════════════════════════════════════════════ */
+        const CF_WORKER_URL = "https://irrigationos-storage.thornpali99.workers.dev/"; // ← CHANGE THIS
+        const CF_API_KEY    = "https://api.irrigationos.com";  // ← Set this to match your Worker's API_KEY secret
 
         const DEFAULT_FIREBASE_URL =
           "https://rua-farm-default-rtdb.asia-southeast1.firebasedatabase.app";
 
         const DEFAULT_USERS = [
-          {
-            id: "admin",
-            password: "rua2024",
-            role: "ADMIN",
-            display: "Administrator",
-          },
-          {
-            id: "operator",
-            password: "farm1234",
-            role: "OPERATOR",
-            display: "Operator",
-          },
-          {
-            id: "viewer",
-            password: "view0000",
-            role: "VIEWER",
-            display: "Read-Only Viewer",
-          },
+          { id: "admin",    password: "rua2024",   role: "ADMIN",    display: "Administrator"   },
+          { id: "operator", password: "farm1234",  role: "OPERATOR", display: "Operator"        },
+          { id: "viewer",   password: "view0000",  role: "VIEWER",   display: "Read-Only Viewer"},
         ];
 
+        /* ── In-memory cache (avoids repeated network round-trips) ── */
+        let _cachedUsers       = null;
+        let _cachedFirebaseURL = null;
+
+        function cfHeaders() {
+          const h = { "Content-Type": "application/json" };
+          if (CF_API_KEY) h["X-IrrigationOS-Key"] = CF_API_KEY;
+          return h;
+        }
+
+        /* ── Users ───────────────────────────────────────────────── */
         function loadUsers() {
+          // Return cache synchronously if available (auth hot path)
+          return _cachedUsers || JSON.parse(JSON.stringify(DEFAULT_USERS));
+        }
+
+        async function loadUsersAsync() {
           try {
-            const raw = localStorage.getItem(STORAGE_USERS_KEY);
-            if (raw) return JSON.parse(raw);
-          } catch (e) {}
-          return JSON.parse(JSON.stringify(DEFAULT_USERS));
+            const r = await fetch(`${CF_WORKER_URL}/api/users`, { headers: cfHeaders() });
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            _cachedUsers = await r.json();
+          } catch (e) {
+            console.warn("CF loadUsers failed, using defaults:", e.message);
+            if (!_cachedUsers) _cachedUsers = JSON.parse(JSON.stringify(DEFAULT_USERS));
+          }
+          return _cachedUsers;
         }
 
         function saveUsers(users) {
-          localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+          _cachedUsers = users; // update cache immediately so UI is responsive
+          fetch(`${CF_WORKER_URL}/api/users`, {
+            method: "PUT",
+            headers: cfHeaders(),
+            body: JSON.stringify(users),
+          }).catch(e => console.error("CF saveUsers failed:", e.message));
         }
 
+        /* ── Firebase URL ────────────────────────────────────────── */
         function loadFirebaseURL() {
-          return (
-            localStorage.getItem(STORAGE_FIREBASE_KEY) || DEFAULT_FIREBASE_URL
-          );
+          return _cachedFirebaseURL || DEFAULT_FIREBASE_URL;
+        }
+
+        async function loadFirebaseURLAsync() {
+          try {
+            const r = await fetch(`${CF_WORKER_URL}/api/firebase-url`, { headers: cfHeaders() });
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            const data = await r.json();
+            _cachedFirebaseURL = data.url || DEFAULT_FIREBASE_URL;
+          } catch (e) {
+            console.warn("CF loadFirebaseURL failed, using default:", e.message);
+            if (!_cachedFirebaseURL) _cachedFirebaseURL = DEFAULT_FIREBASE_URL;
+          }
+          return _cachedFirebaseURL;
         }
 
         function saveFirebaseURL(url) {
-          localStorage.setItem(STORAGE_FIREBASE_KEY, url);
+          _cachedFirebaseURL = url;
+          fetch(`${CF_WORKER_URL}/api/firebase-url`, {
+            method: "PUT",
+            headers: cfHeaders(),
+            body: JSON.stringify({ url }),
+          }).catch(e => console.error("CF saveFirebaseURL failed:", e.message));
         }
 
         /* ═══════════ FIREBASE — dynamic init ═══════════ */
@@ -3042,8 +3077,7 @@
           }
         }
 
-        // Initialize with saved or default URL
-        initFirebase(loadFirebaseURL());
+        // Firebase is initialized in window.onload after fetching the saved URL from Cloudflare KV
 
         /* ═══════════ STATE ═══════════ */
         let zonesData = [];
@@ -3136,27 +3170,32 @@
         }
 
         function persistHistory() {
-          try {
-            const payload = {
-              runHistory,
-              totalRuntime: totalRuntimeMinutes,
-              totalCycles,
-              savedAt: Date.now(),
-            };
-            localStorage.setItem("irrigationos_history", JSON.stringify(payload));
-          } catch (e) {}
+          const payload = {
+            runHistory,
+            totalRuntime: totalRuntimeMinutes,
+            totalCycles,
+            savedAt: Date.now(),
+          };
+          fetch(`${CF_WORKER_URL}/api/history`, {
+            method: "PUT",
+            headers: cfHeaders(),
+            body: JSON.stringify(payload),
+          }).catch(e => console.warn("CF persistHistory failed:", e.message));
         }
 
-        function loadPersistedHistory() {
+        async function loadPersistedHistory() {
           try {
-            const raw = localStorage.getItem("irrigationos_history");
-            if (raw) {
-              const p = JSON.parse(raw);
-              if (p.runHistory) runHistory = p.runHistory;
-              if (p.totalRuntime) totalRuntimeMinutes = p.totalRuntime;
-              if (p.totalCycles) totalCycles = p.totalCycles;
+            const r = await fetch(`${CF_WORKER_URL}/api/history`, { headers: cfHeaders() });
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            const p = await r.json();
+            if (p) {
+              if (p.runHistory)   runHistory           = p.runHistory;
+              if (p.totalRuntime) totalRuntimeMinutes  = p.totalRuntime;
+              if (p.totalCycles)  totalCycles          = p.totalCycles;
             }
-          } catch (e) {}
+          } catch (e) {
+            console.warn("CF loadPersistedHistory failed:", e.message);
+          }
         }
 
         function clearRunHistory() {
@@ -4020,9 +4059,9 @@
       /* ═══════════ APP BOOT — called after successful login ═══════════ */
       let currentUser = null; // always reflects the logged-in user
 
-      function bootApp(user) {
+      async function bootApp(user) {
         currentUser = user;
-        loadPersistedHistory();
+        await loadPersistedHistory();   // async: loads from Cloudflare KV
         startFirebaseListeners();
         startWatchdog();
 
@@ -4050,8 +4089,12 @@
       }
 
       /* ═══════════ INIT ═══════════ */
-      window.onload = () => {
+      window.onload = async () => {
         lucide.createIcons();
+
+        // Pre-load users and Firebase URL from Cloudflare KV so login works immediately
+        await Promise.all([loadUsersAsync(), loadFirebaseURLAsync()]);
+        initFirebase(loadFirebaseURL());
 
         // Check if a session is already active (survives page refresh)
         const savedSession = sessionStorage.getItem("irrigationos_session");
@@ -4084,7 +4127,7 @@
       };
 
       /* ══════════════════════════════════════════════════════
-       LOGIN SYSTEM  — credentials come from localStorage
+       LOGIN SYSTEM  — credentials come from Cloudflare Worker KV
     ══════════════════════════════════════════════════════ */
 
       const MAX_ATTEMPTS = 5;
