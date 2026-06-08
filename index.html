@@ -8,7 +8,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -27,28 +27,23 @@
 
     <style>
       :root {
-        --bg-base: #eef2f7;
-        --bg-panel: #ffffff;
-        --bg-panel-2: #f7f9fc;
-        --border: rgba(15, 40, 70, 0.09);
-        --border-accent: rgba(0, 180, 120, 0.30);
-        --text-primary: #0b1e35;
-        --text-secondary: #3d5a78;
-        --text-muted: #8ca8c4;
-        --accent: #00b87a;
-        --accent-dim: rgba(0, 184, 122, 0.12);
-        --accent-glow: rgba(0, 184, 122, 0.07);
+        --bg-base: #080c10;
+        --bg-panel: #0d1520;
+        --bg-panel-2: #111c2a;
+        --border: rgba(255, 255, 255, 0.06);
+        --border-accent: rgba(0, 200, 140, 0.25);
+        --text-primary: #e8f0f8;
+        --text-secondary: #6a8ba8;
+        --text-muted: #3a5068;
+        --accent: #00c88c;
+        --accent-dim: rgba(0, 200, 140, 0.15);
+        --accent-glow: rgba(0, 200, 140, 0.08);
         --amber: #f59e0b;
-        --red: #e53935;
-        --blue: #1a73e8;
-        --indigo: #5c6bc0;
+        --red: #ef4444;
+        --blue: #3b82f6;
+        --indigo: #6366f1;
         --mono: "IBM Plex Mono", monospace;
         --sans: "IBM Plex Sans", sans-serif;
-        --shadow-sm: 0 1px 3px rgba(11,30,53,0.07), 0 1px 2px rgba(11,30,53,0.04);
-        --shadow-md: 0 4px 12px rgba(11,30,53,0.08), 0 2px 4px rgba(11,30,53,0.05);
-        --shadow-lg: 0 10px 30px rgba(11,30,53,0.10), 0 4px 10px rgba(11,30,53,0.06);
-        --radius: 10px;
-        --radius-sm: 6px;
       }
 
       * {
@@ -68,41 +63,57 @@
         overflow-x: hidden;
       }
 
-      /* Professional subtle mesh background */
+      /* Scanline overlay for industrial aesthetic */
       body::before {
         content: "";
         position: fixed;
         inset: 0;
-        background:
-          radial-gradient(ellipse at 20% 50%, rgba(0,184,122,0.04) 0%, transparent 60%),
-          radial-gradient(ellipse at 80% 20%, rgba(26,115,232,0.04) 0%, transparent 50%);
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.04) 2px,
+          rgba(0, 0, 0, 0.04) 4px
+        );
         pointer-events: none;
-        z-index: 0;
+        z-index: 9999;
       }
 
-      /* Professional card panels */
+      /* Corner-cut panels — industrial look */
       .panel {
         background: var(--bg-panel);
         border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-sm);
         position: relative;
         overflow: hidden;
-        transition: box-shadow 0.2s;
       }
 
-      .panel:hover {
-        box-shadow: var(--shadow-md);
+      .panel::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        background: var(--bg-base);
+        clip-path: polygon(100% 0, 100% 100%, 0 100%);
       }
 
       .panel-accent {
         border-color: var(--border-accent);
-        background: linear-gradient(145deg, rgba(0,184,122,0.04) 0%, var(--bg-panel) 60%);
+        background: linear-gradient(
+          135deg,
+          rgba(0, 200, 140, 0.04) 0%,
+          var(--bg-panel) 50%
+        );
       }
 
       .panel-danger {
-        border-color: rgba(229,57,53,0.25);
-        background: linear-gradient(145deg, rgba(229,57,53,0.04) 0%, var(--bg-panel) 60%);
+        border-color: rgba(239, 68, 68, 0.3);
+        background: linear-gradient(
+          135deg,
+          rgba(239, 68, 68, 0.05) 0%,
+          var(--bg-panel) 50%
+        );
       }
 
       /* Monospace data readouts */
@@ -140,7 +151,7 @@
           0 0 14px rgba(245, 158, 11, 0.4);
       }
       .led-off {
-        background: #c0cdd8;
+        background: #1e3048;
       }
 
       .led-pulse::before {
@@ -187,8 +198,8 @@
       .valve-track {
         width: 52px;
         height: 26px;
-        background: #dce6ef;
-        border: 1px solid #b0c4d8;
+        background: #0a1520;
+        border: 1px solid #1e3048;
         border-radius: 2px;
         position: relative;
         transition: all 0.2s;
@@ -201,7 +212,7 @@
         left: 3px;
         width: 18px;
         height: 18px;
-        background: #7a9ab8;
+        background: #3a5068;
         transition: all 0.2s;
         border-radius: 1px;
       }
@@ -224,8 +235,8 @@
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        padding: 2px 8px;
-        border-radius: 4px;
+        padding: 2px 6px;
+        border-radius: 2px;
       }
 
       .tag-green {
@@ -249,20 +260,19 @@
         border: 1px solid rgba(59, 130, 246, 0.2);
       }
       .tag-muted {
-        background: rgba(15, 40, 70, 0.05);
+        background: rgba(255, 255, 255, 0.04);
         color: var(--text-secondary);
         border: 1px solid var(--border);
       }
 
-      /* Top nav — crisp white with subtle shadow */
+      /* Top nav */
       #topnav {
         border-bottom: 1px solid var(--border);
-        background: rgba(255,255,255,0.97);
-        backdrop-filter: blur(12px);
+        background: rgba(8, 12, 16, 0.95);
+        backdrop-filter: blur(8px);
         position: sticky;
         top: 0;
         z-index: 100;
-        box-shadow: 0 1px 0 var(--border), 0 2px 8px rgba(11,30,53,0.05);
       }
 
       /* Section labels */
@@ -284,7 +294,7 @@
         background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background: #c5d5e6;
+        background: #1e3048;
         border-radius: 2px;
       }
       ::-webkit-scrollbar-thumb:hover {
@@ -293,9 +303,9 @@
 
       /* Progress / activity bar */
       .activity-bar {
-        height: 4px;
-        border-radius: 2px;
-        background: #e2eaf3;
+        height: 3px;
+        border-radius: 1px;
+        background: #1e3048;
         position: relative;
         overflow: hidden;
       }
@@ -319,8 +329,8 @@
       .uptime-cell {
         width: 8px;
         height: 18px;
-        border-radius: 2px;
-        background: #d8e5f1;
+        border-radius: 1px;
+        background: #1e3048;
         transition: background 0.3s;
         cursor: default;
         flex-shrink: 0;
@@ -328,10 +338,11 @@
 
       .uptime-cell.on {
         background: var(--accent);
-        box-shadow: 0 0 4px rgba(0,184,122,0.3);
+        box-shadow:
+          0 0 4px rgba(0, 200, 140, 0.4);
       }
       .uptime-cell.off {
-        background: #d8e5f1;
+        background: #1e3048;
       }
       .uptime-cell.error {
         background: var(--red);
@@ -368,17 +379,20 @@
         transition: all 0.3s;
       }
       .zone-card.relay-on {
-        border-color: var(--border-accent) !important;
-        background: linear-gradient(145deg, rgba(0,184,122,0.06) 0%, var(--bg-panel) 60%) !important;
-        box-shadow: 0 0 0 2px rgba(0,184,122,0.10), var(--shadow-md) !important;
+        border-color: rgba(0, 200, 140, 0.3) !important;
+        background: linear-gradient(
+          135deg,
+          rgba(0, 200, 140, 0.06) 0%,
+          var(--bg-panel) 60%
+        ) !important;
       }
 
       /* Modal */
       .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(11,30,53,0.45);
-        backdrop-filter: blur(6px);
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(4px);
         z-index: 200;
         display: flex;
         align-items: center;
@@ -389,8 +403,6 @@
       .modal-box {
         background: var(--bg-panel);
         border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-lg);
         max-width: 520px;
         width: 100%;
         max-height: 90vh;
@@ -400,22 +412,21 @@
       /* Input */
       .inp {
         width: 100%;
-        background: var(--bg-panel-2);
-        border: 1px solid var(--border);
+        background: #0a1520;
+        border: 1px solid #1e3048;
         color: var(--text-primary);
         font-family: var(--mono);
         font-size: 13px;
-        padding: 11px 12px;
+        padding: 11px 12px; /* iOS friendly height */
         outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        border-radius: var(--radius-sm);
+        transition: border-color 0.2s;
+        border-radius: 4px;
         appearance: none;
         -webkit-appearance: none;
       }
 
       .inp:focus {
         border-color: var(--accent);
-        box-shadow: 0 0 0 3px var(--accent-dim);
       }
 
       input[type="time"]::-webkit-calendar-picker-indicator {
@@ -424,9 +435,9 @@
 
       /* Day pill with expanded tap region */
       .day-pill {
-        padding: 10px 4px;
-        border: 1px solid var(--border);
-        background: var(--bg-panel-2);
+        padding: 10px 4px; /* Taller on mobile */
+        border: 1px solid #1e3048;
+        background: #0a1520;
         color: var(--text-muted);
         font-family: var(--mono);
         font-size: 10px;
@@ -434,7 +445,7 @@
         text-align: center;
         cursor: pointer;
         transition: all 0.15s;
-        border-radius: var(--radius-sm);
+        border-radius: 4px;
         user-select: none;
       }
 
@@ -483,13 +494,13 @@
       }
 
       .slot-tab.active {
-        background: var(--accent-dim);
+        background: rgba(0, 200, 140, 0.1);
         border-color: var(--accent);
         color: var(--accent);
       }
 
       .slot-tab:hover:not(.active) {
-        background: var(--bg-panel-2);
+        background: rgba(255, 255, 255, 0.04);
         color: var(--text-primary);
       }
 
@@ -500,8 +511,8 @@
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        padding: 12px 18px;
-        border-radius: var(--radius-sm);
+        padding: 12px 18px; /* Standardize larger touch targets */
+        border-radius: 4px;
         cursor: pointer;
         transition: all 0.15s;
         display: inline-flex;
@@ -512,15 +523,11 @@
       }
 
       .btn-primary {
-        background: linear-gradient(135deg, #00c888, #00a868);
-        color: #fff;
-        box-shadow: 0 2px 10px rgba(0,184,122,0.28);
-        border-radius: var(--radius-sm);
+        background: var(--accent);
+        color: #000;
       }
       .btn-primary:hover {
-        background: linear-gradient(135deg, #00daa0, #00b87a);
-        box-shadow: 0 4px 14px rgba(0,184,122,0.36);
-        transform: translateY(-1px);
+        background: #00dfa0;
       }
 
       .btn-ghost {
@@ -530,9 +537,8 @@
       }
 
       .btn-ghost:hover {
-        background: var(--bg-panel-2);
+        background: rgba(255, 255, 255, 0.04);
         color: var(--text-primary);
-        border-color: rgba(15,40,70,0.15);
       }
 
       .btn-danger {
@@ -624,7 +630,7 @@
         bottom: calc(100% + 6px);
         left: 50%;
         transform: translateX(-50%);
-        background: #1a2d45;
+        background: #1a2a3a;
         border: 1px solid var(--border);
         color: var(--text-primary);
         font-size: 10px;
@@ -650,7 +656,7 @@
       #login-screen {
         position: fixed;
         inset: 0;
-        background: linear-gradient(135deg, #eef2f7 0%, #e2edf8 50%, #eaf4f0 100%);
+        background: var(--bg-base);
         z-index: 10000;
         display: flex;
         align-items: center;
@@ -658,13 +664,18 @@
         padding: 16px;
       }
 
+      /* scanline on login too */
       #login-screen::before {
         content: "";
         position: fixed;
         inset: 0;
-        background:
-          radial-gradient(ellipse at 30% 40%, rgba(0,184,122,0.07) 0%, transparent 55%),
-          radial-gradient(ellipse at 75% 70%, rgba(26,115,232,0.06) 0%, transparent 50%);
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.04) 2px,
+          rgba(0, 0, 0, 0.04) 4px
+        );
         pointer-events: none;
         z-index: 1;
       }
@@ -673,31 +684,40 @@
         position: relative;
         z-index: 2;
         width: 100%;
-        max-width: 420px;
+        max-width: 400px;
         background: var(--bg-panel);
         border: 1px solid var(--border);
-        border-radius: 16px;
-        box-shadow: 0 20px 60px rgba(11,30,53,0.14), 0 6px 20px rgba(11,30,53,0.08);
+        /* corner cut */
+        clip-path: polygon(
+          0 0,
+          calc(100% - 16px) 0,
+          100% 16px,
+          100% 100%,
+          16px 100%,
+          0 calc(100% - 16px)
+        );
       }
 
       .login-header {
-        background: linear-gradient(145deg, rgba(0,184,122,0.07) 0%, rgba(26,115,232,0.04) 100%);
+        background: linear-gradient(
+          135deg,
+          rgba(0, 200, 140, 0.08) 0%,
+          transparent 60%
+        );
         border-bottom: 1px solid var(--border);
-        padding: 32px 32px 24px;
+        padding: 28px 32px 24px;
         text-align: center;
-        border-radius: 16px 16px 0 0;
       }
 
       .login-logo {
-        width: 56px;
-        height: 56px;
-        background: linear-gradient(135deg, #00c888, #00b87a);
+        width: 48px;
+        height: 48px;
+        background: var(--accent);
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 14px;
-        margin-bottom: 16px;
-        box-shadow: 0 4px 16px rgba(0,184,122,0.30);
+        clip-path: polygon(0 0, 80% 0, 100% 20%, 100% 100%, 20% 100%, 0 80%);
+        margin-bottom: 14px;
       }
 
       .login-body {
@@ -735,21 +755,22 @@
 
       .login-inp {
         width: 100%;
-        background: var(--bg-panel-2);
-        border: 1.5px solid var(--border);
+        background: #080c10;
+        border: 1px solid #1e3048;
         color: var(--text-primary);
         font-family: var(--mono);
         font-size: 13px;
-        padding: 12px 40px 12px 38px;
+        padding: 12px 40px 12px 38px; /* Taller on mobile inputs */
         outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        border-radius: 8px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        border-radius: 4px;
       }
 
       .login-inp:focus {
         border-color: var(--accent);
-        box-shadow: 0 0 0 3px var(--accent-dim);
-        background: #fff;
+        box-shadow: 0 0 0 2px rgba(0, 200, 140, 0.1);
       }
 
       .login-inp::placeholder {
@@ -773,38 +794,36 @@
 
       .login-btn {
         width: 100%;
-        background: linear-gradient(135deg, #00c888, #00a868);
-        color: #fff;
+        background: var(--accent);
+        color: #000;
         border: none;
         font-family: var(--mono);
         font-size: 12px;
         font-weight: 700;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.15em;
         text-transform: uppercase;
-        padding: 14px;
+        padding: 14px; /* Expand touch area */
         cursor: pointer;
-        transition: all 0.2s;
+        transition:
+          background 0.15s,
+          transform 0.1s;
         margin-top: 8px;
-        border-radius: 8px;
-        box-shadow: 0 4px 14px rgba(0,184,122,0.30);
+        border-radius: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
       }
       .login-btn:hover {
-        background: linear-gradient(135deg, #00daa0, #00b87a);
-        box-shadow: 0 6px 18px rgba(0,184,122,0.38);
-        transform: translateY(-1px);
+        background: #00dfa0;
       }
       .login-btn:active {
-        transform: scale(0.99) translateY(0);
+        transform: scale(0.99);
       }
       .login-btn:disabled {
-        background: #d2dce8;
+        background: #1e3048;
         color: var(--text-muted);
         cursor: not-allowed;
-        box-shadow: none;
       }
 
       .login-error {
@@ -883,8 +902,8 @@
       .settings-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(11,30,53,0.40);
-        backdrop-filter: blur(8px);
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(6px);
         z-index: 500;
         display: flex;
         align-items: stretch;
@@ -896,7 +915,6 @@
         max-width: 520px;
         background: var(--bg-panel);
         border-left: 1px solid var(--border);
-        box-shadow: -8px 0 40px rgba(11,30,53,0.12);
         display: flex;
         flex-direction: column;
         animation: slideInRight 0.25s ease;
@@ -955,12 +973,12 @@
       .settings-tab.active {
         color: var(--accent);
         border-bottom-color: var(--accent);
-        background: var(--accent-glow);
+        background: rgba(0, 200, 140, 0.04);
       }
 
       .settings-tab:hover:not(.active) {
         color: var(--text-primary);
-        background: var(--bg-panel-2);
+        background: rgba(255, 255, 255, 0.03);
       }
 
       .settings-body {
@@ -991,7 +1009,7 @@
         border-bottom: none;
       }
       .user-row:hover {
-        background: var(--bg-panel-2);
+        background: rgba(255, 255, 255, 0.02);
       }
 
       .user-role-badge {
@@ -999,8 +1017,8 @@
         font-size: 9px;
         font-weight: 700;
         letter-spacing: 0.08em;
-        padding: 2px 8px;
-        border-radius: 4px;
+        padding: 2px 6px;
+        border-radius: 2px;
         text-align: center;
       }
 
@@ -1026,22 +1044,20 @@
       /* Inline form inside settings */
       .sett-inp {
         width: 100%;
-        background: var(--bg-panel-2);
-        border: 1px solid var(--border);
+        background: #080c10;
+        border: 1px solid #1e3048;
         color: var(--text-primary);
         font-family: var(--mono);
         font-size: 12px;
         padding: 10px 12px;
         outline: none;
-        border-radius: var(--radius-sm);
-        transition: border-color 0.2s, box-shadow 0.2s;
+        border-radius: 4px;
+        transition: border-color 0.2s;
         appearance: none;
         -webkit-appearance: none;
       }
       .sett-inp:focus {
         border-color: var(--accent);
-        box-shadow: 0 0 0 3px var(--accent-dim);
-        background: #fff;
       }
       .sett-inp::placeholder {
         color: var(--text-muted);
@@ -1049,19 +1065,18 @@
 
       .sett-select {
         width: 100%;
-        background: var(--bg-panel-2);
-        border: 1px solid var(--border);
+        background: #080c10;
+        border: 1px solid #1e3048;
         color: var(--text-primary);
         font-family: var(--mono);
         font-size: 12px;
         padding: 10px 12px;
         outline: none;
-        border-radius: var(--radius-sm);
+        border-radius: 4px;
         cursor: pointer;
       }
       .sett-select:focus {
         border-color: var(--accent);
-        box-shadow: 0 0 0 3px var(--accent-dim);
       }
 
       .sett-label {
@@ -1080,11 +1095,11 @@
       }
 
       .sett-card {
-        background: var(--bg-panel-2);
+        background: #080c10;
         border: 1px solid var(--border);
         padding: 16px;
         margin-bottom: 16px;
-        border-radius: var(--radius-sm);
+        border-radius: 4px;
       }
 
       .sett-alert {
@@ -1111,119 +1126,6 @@
         background: rgba(59, 130, 246, 0.08);
         border: 1px solid rgba(59, 130, 246, 0.2);
         color: var(--blue);
-      }
-
-      /* ─── Professional Dashboard Enhancements ─── */
-
-      /* Smooth body with subtle dot-grid texture */
-      body {
-        background-image: radial-gradient(rgba(11,30,53,0.055) 1px, transparent 1px);
-        background-size: 24px 24px;
-        background-attachment: fixed;
-      }
-
-      /* Nav brand gradient accent bar at bottom */
-      #topnav::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent 0%, var(--accent) 30%, var(--blue) 70%, transparent 100%);
-        opacity: 0.5;
-      }
-      #topnav { position: sticky; }
-
-      /* Improved section label style */
-      .section-label {
-        color: var(--text-muted);
-        letter-spacing: 0.18em;
-      }
-
-      /* Panel polish: subtle top accent line on accent panels */
-      .panel-accent::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, var(--accent), rgba(0,184,122,0));
-        border-radius: var(--radius) var(--radius) 0 0;
-      }
-
-      /* Chip-like tags */
-      .tag {
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.06em;
-      }
-
-      /* Refined log line */
-      .log-line {
-        border-bottom: 1px solid rgba(15,40,70,0.06);
-        transition: background 0.15s;
-      }
-      .log-line:hover { background: var(--bg-panel-2); border-radius: 4px; }
-
-      /* Prettier btn */
-      .btn {
-        transition: all 0.18s ease;
-      }
-      .btn:hover { transform: translateY(-1px); }
-      .btn:active { transform: translateY(0); }
-      .btn-ghost {
-        border-radius: var(--radius-sm);
-      }
-
-      /* Valve track — rounded modern toggle */
-      .valve-track {
-        border-radius: 13px !important;
-      }
-      .valve-track::before {
-        border-radius: 50% !important;
-        width: 20px !important;
-        height: 20px !important;
-        top: 2px !important;
-        left: 2px !important;
-        box-shadow: 0 1px 3px rgba(11,30,53,0.15) !important;
-      }
-      .valve-toggle input:checked + .valve-track::before {
-        transform: translateX(24px) !important;
-      }
-
-      /* Settings panel header gradient */
-      .settings-header {
-        background: linear-gradient(145deg, rgba(0,184,122,0.05) 0%, var(--bg-panel) 80%);
-      }
-
-      /* Slot tab rounded */
-      .slot-tab {
-        border-radius: var(--radius-sm);
-      }
-
-      /* health ring subtle shadow */
-      .health-ring {
-        filter: drop-shadow(0 2px 4px rgba(0,184,122,0.15));
-      }
-
-      /* Scrollbar polish */
-      ::-webkit-scrollbar { width: 5px; height: 5px; }
-      ::-webkit-scrollbar-track { background: var(--bg-panel-2); border-radius: 4px; }
-      ::-webkit-scrollbar-thumb { background: #c5d5e6; border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-      /* Fade-in polish */
-      @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: none; }
-      }
-
-      /* Day pill active */
-      .day-pill.active {
-        background: var(--accent-dim);
-        border-color: var(--accent);
-        color: var(--accent);
-        box-shadow: 0 0 0 2px rgba(0,184,122,0.12);
       }
     </style>
   </head>
@@ -2269,23 +2171,6 @@
               ></i
               >About
             </button>
-            <button
-              class="settings-tab"
-              id="stab-cloudflare"
-              onclick="openSettingsTab('cloudflare')"
-            >
-              <i
-                data-lucide="cloud"
-                style="
-                  width: 12px;
-                  height: 12px;
-                  display: inline-block;
-                  vertical-align: middle;
-                  margin-right: 4px;
-                "
-              ></i
-              >Cloudflare
-            </button>
           </div>
 
           <!-- Body -->
@@ -2754,136 +2639,6 @@
               </div>
             </div>
             <!-- /ssec-about -->
-
-
-            <!-- ── TAB: CLOUDFLARE KV ── -->
-            <div class="settings-section" id="ssec-cloudflare" style="display:none">
-              <div id="cf-alert" style="display:none" class="sett-alert"></div>
-
-              <!-- Hero explainer card -->
-              <div class="sett-card" style="border-color:rgba(249,115,22,0.2);background:linear-gradient(145deg,rgba(249,115,22,0.04) 0%,var(--bg-panel) 80%)">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                  <div style="width:36px;height:36px;background:linear-gradient(135deg,#f97316,#ea580c);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(249,115,22,0.25)">
-                    <i data-lucide="cloud" style="width:18px;height:18px;color:#fff"></i>
-                  </div>
-                  <div>
-                    <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text-primary)">Cloudflare KV Storage</div>
-                    <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Persist settings &amp; history across devices via Workers KV</div>
-                  </div>
-                </div>
-                <div style="font-size:11px;color:var(--text-secondary);line-height:1.7">
-                  Saves <strong>user accounts</strong>, <strong>Firebase URL</strong>, and <strong>run history</strong> to your Cloudflare Worker. 
-                  Data syncs automatically on every save and on dashboard load.
-                </div>
-              </div>
-
-              <!-- Worker URL + token -->
-              <div class="sett-card">
-                <div class="section-label mb-3">WORKER ENDPOINT</div>
-                <div class="sett-field">
-                  <label class="sett-label">Worker Base URL</label>
-                  <input type="url" id="cf-worker-url" class="sett-inp"
-                    placeholder="https://your-worker.your-subdomain.workers.dev"
-                    spellcheck="false" />
-                  <div style="font-size:10px;color:var(--text-muted);margin-top:5px;font-family:var(--mono)">
-                    No trailing slash · Must expose GET /kv?key= and PUT /kv
-                  </div>
-                </div>
-                <div class="sett-field">
-                  <label class="sett-label">API Token (optional)</label>
-                  <input type="password" id="cf-api-token" class="sett-inp"
-                    placeholder="Passed as X-API-Token header" />
-                  <div style="font-size:10px;color:var(--text-muted);margin-top:5px;font-family:var(--mono)">
-                    Leave blank if your Worker is public or uses IP rules
-                  </div>
-                </div>
-                <div style="display:flex;gap:8px">
-                  <button class="btn btn-ghost w-full" onclick="testCfWorker()" style="font-size:10px;padding:11px">
-                    <i data-lucide="wifi" style="width:12px;height:12px"></i> TEST
-                  </button>
-                  <button class="btn btn-primary flex-1" onclick="saveCfWorkerConfig()" style="font-size:11px;padding:11px">
-                    <i data-lucide="save" style="width:13px;height:13px"></i> SAVE CONFIG
-                  </button>
-                </div>
-              </div>
-
-              <!-- Sync actions -->
-              <div class="sett-card">
-                <div class="section-label mb-3">SYNC ACTIONS</div>
-                <div style="display:flex;flex-direction:column;gap:8px">
-                  <button class="btn btn-ghost w-full" onclick="cfPushAll()" style="font-size:10px;padding:11px;text-align:left;justify-content:flex-start;gap:10px">
-                    <i data-lucide="upload-cloud" style="width:13px;height:13px;color:var(--blue);flex-shrink:0"></i>
-                    <span>Push all local data to Cloudflare KV now</span>
-                  </button>
-                  <button class="btn btn-ghost w-full" onclick="cfPullAll()" style="font-size:10px;padding:11px;text-align:left;justify-content:flex-start;gap:10px">
-                    <i data-lucide="download-cloud" style="width:13px;height:13px;color:var(--accent);flex-shrink:0"></i>
-                    <span>Pull latest data from Cloudflare KV now</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Status card -->
-              <div class="sett-card" id="cf-status-card">
-                <div class="section-label mb-2">SYNC STATUS</div>
-                <div style="display:flex;flex-direction:column;gap:8px;font-family:var(--mono);font-size:11px">
-                  <div style="display:flex;justify-content:space-between;align-items:center">
-                    <span style="color:var(--text-muted)">Worker URL</span>
-                    <span id="cf-status-url" style="color:var(--text-primary);font-size:10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Not configured</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between;align-items:center">
-                    <span style="color:var(--text-muted)">Auth Token</span>
-                    <span id="cf-status-token" style="color:var(--text-muted)">None</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between;align-items:center">
-                    <span style="color:var(--text-muted)">Last Sync</span>
-                    <span id="cf-status-lastsync" style="color:var(--text-muted)">Never</span>
-                  </div>
-                  <div style="display:flex;justify-content:space-between;align-items:center">
-                    <span style="color:var(--text-muted)">Connection</span>
-                    <span id="cf-status-conn" style="color:var(--text-muted)">Unknown</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Worker code snippet -->
-              <div class="sett-card" style="border-color:rgba(59,130,246,0.15)">
-                <div class="section-label mb-2" style="color:var(--blue)">WORKER TEMPLATE</div>
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:10px;line-height:1.6">
-                  Deploy this Cloudflare Worker script pointing to your KV namespace:
-                </div>
-                <pre id="cf-worker-snippet" style="background:var(--bg-panel-2);border:1px solid var(--border);border-radius:6px;padding:12px;font-family:var(--mono);font-size:10px;color:var(--text-secondary);overflow-x:auto;white-space:pre;line-height:1.6">export default {
-  async fetch(req, env) {
-    const url = new URL(req.url);
-    const token = req.headers.get("X-API-Token");
-    if (env.API_TOKEN && token !== env.API_TOKEN)
-      return new Response("Forbidden", { status: 403 });
-    const corsH = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,PUT,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type,X-API-Token",
-    };
-    if (req.method === "OPTIONS")
-      return new Response(null, { headers: corsH });
-    const key = url.searchParams.get("key");
-    if (req.method === "GET") {
-      const val = await env.KV.get(key);
-      return Response.json({ value: val }, { headers: corsH });
-    }
-    if (req.method === "PUT") {
-      const body = await req.json();
-      await env.KV.put(body.key, body.value);
-      return Response.json({ ok: true }, { headers: corsH });
-    }
-    return new Response("Not found", { status: 404 });
-  }
-};</pre>
-                <button class="btn btn-ghost w-full mt-2" onclick="copyCfSnippet()" style="font-size:10px;padding:10px;margin-top:8px">
-                  <i data-lucide="copy" style="width:12px;height:12px"></i> COPY CODE
-                </button>
-              </div>
-            </div>
-            <!-- /ssec-cloudflare -->
-
           </div>
           <!-- /settings-body -->
         </div>
@@ -3214,77 +2969,9 @@
 
       <!-- ═══════════════════════════════════════ SCRIPT ═══ -->
       <script>
-        /* ═══════════ PERSISTENT CONFIG — Cloudflare KV + localStorage fallback ═══════════ */
+        /* ═══════════ PERSISTENT CONFIG (localStorage) ═══════════ */
         const STORAGE_USERS_KEY = "irrigationos_users";
         const STORAGE_FIREBASE_KEY = "irrigationos_firebase_url";
-        const STORAGE_CF_WORKER_URL = "irrigationos_cf_worker_url";
-        const STORAGE_CF_API_TOKEN = "irrigationos_cf_api_token";
-
-        /* ─── Cloudflare KV REST helpers ─── */
-        // Your Worker must expose:
-        //   GET  /kv?key=KEY             → {value: "..."}
-        //   PUT  /kv      body: {key, value}
-        // If no Worker URL is configured, we fall back to localStorage only.
-
-        function loadCfConfig() {
-          return {
-            workerUrl: localStorage.getItem(STORAGE_CF_WORKER_URL) || "",
-            apiToken: localStorage.getItem(STORAGE_CF_API_TOKEN) || "",
-          };
-        }
-
-        function saveCfConfig(workerUrl, apiToken) {
-          localStorage.setItem(STORAGE_CF_WORKER_URL, workerUrl.replace(/\/$/, ""));
-          localStorage.setItem(STORAGE_CF_API_TOKEN, apiToken);
-        }
-
-        async function cfKvGet(key) {
-          const { workerUrl, apiToken } = loadCfConfig();
-          if (!workerUrl) return null;
-          try {
-            const headers = {};
-            if (apiToken) headers["X-API-Token"] = apiToken;
-            const resp = await fetch(`${workerUrl}/kv?key=${encodeURIComponent(key)}`, {
-              headers,
-              signal: AbortSignal.timeout(6000),
-            });
-            if (!resp.ok) return null;
-            const data = await resp.json();
-            return data.value !== undefined ? data.value : null;
-          } catch (e) {
-            console.warn("[CF-KV] GET failed:", e.message);
-            return null;
-          }
-        }
-
-        async function cfKvPut(key, value) {
-          const { workerUrl, apiToken } = loadCfConfig();
-          if (!workerUrl) return false;
-          try {
-            const headers = { "Content-Type": "application/json" };
-            if (apiToken) headers["X-API-Token"] = apiToken;
-            const resp = await fetch(`${workerUrl}/kv`, {
-              method: "PUT",
-              headers,
-              body: JSON.stringify({ key, value }),
-              signal: AbortSignal.timeout(6000),
-            });
-            return resp.ok;
-          } catch (e) {
-            console.warn("[CF-KV] PUT failed:", e.message);
-            return false;
-          }
-        }
-
-        // Sync queue so rapid saves don't race
-        const _cfSyncQueue = {};
-        function cfKvPutDebounced(key, value, delayMs = 1500) {
-          if (_cfSyncQueue[key]) clearTimeout(_cfSyncQueue[key]);
-          _cfSyncQueue[key] = setTimeout(async () => {
-            const ok = await cfKvPut(key, value);
-            if (ok) appendLog(`[CF-KV] Synced "${key}" to Cloudflare`, "info");
-          }, delayMs);
-        }
 
         const DEFAULT_FIREBASE_URL =
           "https://rua-farm-default-rtdb.asia-southeast1.firebasedatabase.app";
@@ -3319,24 +3006,7 @@
         }
 
         function saveUsers(users) {
-          const json = JSON.stringify(users);
-          localStorage.setItem(STORAGE_USERS_KEY, json);
-          cfKvPutDebounced(STORAGE_USERS_KEY, json);
-        }
-
-        async function syncUsersFromCF() {
-          const remote = await cfKvGet(STORAGE_USERS_KEY);
-          if (remote) {
-            try {
-              const parsed = JSON.parse(remote);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                localStorage.setItem(STORAGE_USERS_KEY, remote);
-                appendLog("[CF-KV] User accounts loaded from Cloudflare KV", "success");
-                return parsed;
-              }
-            } catch(e) {}
-          }
-          return null;
+          localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
         }
 
         function loadFirebaseURL() {
@@ -3347,17 +3017,6 @@
 
         function saveFirebaseURL(url) {
           localStorage.setItem(STORAGE_FIREBASE_KEY, url);
-          cfKvPutDebounced(STORAGE_FIREBASE_KEY, url);
-        }
-
-        async function syncFirebaseURLFromCF() {
-          const remote = await cfKvGet(STORAGE_FIREBASE_KEY);
-          if (remote && remote.startsWith("https://")) {
-            localStorage.setItem(STORAGE_FIREBASE_KEY, remote);
-            appendLog("[CF-KV] Firebase URL loaded from Cloudflare KV", "success");
-            return remote;
-          }
-          return null;
         }
 
         /* ═══════════ FIREBASE — dynamic init ═══════════ */
@@ -3484,9 +3143,7 @@
               totalCycles,
               savedAt: Date.now(),
             };
-            const json = JSON.stringify(payload);
-            localStorage.setItem("irrigationos_history", json);
-            cfKvPutDebounced("irrigationos_history", json, 3000);
+            localStorage.setItem("irrigationos_history", JSON.stringify(payload));
           } catch (e) {}
         }
 
@@ -3500,24 +3157,6 @@
               if (p.totalCycles) totalCycles = p.totalCycles;
             }
           } catch (e) {}
-        }
-
-        async function syncHistoryFromCF() {
-          const remote = await cfKvGet("irrigationos_history");
-          if (!remote) return;
-          try {
-            const p = JSON.parse(remote);
-            // Only apply if remote is newer than local
-            const localRaw = localStorage.getItem("irrigationos_history");
-            const localSaved = localRaw ? (JSON.parse(localRaw).savedAt || 0) : 0;
-            if (p.savedAt && p.savedAt > localSaved) {
-              if (p.runHistory) runHistory = p.runHistory;
-              if (p.totalRuntime) totalRuntimeMinutes = p.totalRuntime;
-              if (p.totalCycles) totalCycles = p.totalCycles;
-              localStorage.setItem("irrigationos_history", remote);
-              appendLog("[CF-KV] Run history loaded from Cloudflare KV (newer)", "success");
-            }
-          } catch(e) {}
         }
 
         function clearRunHistory() {
@@ -4386,12 +4025,6 @@
         loadPersistedHistory();
         startFirebaseListeners();
         startWatchdog();
-        // Async CF-KV sync: pull any newer cloud data after boot
-        setTimeout(async () => {
-          await syncHistoryFromCF();
-          await syncFirebaseURLFromCF();
-          renderRunHistory();
-        }, 2500);
 
         setTimeout(measureDatabaseLatency, 1000);
 
@@ -4784,7 +4417,7 @@
         const isAdmin = currentUser && currentUser.role === "ADMIN";
 
         // Tab button highlights
-        ["users", "firebase", "about", "cloudflare"].forEach((t) => {
+        ["users", "firebase", "about"].forEach((t) => {
           const btn = document.getElementById(`stab-${t}`);
           if (btn) {
             const active =
@@ -4827,19 +4460,9 @@
           }
         }
 
-        // Show/hide cloudflare tab
-        const ssecCf = document.getElementById("ssec-cloudflare");
-        const stabCf = document.getElementById("stab-cloudflare");
-        if (ssecCf) {
-          ssecCf.classList.toggle("active", tab === "cloudflare");
-          ssecCf.style.display = tab === "cloudflare" ? "block" : "none";
-        }
-        if (stabCf) stabCf.classList.toggle("active", tab === "cloudflare");
-
         if (tab === "firebase" && isAdmin) renderFirebaseTab();
         if (tab === "about" && isAdmin) renderAboutTab();
         if (tab === "myaccount") renderMyAccountTab();
-        if (tab === "cloudflare") renderCfTab();
       }
 
       /* ─── USERS TAB (ADMIN only) ─── */
@@ -5538,560 +5161,7 @@
         if (fbRegionBadge) fbRegionBadge.textContent = region;
       }
 
-
-      /* ══════════════════════════════════════════════════════
-         CLOUDFLARE KV SETTINGS
-      ══════════════════════════════════════════════════════ */
-
-      let cfLastSync = null;
-
-      function renderCfTab() {
-        const { workerUrl, apiToken } = loadCfConfig();
-        const urlEl = document.getElementById("cf-worker-url");
-        const tokenEl = document.getElementById("cf-api-token");
-        if (urlEl) urlEl.value = workerUrl;
-        if (tokenEl) tokenEl.value = apiToken;
-        updateCfStatus();
-        hideCfAlert();
-      }
-
-      function updateCfStatus() {
-        const { workerUrl, apiToken } = loadCfConfig();
-        const urlLabel = document.getElementById("cf-status-url");
-        const tokenLabel = document.getElementById("cf-status-token");
-        const syncLabel = document.getElementById("cf-status-lastsync");
-        if (urlLabel) urlLabel.textContent = workerUrl || "Not configured";
-        if (tokenLabel) tokenLabel.textContent = apiToken ? "●●●●●●●●" : "None";
-        if (syncLabel) syncLabel.textContent = cfLastSync
-          ? cfLastSync.toLocaleTimeString("en-GB", { hour12: false })
-          : "Never";
-      }
-
-      function saveCfWorkerConfig() {
-        const url = (document.getElementById("cf-worker-url").value || "").trim().replace(/\/$/, "");
-        const token = (document.getElementById("cf-api-token").value || "").trim();
-        saveCfConfig(url, token);
-        updateCfStatus();
-        showCfAlert(url ? "Cloudflare KV config saved." : "Config cleared (Worker URL removed).", "success");
-        appendLog(`Settings: Cloudflare Worker URL set → ${url || "(cleared)"}`, "success");
-      }
-
-      async function testCfWorker() {
-        const url = (document.getElementById("cf-worker-url").value || "").trim().replace(/\/$/, "");
-        if (!url) { showCfAlert("Enter a Worker URL first.", "error"); return; }
-        showCfAlert("Testing Worker connection…", "info");
-        const connEl = document.getElementById("cf-status-conn");
-        if (connEl) connEl.textContent = "Testing…";
-        try {
-          const headers = {};
-          const token = (document.getElementById("cf-api-token").value || "").trim();
-          if (token) headers["X-API-Token"] = token;
-          const t0 = Date.now();
-          const resp = await fetch(`${url}/kv?key=__ping__`, {
-            headers, signal: AbortSignal.timeout(7000)
-          });
-          const latency = Date.now() - t0;
-          if (resp.ok || resp.status === 404) {
-            showCfAlert(`Worker reachable — ${latency}ms. Click SAVE CONFIG to apply.`, "success");
-            if (connEl) { connEl.textContent = `ONLINE · ${latency}ms`; connEl.style.color = "var(--accent)"; }
-          } else if (resp.status === 403) {
-            showCfAlert("Forbidden (403) — check your API token.", "error");
-            if (connEl) { connEl.textContent = "AUTH FAILED"; connEl.style.color = "var(--red)"; }
-          } else {
-            showCfAlert(`HTTP ${resp.status} — check your Worker URL.`, "error");
-            if (connEl) { connEl.textContent = `HTTP ${resp.status}`; connEl.style.color = "var(--red)"; }
-          }
-        } catch(e) {
-          showCfAlert(`Connection failed: ${e.message}`, "error");
-          if (connEl) { connEl.textContent = "UNREACHABLE"; connEl.style.color = "var(--red)"; }
-        }
-      }
-
-      async function cfPushAll() {
-        const { workerUrl } = loadCfConfig();
-        if (!workerUrl) { showCfAlert("No Worker URL configured.", "error"); return; }
-        showCfAlert("Pushing all local data to Cloudflare KV…", "info");
-        let ok = true;
-        ok &= await cfKvPut(STORAGE_USERS_KEY, localStorage.getItem(STORAGE_USERS_KEY) || "[]");
-        ok &= await cfKvPut(STORAGE_FIREBASE_KEY, loadFirebaseURL());
-        const histJson = localStorage.getItem("irrigationos_history");
-        if (histJson) ok &= await cfKvPut("irrigationos_history", histJson);
-        cfLastSync = new Date();
-        updateCfStatus();
-        if (ok) {
-          showCfAlert("All data pushed to Cloudflare KV successfully.", "success");
-          appendLog("[CF-KV] Manual push: users, Firebase URL, run history synced", "success");
-        } else {
-          showCfAlert("Some keys failed to push — check the console.", "error");
-        }
-      }
-
-      async function cfPullAll() {
-        const { workerUrl } = loadCfConfig();
-        if (!workerUrl) { showCfAlert("No Worker URL configured.", "error"); return; }
-        showCfAlert("Pulling latest data from Cloudflare KV…", "info");
-        let count = 0;
-        const remoteUsers = await cfKvGet(STORAGE_USERS_KEY);
-        if (remoteUsers) { localStorage.setItem(STORAGE_USERS_KEY, remoteUsers); count++; }
-        const remoteFb = await cfKvGet(STORAGE_FIREBASE_KEY);
-        if (remoteFb && remoteFb.startsWith("https://")) {
-          localStorage.setItem(STORAGE_FIREBASE_KEY, remoteFb); count++;
-        }
-        const remoteHist = await cfKvGet("irrigationos_history");
-        if (remoteHist) {
-          try {
-            const p = JSON.parse(remoteHist);
-            if (p.runHistory) runHistory = p.runHistory;
-            if (p.totalRuntime) totalRuntimeMinutes = p.totalRuntime;
-            if (p.totalCycles) totalCycles = p.totalCycles;
-            localStorage.setItem("irrigationos_history", remoteHist);
-            count++;
-          } catch(e) {}
-        }
-        cfLastSync = new Date();
-        updateCfStatus();
-        renderRunHistory();
-        if (currentSettingsTab === "users") renderUsersTable();
-        showCfAlert(`Pulled ${count} key(s) from Cloudflare KV.`, count > 0 ? "success" : "info");
-        appendLog(`[CF-KV] Manual pull: ${count} key(s) restored from cloud`, "success");
-      }
-
-      function copyCfSnippet() {
-        const code = document.getElementById("cf-worker-snippet").textContent;
-        navigator.clipboard.writeText(code).then(() => {
-          showCfAlert("Worker code copied to clipboard.", "success");
-        }).catch(() => {
-          showCfAlert("Copy failed — select the code manually.", "error");
-        });
-      }
-
-      function showCfAlert(msg, type) {
-        const el = document.getElementById("cf-alert");
-        if (!el) return;
-        el.className = `sett-alert sett-alert-${type}`;
-        const icon = type === "success" ? "check-circle" : type === "error" ? "alert-circle" : "info";
-        el.innerHTML = `<i data-lucide="${icon}" style="width:14px;height:14px;flex-shrink:0"></i><span>${escHtml(msg)}</span>`;
-        el.style.display = "flex";
-        lucide.createIcons();
-        if (type === "success") setTimeout(hideCfAlert, 4000);
-      }
-
-      function hideCfAlert() {
-        const el = document.getElementById("cf-alert");
-        if (el) el.style.display = "none";
-      }
-
-      /* ══════════════════════════════════════════════════════
-         CLOUDFLARE KV SETTINGS
-      ══════════════════════════════════════════════════════ */
-
-      let cfLastSync = null;
-
-      function renderCfTab() {
-        const { workerUrl, apiToken } = loadCfConfig();
-        const urlEl = document.getElementById("cf-worker-url");
-        const tokenEl = document.getElementById("cf-api-token");
-        if (urlEl) urlEl.value = workerUrl;
-        if (tokenEl) tokenEl.value = apiToken;
-        updateCfStatus();
-        hideCfAlert();
-      }
-
-      function updateCfStatus() {
-        const { workerUrl, apiToken } = loadCfConfig();
-        const urlLabel = document.getElementById("cf-status-url");
-        const tokenLabel = document.getElementById("cf-status-token");
-        const syncLabel = document.getElementById("cf-status-lastsync");
-        if (urlLabel) urlLabel.textContent = workerUrl || "Not configured";
-        if (tokenLabel) tokenLabel.textContent = apiToken ? "●●●●●●●●" : "None";
-        if (syncLabel) syncLabel.textContent = cfLastSync
-          ? cfLastSync.toLocaleTimeString("en-GB", { hour12: false })
-          : "Never";
-      }
-
-      function saveCfWorkerConfig() {
-        const url = (document.getElementById("cf-worker-url").value || "").trim().replace(/\/$/, "");
-        const token = (document.getElementById("cf-api-token").value || "").trim();
-        saveCfConfig(url, token);
-        updateCfStatus();
-        showCfAlert(url ? "Cloudflare KV config saved." : "Config cleared (Worker URL removed).", "success");
-        appendLog("Settings: Cloudflare Worker URL set → " + (url || "(cleared)"), "success");
-      }
-
-      async function testCfWorker() {
-        const url = (document.getElementById("cf-worker-url").value || "").trim().replace(/\/$/, "");
-        if (!url) { showCfAlert("Enter a Worker URL first.", "error"); return; }
-        showCfAlert("Testing Worker connection…", "info");
-        const connEl = document.getElementById("cf-status-conn");
-        if (connEl) connEl.textContent = "Testing…";
-        try {
-          const headers = {};
-          const token = (document.getElementById("cf-api-token").value || "").trim();
-          if (token) headers["X-API-Token"] = token;
-          const t0 = Date.now();
-          const resp = await fetch(url + "/kv?key=__ping__", {
-            headers, signal: AbortSignal.timeout(7000)
-          });
-          const latency = Date.now() - t0;
-          if (resp.ok || resp.status === 404) {
-            showCfAlert("Worker reachable — " + latency + "ms. Click SAVE CONFIG to apply.", "success");
-            if (connEl) { connEl.textContent = "ONLINE · " + latency + "ms"; connEl.style.color = "var(--accent)"; }
-          } else if (resp.status === 403) {
-            showCfAlert("Forbidden (403) — check your API token.", "error");
-            if (connEl) { connEl.textContent = "AUTH FAILED"; connEl.style.color = "var(--red)"; }
-          } else {
-            showCfAlert("HTTP " + resp.status + " — check your Worker URL.", "error");
-            if (connEl) { connEl.textContent = "HTTP " + resp.status; connEl.style.color = "var(--red)"; }
-          }
-        } catch(e) {
-          showCfAlert("Connection failed: " + e.message, "error");
-          if (connEl) { connEl.textContent = "UNREACHABLE"; connEl.style.color = "var(--red)"; }
-        }
-      }
-
-      async function cfPushAll() {
-        const { workerUrl } = loadCfConfig();
-        if (!workerUrl) { showCfAlert("No Worker URL configured.", "error"); return; }
-        showCfAlert("Pushing all local data to Cloudflare KV…", "info");
-        let results = [];
-        results.push(await cfKvPut(STORAGE_USERS_KEY, localStorage.getItem(STORAGE_USERS_KEY) || "[]"));
-        results.push(await cfKvPut(STORAGE_FIREBASE_KEY, loadFirebaseURL()));
-        const histJson = localStorage.getItem("irrigationos_history");
-        if (histJson) results.push(await cfKvPut("irrigationos_history", histJson));
-        cfLastSync = new Date();
-        updateCfStatus();
-        const ok = results.every(Boolean);
-        if (ok) {
-          showCfAlert("All data pushed to Cloudflare KV successfully.", "success");
-          appendLog("[CF-KV] Manual push: users, Firebase URL, run history synced", "success");
-        } else {
-          showCfAlert("Some keys failed to push — check the console.", "error");
-        }
-      }
-
-      async function cfPullAll() {
-        const { workerUrl } = loadCfConfig();
-        if (!workerUrl) { showCfAlert("No Worker URL configured.", "error"); return; }
-        showCfAlert("Pulling latest data from Cloudflare KV…", "info");
-        let count = 0;
-        const remoteUsers = await cfKvGet(STORAGE_USERS_KEY);
-        if (remoteUsers) { localStorage.setItem(STORAGE_USERS_KEY, remoteUsers); count++; }
-        const remoteFb = await cfKvGet(STORAGE_FIREBASE_KEY);
-        if (remoteFb && remoteFb.startsWith("https://")) {
-          localStorage.setItem(STORAGE_FIREBASE_KEY, remoteFb); count++;
-        }
-        const remoteHist = await cfKvGet("irrigationos_history");
-        if (remoteHist) {
-          try {
-            const p = JSON.parse(remoteHist);
-            if (p.runHistory) runHistory = p.runHistory;
-            if (p.totalRuntime) totalRuntimeMinutes = p.totalRuntime;
-            if (p.totalCycles) totalCycles = p.totalCycles;
-            localStorage.setItem("irrigationos_history", remoteHist);
-            count++;
-          } catch(e) {}
-        }
-        cfLastSync = new Date();
-        updateCfStatus();
-        renderRunHistory();
-        showCfAlert("Pulled " + count + " key(s) from Cloudflare KV.", count > 0 ? "success" : "info");
-        appendLog("[CF-KV] Manual pull: " + count + " key(s) restored from cloud", "success");
-      }
-
-      function copyCfSnippet() {
-        const code = document.getElementById("cf-worker-snippet").textContent;
-        navigator.clipboard.writeText(code).then(() => {
-          showCfAlert("Worker code copied to clipboard.", "success");
-        }).catch(() => {
-          showCfAlert("Copy failed — select the code manually.", "error");
-        });
-      }
-
-      function showCfAlert(msg, type) {
-        const el = document.getElementById("cf-alert");
-        if (!el) return;
-        el.className = "sett-alert sett-alert-" + type;
-        const icon = type === "success" ? "check-circle" : type === "error" ? "alert-circle" : "info";
-        el.innerHTML = '<i data-lucide="' + icon + '" style="width:14px;height:14px;flex-shrink:0"></i><span>' + escHtml(msg) + '</span>';
-        el.style.display = "flex";
-        lucide.createIcons();
-        if (type === "success") setTimeout(hideCfAlert, 4000);
-      }
-
-      function hideCfAlert() {
-        const el = document.getElementById("cf-alert");
-        if (el) el.style.display = "none";
-      }
-
-
-      /* =====================================================
-         CLOUDFLARE KV SETTINGS
-      ===================================================== */
-
-      let cfLastSync = null;
-
-      function renderCfTab() {
-        const { workerUrl, apiToken } = loadCfConfig();
-        const urlEl = document.getElementById("cf-worker-url");
-        const tokenEl = document.getElementById("cf-api-token");
-        if (urlEl) urlEl.value = workerUrl;
-        if (tokenEl) tokenEl.value = apiToken;
-        updateCfStatus();
-        hideCfAlert();
-      }
-
-      function updateCfStatus() {
-        const { workerUrl, apiToken } = loadCfConfig();
-        const urlLabel = document.getElementById("cf-status-url");
-        const tokenLabel = document.getElementById("cf-status-token");
-        const syncLabel = document.getElementById("cf-status-lastsync");
-        if (urlLabel) urlLabel.textContent = workerUrl || "Not configured";
-        if (tokenLabel) tokenLabel.textContent = apiToken ? "\u25cf\u25cf\u25cf\u25cf\u25cf\u25cf" : "None";
-        if (syncLabel) syncLabel.textContent = cfLastSync
-          ? cfLastSync.toLocaleTimeString("en-GB", { hour12: false })
-          : "Never";
-      }
-
-      function saveCfWorkerConfig() {
-        const url = (document.getElementById("cf-worker-url").value || "").trim().replace(/\/$/, "");
-        const token = (document.getElementById("cf-api-token").value || "").trim();
-        saveCfConfig(url, token);
-        updateCfStatus();
-        showCfAlert(url ? "Cloudflare KV config saved." : "Config cleared.", "success");
-        appendLog("Settings: Cloudflare Worker URL -> " + (url || "(cleared)"), "success");
-      }
-
-      async function testCfWorker() {
-        const url = (document.getElementById("cf-worker-url").value || "").trim().replace(/\/$/, "");
-        if (!url) { showCfAlert("Enter a Worker URL first.", "error"); return; }
-        showCfAlert("Testing Worker connection...", "info");
-        const connEl = document.getElementById("cf-status-conn");
-        if (connEl) connEl.textContent = "Testing...";
-        try {
-          const headers = {};
-          const token = (document.getElementById("cf-api-token").value || "").trim();
-          if (token) headers["X-API-Token"] = token;
-          const t0 = Date.now();
-          const resp = await fetch(url + "/kv?key=__ping__", { headers, signal: AbortSignal.timeout(7000) });
-          const latency = Date.now() - t0;
-          if (resp.ok || resp.status === 404) {
-            showCfAlert("Worker reachable " + latency + "ms. Click SAVE CONFIG to apply.", "success");
-            if (connEl) { connEl.textContent = "ONLINE " + latency + "ms"; connEl.style.color = "var(--accent)"; }
-          } else if (resp.status === 403) {
-            showCfAlert("Forbidden (403) - check your API token.", "error");
-            if (connEl) { connEl.textContent = "AUTH FAILED"; connEl.style.color = "var(--red)"; }
-          } else {
-            showCfAlert("HTTP " + resp.status + " - check your Worker URL.", "error");
-            if (connEl) { connEl.textContent = "HTTP " + resp.status; connEl.style.color = "var(--red)"; }
-          }
-        } catch(e) {
-          showCfAlert("Connection failed: " + e.message, "error");
-          if (connEl) { connEl.textContent = "UNREACHABLE"; connEl.style.color = "var(--red)"; }
-        }
-      }
-
-      async function cfPushAll() {
-        const { workerUrl } = loadCfConfig();
-        if (!workerUrl) { showCfAlert("No Worker URL configured.", "error"); return; }
-        showCfAlert("Pushing all local data to Cloudflare KV...", "info");
-        const r1 = await cfKvPut(STORAGE_USERS_KEY, localStorage.getItem(STORAGE_USERS_KEY) || "[]");
-        const r2 = await cfKvPut(STORAGE_FIREBASE_KEY, loadFirebaseURL());
-        const histJson = localStorage.getItem("irrigationos_history");
-        const r3 = histJson ? await cfKvPut("irrigationos_history", histJson) : true;
-        cfLastSync = new Date();
-        updateCfStatus();
-        if (r1 && r2 && r3) {
-          showCfAlert("All data pushed to Cloudflare KV successfully.", "success");
-          appendLog("[CF-KV] Manual push: users, Firebase URL, run history synced", "success");
-        } else {
-          showCfAlert("Some keys failed to push - check Worker logs.", "error");
-        }
-      }
-
-      async function cfPullAll() {
-        const { workerUrl } = loadCfConfig();
-        if (!workerUrl) { showCfAlert("No Worker URL configured.", "error"); return; }
-        showCfAlert("Pulling latest data from Cloudflare KV...", "info");
-        let count = 0;
-        const remoteUsers = await cfKvGet(STORAGE_USERS_KEY);
-        if (remoteUsers) { localStorage.setItem(STORAGE_USERS_KEY, remoteUsers); count++; }
-        const remoteFb = await cfKvGet(STORAGE_FIREBASE_KEY);
-        if (remoteFb && remoteFb.startsWith("https://")) { localStorage.setItem(STORAGE_FIREBASE_KEY, remoteFb); count++; }
-        const remoteHist = await cfKvGet("irrigationos_history");
-        if (remoteHist) {
-          try {
-            const p = JSON.parse(remoteHist);
-            if (p.runHistory) runHistory = p.runHistory;
-            if (p.totalRuntime) totalRuntimeMinutes = p.totalRuntime;
-            if (p.totalCycles) totalCycles = p.totalCycles;
-            localStorage.setItem("irrigationos_history", remoteHist);
-            count++;
-          } catch(e) {}
-        }
-        cfLastSync = new Date();
-        updateCfStatus();
-        renderRunHistory();
-        showCfAlert("Pulled " + count + " key(s) from Cloudflare KV.", count > 0 ? "success" : "info");
-        appendLog("[CF-KV] Manual pull: " + count + " key(s) restored", "success");
-      }
-
-      function copyCfSnippet() {
-        const code = document.getElementById("cf-worker-snippet").textContent;
-        navigator.clipboard.writeText(code)
-          .then(() => showCfAlert("Worker code copied to clipboard.", "success"))
-          .catch(() => showCfAlert("Copy failed - select code manually.", "error"));
-      }
-
-      function showCfAlert(msg, type) {
-        const el = document.getElementById("cf-alert");
-        if (!el) return;
-        el.className = "sett-alert sett-alert-" + type;
-        const icon = type === "success" ? "check-circle" : type === "error" ? "alert-circle" : "info";
-        el.innerHTML = '<i data-lucide="' + icon + '" style="width:14px;height:14px;flex-shrink:0"></i><span>' + escHtml(msg) + '</span>';
-        el.style.display = "flex";
-        lucide.createIcons();
-        if (type === "success") setTimeout(hideCfAlert, 4000);
-      }
-
-      function hideCfAlert() {
-        const el = document.getElementById("cf-alert");
-        if (el) el.style.display = "none";
-      }
-
       /* ─── UTILITY ─── */
-      /* =====================================================
-         CLOUDFLARE KV SETTINGS
-      ===================================================== */
-
-      let cfLastSync = null;
-
-      function renderCfTab() {
-        const cfg = loadCfConfig();
-        const urlEl = document.getElementById("cf-worker-url");
-        const tokenEl = document.getElementById("cf-api-token");
-        if (urlEl) urlEl.value = cfg.workerUrl;
-        if (tokenEl) tokenEl.value = cfg.apiToken;
-        updateCfStatus();
-        hideCfAlert();
-      }
-
-      function updateCfStatus() {
-        const cfg = loadCfConfig();
-        const urlLabel = document.getElementById("cf-status-url");
-        const tokenLabel = document.getElementById("cf-status-token");
-        const syncLabel = document.getElementById("cf-status-lastsync");
-        if (urlLabel) urlLabel.textContent = cfg.workerUrl || "Not configured";
-        if (tokenLabel) tokenLabel.textContent = cfg.apiToken ? "Configured" : "None";
-        if (syncLabel) syncLabel.textContent = cfLastSync
-          ? cfLastSync.toLocaleTimeString("en-GB", { hour12: false }) : "Never";
-      }
-
-      function saveCfWorkerConfig() {
-        const url = (document.getElementById("cf-worker-url").value || "").trim().replace(/\/$/, "");
-        const token = (document.getElementById("cf-api-token").value || "").trim();
-        saveCfConfig(url, token);
-        updateCfStatus();
-        showCfAlert(url ? "Cloudflare KV config saved." : "Config cleared.", "success");
-        appendLog("Settings: Cloudflare Worker URL -> " + (url || "(cleared)"), "success");
-      }
-
-      async function testCfWorker() {
-        const url = (document.getElementById("cf-worker-url").value || "").trim().replace(/\/$/, "");
-        if (!url) { showCfAlert("Enter a Worker URL first.", "error"); return; }
-        showCfAlert("Testing Worker connection...", "info");
-        const connEl = document.getElementById("cf-status-conn");
-        if (connEl) connEl.textContent = "Testing...";
-        try {
-          const headers = {};
-          const token = (document.getElementById("cf-api-token").value || "").trim();
-          if (token) headers["X-API-Token"] = token;
-          const t0 = Date.now();
-          const resp = await fetch(url + "/kv?key=__ping__", { headers, signal: AbortSignal.timeout(7000) });
-          const latency = Date.now() - t0;
-          if (resp.ok || resp.status === 404) {
-            showCfAlert("Worker reachable - " + latency + "ms. Click SAVE CONFIG to apply.", "success");
-            if (connEl) { connEl.textContent = "ONLINE " + latency + "ms"; connEl.style.color = "var(--accent)"; }
-          } else if (resp.status === 403) {
-            showCfAlert("Forbidden (403) - check your API token.", "error");
-            if (connEl) { connEl.textContent = "AUTH FAILED"; connEl.style.color = "var(--red)"; }
-          } else {
-            showCfAlert("HTTP " + resp.status + " - check your Worker URL.", "error");
-            if (connEl) { connEl.textContent = "HTTP " + resp.status; connEl.style.color = "var(--red)"; }
-          }
-        } catch(e) {
-          showCfAlert("Connection failed: " + e.message, "error");
-          if (connEl) { connEl.textContent = "UNREACHABLE"; connEl.style.color = "var(--red)"; }
-        }
-      }
-
-      async function cfPushAll() {
-        const cfg = loadCfConfig();
-        if (!cfg.workerUrl) { showCfAlert("No Worker URL configured.", "error"); return; }
-        showCfAlert("Pushing all local data to Cloudflare KV...", "info");
-        const r1 = await cfKvPut(STORAGE_USERS_KEY, localStorage.getItem(STORAGE_USERS_KEY) || "[]");
-        const r2 = await cfKvPut(STORAGE_FIREBASE_KEY, loadFirebaseURL());
-        const histJson = localStorage.getItem("irrigationos_history");
-        const r3 = histJson ? await cfKvPut("irrigationos_history", histJson) : true;
-        cfLastSync = new Date();
-        updateCfStatus();
-        if (r1 && r2 && r3) {
-          showCfAlert("All data pushed to Cloudflare KV successfully.", "success");
-          appendLog("[CF-KV] Manual push: users, Firebase URL, run history synced", "success");
-        } else {
-          showCfAlert("Some keys failed to push - check Worker logs.", "error");
-        }
-      }
-
-      async function cfPullAll() {
-        const cfg = loadCfConfig();
-        if (!cfg.workerUrl) { showCfAlert("No Worker URL configured.", "error"); return; }
-        showCfAlert("Pulling latest data from Cloudflare KV...", "info");
-        let count = 0;
-        const remoteUsers = await cfKvGet(STORAGE_USERS_KEY);
-        if (remoteUsers) { localStorage.setItem(STORAGE_USERS_KEY, remoteUsers); count++; }
-        const remoteFb = await cfKvGet(STORAGE_FIREBASE_KEY);
-        if (remoteFb && remoteFb.startsWith("https://")) { localStorage.setItem(STORAGE_FIREBASE_KEY, remoteFb); count++; }
-        const remoteHist = await cfKvGet("irrigationos_history");
-        if (remoteHist) {
-          try {
-            const p = JSON.parse(remoteHist);
-            if (p.runHistory) runHistory = p.runHistory;
-            if (p.totalRuntime) totalRuntimeMinutes = p.totalRuntime;
-            if (p.totalCycles) totalCycles = p.totalCycles;
-            localStorage.setItem("irrigationos_history", remoteHist);
-            count++;
-          } catch(e) {}
-        }
-        cfLastSync = new Date();
-        updateCfStatus();
-        renderRunHistory();
-        showCfAlert("Pulled " + count + " key(s) from Cloudflare KV.", count > 0 ? "success" : "info");
-        appendLog("[CF-KV] Manual pull: " + count + " key(s) restored", "success");
-      }
-
-      function copyCfSnippet() {
-        const code = document.getElementById("cf-worker-snippet").textContent;
-        navigator.clipboard.writeText(code)
-          .then(function() { showCfAlert("Worker code copied to clipboard.", "success"); })
-          .catch(function() { showCfAlert("Copy failed - select code manually.", "error"); });
-      }
-
-      function showCfAlert(msg, type) {
-        const el = document.getElementById("cf-alert");
-        if (!el) return;
-        el.className = "sett-alert sett-alert-" + type;
-        const icon = type === "success" ? "check-circle" : type === "error" ? "alert-circle" : "info";
-        el.innerHTML = '<i data-lucide="' + icon + '" style="width:14px;height:14px;flex-shrink:0"></i><span>' + escHtml(msg) + '</span>';
-        el.style.display = "flex";
-        lucide.createIcons();
-        if (type === "success") setTimeout(hideCfAlert, 4000);
-      }
-
-      function hideCfAlert() {
-        const el = document.getElementById("cf-alert");
-        if (el) el.style.display = "none";
-      }
-
       function escHtml(str) {
         return String(str)
           .replace(/&/g, "&amp;")
