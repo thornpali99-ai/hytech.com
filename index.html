@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>IrrigationOS v8.0 Industrial Command Center</title>
+    <title>IrrigationOS v10.0 — Soil Moisture Edition</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -286,6 +286,12 @@
       }
 
       /* Scrollbar */
+
+      .active-period {
+        border-color: var(--accent) !important;
+        color: var(--accent) !important;
+        background: var(--accent-dim) !important;
+      }
       ::-webkit-scrollbar {
         width: 4px;
         height: 4px;
@@ -1400,7 +1406,7 @@
                   display: block;
                   line-height: 1;
                 "
-                >v8.0 INDUSTRIAL</span
+                >v10.0 SOIL MOISTURE</span
               >
             </div>
           </div>
@@ -1637,6 +1643,100 @@
                 >-- ms</span
               >
             </div>
+          </div>
+        </section>
+
+
+        <!-- ── SOIL MOISTURE KPI STRIP ── -->
+        <section class="grid grid-cols-2 lg:grid-cols-5 gap-3" id="soil-kpi-strip">
+          <!-- Moisture reading -->
+          <div class="panel p-4 col-span-1 panel-accent">
+            <div class="flex justify-between items-start mb-3">
+              <div class="section-label">SOIL MOISTURE</div>
+              <div class="tag tag-blue">RS485</div>
+            </div>
+            <div class="data-readout" style="font-size:28px;color:var(--blue)" id="kpi-soil-moisture">--.-</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">% VWC</div>
+            <div class="activity-bar mt-3">
+              <div class="activity-bar-fill" id="kpi-soil-bar" style="width:0%;background:var(--blue)"></div>
+            </div>
+          </div>
+          <!-- Soil temperature -->
+          <div class="panel p-4 col-span-1">
+            <div class="flex justify-between items-start mb-3">
+              <div class="section-label">SOIL TEMP</div>
+              <div class="tag tag-amber">°C</div>
+            </div>
+            <div class="data-readout" style="font-size:28px;color:var(--amber)" id="kpi-soil-temp">--.-</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">Celsius</div>
+          </div>
+          <!-- Setpoint ON -->
+          <div class="panel p-4 col-span-1">
+            <div class="flex justify-between items-start mb-3">
+              <div class="section-label">SETPOINT ON</div>
+              <div class="tag tag-green">PUMP ON</div>
+            </div>
+            <div class="data-readout" style="font-size:24px;color:var(--accent)" id="kpi-setpoint-on">50.0</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">% — turn pump ON below</div>
+          </div>
+          <!-- Setpoint OFF -->
+          <div class="panel p-4 col-span-1">
+            <div class="flex justify-between items-start mb-3">
+              <div class="section-label">SETPOINT OFF</div>
+              <div class="tag tag-red">PUMP OFF</div>
+            </div>
+            <div class="data-readout" style="font-size:24px;color:var(--red)" id="kpi-setpoint-off">65.0</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">% — turn pump OFF above</div>
+          </div>
+          <!-- Control status -->
+          <div class="panel p-4 col-span-2 lg:col-span-1 panel-accent" id="soil-ctrl-panel">
+            <div class="flex justify-between items-start mb-3">
+              <div class="section-label">AUTO CTRL</div>
+              <div class="led led-off" id="soil-ctrl-led" style="width:8px;height:8px"></div>
+            </div>
+            <div class="data-readout" style="font-size:13px;" id="soil-ctrl-status">DISABLED</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
+              Zone: <span id="soil-ctrl-zone">Z1</span>
+            </div>
+            <button onclick="openSoilSettings()" class="btn btn-ghost w-full mt-3" style="font-size:9px;padding:6px 8px">
+              <i data-lucide="settings-2" style="width:11px;height:11px"></i> CONFIGURE
+            </button>
+          </div>
+        </section>
+
+        <!-- ── SOIL MOISTURE HISTORY TRENDS ── -->
+        <section class="panel p-5" id="soil-trend-section">
+          <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+            <div>
+              <div class="section-label mb-1">SOIL MOISTURE — HISTORY TREND</div>
+              <div style="font-size:11px;color:var(--text-muted)">RS-WS-N01-TR-1-EX sensor · Logged every minute to Firebase</div>
+            </div>
+            <div class="flex flex-wrap gap-2 items-center">
+              <!-- Period selector -->
+              <div class="flex gap-1">
+                <button class="btn btn-ghost soil-period-btn active-period" data-period="day" onclick="setSoilPeriod('day')" style="font-size:10px;padding:5px 10px">DAY</button>
+                <button class="btn btn-ghost soil-period-btn" data-period="week" onclick="setSoilPeriod('week')" style="font-size:10px;padding:5px 10px">WEEK</button>
+                <button class="btn btn-ghost soil-period-btn" data-period="month" onclick="setSoilPeriod('month')" style="font-size:10px;padding:5px 10px">MONTH</button>
+              </div>
+              <button onclick="downloadSoilHistory('csv')" class="btn btn-ghost" style="font-size:10px;padding:5px 10px">
+                <i data-lucide="download" style="width:12px;height:12px"></i> CSV
+              </button>
+              <button onclick="downloadSoilHistory('json')" class="btn btn-ghost" style="font-size:10px;padding:5px 10px">
+                <i data-lucide="file-json" style="width:12px;height:12px"></i> JSON
+              </button>
+            </div>
+          </div>
+          <div class="chart-container" style="height:240px;position:relative">
+            <canvas id="soil-trend-chart"></canvas>
+            <div id="soil-trend-empty" style="display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-family:var(--mono);font-size:11px">
+              NO DATA — waiting for sensor readings
+            </div>
+          </div>
+          <!-- Pump event markers legend -->
+          <div class="flex gap-4 mt-3" style="font-family:var(--mono);font-size:9px;color:var(--text-muted)">
+            <span><span style="display:inline-block;width:10px;height:2px;background:var(--blue);vertical-align:middle;margin-right:4px"></span>MOISTURE %</span>
+            <span><span style="display:inline-block;width:10px;height:2px;background:var(--accent);vertical-align:middle;margin-right:4px;border-style:dashed;border-width:1px"></span>SETPOINT ON</span>
+            <span><span style="display:inline-block;width:10px;height:2px;background:var(--red);vertical-align:middle;margin-right:4px;border-style:dashed;border-width:1px"></span>SETPOINT OFF</span>
           </div>
         </section>
 
@@ -2074,6 +2174,85 @@
           </div>
         </footer>
       </main>
+
+
+      <!-- ═══════════ SOIL MOISTURE SETTINGS MODAL ═══════════ -->
+      <div id="soil-settings-overlay" class="settings-overlay" style="display:none" onclick="if(event.target===this)closeSoilSettings()">
+        <div class="settings-panel" style="max-width:480px;width:94%">
+          <div class="settings-header">
+            <div style="display:flex;align-items:center;gap:10px">
+              <i data-lucide="droplets" style="width:16px;height:16px;color:var(--blue)"></i>
+              <span>SOIL MOISTURE CONTROL</span>
+            </div>
+            <button class="settings-close" onclick="closeSoilSettings()">
+              <i data-lucide="x" style="width:16px;height:16px"></i>
+            </button>
+          </div>
+          <div class="settings-body" style="padding:20px;display:flex;flex-direction:column;gap:16px">
+            <div id="soil-modal-alert" class="sett-alert" style="display:none"></div>
+
+            <!-- Enable toggle -->
+            <div class="sett-card" style="display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text-primary)">AUTO MOISTURE CONTROL</div>
+                <div style="font-size:10px;color:var(--text-muted);margin-top:3px">Enable pump automation based on soil moisture</div>
+              </div>
+              <label class="valve-toggle">
+                <input type="checkbox" id="soil-enabled-toggle" onchange="onSoilToggleChange()">
+                <div class="valve-track"></div>
+              </label>
+            </div>
+
+            <!-- Zone selector -->
+            <div class="sett-field">
+              <label class="sett-label">PUMP CONTROL ZONE</label>
+              <select id="soil-ctrl-zone-select" class="sett-select">
+                <option value="0">Zone 1</option><option value="1">Zone 2</option>
+                <option value="2">Zone 3</option><option value="3">Zone 4</option>
+                <option value="4">Zone 5</option><option value="5">Zone 6</option>
+                <option value="6">Zone 7</option><option value="7">Zone 8</option>
+              </select>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Which relay zone controls the water pump</div>
+            </div>
+
+            <!-- Setpoints -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="sett-field">
+                <label class="sett-label" style="color:var(--accent)">SETPOINT ON (%)</label>
+                <input type="number" id="soil-sp-on" class="sett-inp" min="0" max="100" step="0.5" value="50" placeholder="e.g. 50">
+                <div style="font-size:9px;color:var(--text-muted);margin-top:3px">Pump ON when moisture BELOW this</div>
+              </div>
+              <div class="sett-field">
+                <label class="sett-label" style="color:var(--red)">SETPOINT OFF (%)</label>
+                <input type="number" id="soil-sp-off" class="sett-inp" min="0" max="100" step="0.5" value="65" placeholder="e.g. 65">
+                <div style="font-size:9px;color:var(--text-muted);margin-top:3px">Pump OFF when moisture ABOVE this</div>
+              </div>
+            </div>
+
+            <!-- Run time & delay -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="sett-field">
+                <label class="sett-label">MAX RUN TIME (min)</label>
+                <input type="number" id="soil-max-run" class="sett-inp" min="1" max="240" value="10" placeholder="10">
+                <div style="font-size:9px;color:var(--text-muted);margin-top:3px">Safety cutoff</div>
+              </div>
+              <div class="sett-field">
+                <label class="sett-label">DELAY AFTER STOP (min)</label>
+                <input type="number" id="soil-delay" class="sett-inp" min="1" max="240" value="5" placeholder="5">
+                <div style="font-size:9px;color:var(--text-muted);margin-top:3px">Wait before pump can restart</div>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-primary" onclick="saveSoilConfig()" style="font-size:11px;padding:12px;width:100%">
+                <i data-lucide="save" style="width:13px;height:13px"></i> SAVE TO FIREBASE
+              </button>
+              <button class="btn btn-ghost" onclick="closeSoilSettings()" style="font-size:10px;padding:10px;width:100%">CANCEL</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- ═══════════ SETTINGS PANEL ═══════════ -->
       <div
@@ -4042,12 +4221,394 @@
           }
         }, 1000);
 
-        appendLog(`IrrigationOS v8.0 Industrial initialized`, "success");
+        appendLog(`IrrigationOS v10.0 Soil Moisture Edition initialized`, "success");
+        startSoilListeners();
+        loadSoilHistory('day');
         appendLog(
           `Authenticated as ${user.display} (${user.role}) · Firebase listeners active`,
           "info",
         );
       }
+
+
+      /* ═══════════════════════════════════════════════════════════
+         SOIL MOISTURE — CONFIG, REALTIME, HISTORY CHART, DOWNLOAD
+      ═══════════════════════════════════════════════════════════ */
+
+      // ─── Local state ─────────────────────────────────────────────
+      let soilConfig = {
+        enabled: false,
+        controlZone: 0,
+        setpointOn:  50.0,
+        setpointOff: 65.0,
+        maxRunSec:   600,
+        delayAfterSec: 300
+      };
+
+      let soilHistoryCache = {};   // date-string → {HH-MM: {moisture, temperature, pumpOn, ...}}
+      let currentSoilPeriod = 'day';
+      let soilTrendChart = null;
+
+      // ─── Listen to Firebase /irrigation/soil/latest ──────────────
+      function startSoilListeners() {
+        if (!db) return;
+        // Latest reading
+        db.ref('/irrigation/soil/latest').on('value', snap => {
+          const d = snap.val();
+          if (!d) return;
+          updateSoilKPI(d);
+        });
+        // Config
+        db.ref('/irrigation/soil/config').on('value', snap => {
+          const d = snap.val();
+          if (!d) return;
+          soilConfig = { ...soilConfig, ...d };
+          syncSoilConfigUI();
+        });
+      }
+
+      function updateSoilKPI(d) {
+        const moisture = d.moisture != null ? d.moisture : -1;
+        const temp     = d.temperature != null ? d.temperature : -1;
+        const pumpOn   = d.pumpOn === true;
+
+        const mEl  = document.getElementById('kpi-soil-moisture');
+        const tEl  = document.getElementById('kpi-soil-temp');
+        const bar  = document.getElementById('kpi-soil-bar');
+        const ledEl= document.getElementById('soil-ctrl-led');
+        const stEl = document.getElementById('soil-ctrl-status');
+
+        if (mEl) mEl.textContent = moisture >= 0 ? moisture.toFixed(1) : '--.-';
+        if (tEl) tEl.textContent = temp    >= 0 ? temp.toFixed(1)     : '--.-';
+        if (bar && moisture >= 0) bar.style.width = Math.min(100, moisture) + '%';
+
+        // Ctrl status
+        if (d.controlEnabled) {
+          if (ledEl) { ledEl.className = pumpOn ? 'led led-green led-pulse led-pulse-green' : 'led led-off'; }
+          if (stEl)  { stEl.textContent = pumpOn ? 'PUMP RUNNING' : 'MONITORING'; stEl.style.color = pumpOn ? 'var(--accent)' : 'var(--text-secondary)'; }
+        } else {
+          if (ledEl) ledEl.className = 'led led-off';
+          if (stEl)  { stEl.textContent = 'DISABLED'; stEl.style.color = 'var(--text-muted)'; }
+        }
+
+        if (d.setpointOn  != null) { const e = document.getElementById('kpi-setpoint-on');  if(e) e.textContent = parseFloat(d.setpointOn).toFixed(1); }
+        if (d.setpointOff != null) { const e = document.getElementById('kpi-setpoint-off'); if(e) e.textContent = parseFloat(d.setpointOff).toFixed(1); }
+
+        // Cache for chart (cache today's data from latest push)
+        if (d.ts) {
+          const dateKey = d.ts.substring(0, 10);
+          const timeKey = d.ts.substring(11, 16).replace(':', '-');
+          if (!soilHistoryCache[dateKey]) soilHistoryCache[dateKey] = {};
+          soilHistoryCache[dateKey][timeKey] = d;
+          if (currentSoilPeriod === 'day') renderSoilChart();
+        }
+      }
+
+      function syncSoilConfigUI() {
+        const zoneEl = document.getElementById('soil-ctrl-zone');
+        if (zoneEl) zoneEl.textContent = 'Z' + (soilConfig.controlZone + 1);
+      }
+
+      // ─── Load history from Firebase ──────────────────────────────
+      async function loadSoilHistory(period) {
+        if (!db) return;
+        const today = new Date();
+        const dates = [];
+
+        if (period === 'day') {
+          dates.push(formatDate(today));
+        } else if (period === 'week') {
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date(today); d.setDate(d.getDate() - i);
+            dates.push(formatDate(d));
+          }
+        } else if (period === 'month') {
+          for (let i = 29; i >= 0; i--) {
+            const d = new Date(today); d.setDate(d.getDate() - i);
+            dates.push(formatDate(d));
+          }
+        }
+
+        // Fetch any dates not yet in cache
+        const fetches = dates.map(async dateStr => {
+          if (soilHistoryCache[dateStr]) return;
+          const snap = await db.ref('/irrigation/soil/history/' + dateStr).once('value');
+          const val = snap.val();
+          if (val) soilHistoryCache[dateStr] = val;
+          else     soilHistoryCache[dateStr] = {};
+        });
+        await Promise.all(fetches);
+        renderSoilChart();
+      }
+
+      function formatDate(d) {
+        return d.getFullYear() + '-' +
+               String(d.getMonth()+1).padStart(2,'0') + '-' +
+               String(d.getDate()).padStart(2,'0');
+      }
+
+      // ─── Render Chart.js trend chart ─────────────────────────────
+      function renderSoilChart() {
+        const canvas = document.getElementById('soil-trend-chart');
+        if (!canvas) return;
+
+        const today = new Date();
+        let labels = [], moisture = [], pumpEvents = [];
+
+        if (currentSoilPeriod === 'day') {
+          const dateStr = formatDate(today);
+          const dayData = soilHistoryCache[dateStr] || {};
+          const keys = Object.keys(dayData).sort();
+          keys.forEach(k => {
+            const entry = dayData[k];
+            const hh = k.substring(0,2), mm = k.substring(3,5);
+            labels.push(hh + ':' + mm);
+            moisture.push(entry.moisture != null ? entry.moisture : null);
+            pumpEvents.push(entry.pumpOn ? entry.moisture : null);
+          });
+        } else {
+          // Week/Month: average per day
+          const days = currentSoilPeriod === 'week' ? 7 : 30;
+          for (let i = days - 1; i >= 0; i--) {
+            const d = new Date(today); d.setDate(d.getDate() - i);
+            const ds = formatDate(d);
+            const dayData = soilHistoryCache[ds] || {};
+            const vals = Object.values(dayData).map(e => e.moisture).filter(v => v != null);
+            const avg = vals.length > 0 ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+            labels.push(ds.substring(5)); // MM-DD
+            moisture.push(avg != null ? parseFloat(avg.toFixed(1)) : null);
+            pumpEvents.push(null);
+          }
+        }
+
+        const emptyDiv = document.getElementById('soil-trend-empty');
+        const hasData = moisture.some(v => v != null);
+        if (emptyDiv) emptyDiv.style.display = hasData ? 'none' : 'flex';
+
+        const spOn  = soilConfig.setpointOn;
+        const spOff = soilConfig.setpointOff;
+
+        const spOnData  = labels.map(() => spOn);
+        const spOffData = labels.map(() => spOff);
+
+        const datasets = [
+          {
+            label: 'Moisture %',
+            data: moisture,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59,130,246,0.08)',
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2,
+            pointRadius: currentSoilPeriod === 'day' ? 2 : 3,
+            spanGaps: true
+          },
+          {
+            label: 'Setpoint ON',
+            data: spOnData,
+            borderColor: '#00c88c',
+            borderDash: [6,3],
+            borderWidth: 1.5,
+            pointRadius: 0,
+            fill: false,
+            tension: 0
+          },
+          {
+            label: 'Setpoint OFF',
+            data: spOffData,
+            borderColor: '#ef4444',
+            borderDash: [6,3],
+            borderWidth: 1.5,
+            pointRadius: 0,
+            fill: false,
+            tension: 0
+          }
+        ];
+
+        if (currentSoilPeriod === 'day' && pumpEvents.some(v=>v!=null)) {
+          datasets.push({
+            label: 'Pump ON event',
+            data: pumpEvents,
+            borderColor: 'transparent',
+            backgroundColor: 'rgba(0,200,140,0.7)',
+            pointRadius: 5,
+            pointStyle: 'circle',
+            showLine: false
+          });
+        }
+
+        if (soilTrendChart) {
+          soilTrendChart.data.labels = labels;
+          soilTrendChart.data.datasets = datasets;
+          soilTrendChart.update('none');
+          return;
+        }
+
+        soilTrendChart = new Chart(canvas, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 300 },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#0d1520',
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                titleColor: '#e8f0f8',
+                bodyColor: '#6a8ba8',
+                titleFont: { family: 'IBM Plex Mono', size: 10 },
+                bodyFont:  { family: 'IBM Plex Mono', size: 10 },
+                callbacks: {
+                  label: ctx => {
+                    if (ctx.dataset.label === 'Pump ON event') return ' Pump ON at ' + (ctx.raw != null ? ctx.raw.toFixed(1) + '%' : '');
+                    return ' ' + ctx.dataset.label + ': ' + (ctx.raw != null ? ctx.raw.toFixed(1) + '%' : 'N/A');
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#3a5068', font: { family: 'IBM Plex Mono', size: 9 }, maxTicksLimit: 12, maxRotation: 0 },
+                grid:  { color: 'rgba(255,255,255,0.04)' }
+              },
+              y: {
+                min: 0, max: 100,
+                ticks: { color: '#3a5068', font: { family: 'IBM Plex Mono', size: 9 }, callback: v => v + '%' },
+                grid:  { color: 'rgba(255,255,255,0.04)' }
+              }
+            }
+          }
+        });
+      }
+
+      // ─── Period selector ─────────────────────────────────────────
+      function setSoilPeriod(period) {
+        currentSoilPeriod = period;
+        document.querySelectorAll('.soil-period-btn').forEach(b => {
+          b.classList.toggle('active-period', b.dataset.period === period);
+        });
+        loadSoilHistory(period);
+      }
+
+      // ─── Download soil history ────────────────────────────────────
+      function downloadSoilHistory(format) {
+        const rows = [];
+        Object.keys(soilHistoryCache).sort().forEach(dateStr => {
+          const dayData = soilHistoryCache[dateStr];
+          Object.keys(dayData).sort().forEach(timeKey => {
+            const e = dayData[timeKey];
+            rows.push({
+              datetime: dateStr + ' ' + timeKey.replace('-', ':'),
+              moisture: e.moisture != null ? e.moisture : '',
+              temperature: e.temperature != null ? e.temperature : '',
+              pumpOn: e.pumpOn ? 1 : 0,
+              setpointOn: e.setpointOn != null ? e.setpointOn : '',
+              setpointOff: e.setpointOff != null ? e.setpointOff : ''
+            });
+          });
+        });
+
+        if (rows.length === 0) { appendLog('No soil history to download', 'warning'); return; }
+
+        let blob, filename;
+        if (format === 'csv') {
+          const header = 'datetime,moisture_%,temperature_C,pump_on,setpoint_on,setpoint_off';
+          const csv = [header, ...rows.map(r => Object.values(r).join(','))].join('\n');
+          blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          filename = 'soil_moisture_history_' + new Date().toISOString().split('T')[0] + '.csv';
+        } else {
+          blob = new Blob([JSON.stringify(soilHistoryCache, null, 2)], { type: 'application/json' });
+          filename = 'soil_moisture_history_' + new Date().toISOString().split('T')[0] + '.json';
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        appendLog('Soil history exported as ' + format.toUpperCase() + ' (' + rows.length + ' records)', 'success');
+      }
+
+      // ─── Soil settings modal ──────────────────────────────────────
+      function openSoilSettings() {
+        document.getElementById('soil-enabled-toggle').checked = soilConfig.enabled;
+        document.getElementById('soil-ctrl-zone-select').value  = soilConfig.controlZone;
+        document.getElementById('soil-sp-on').value  = soilConfig.setpointOn;
+        document.getElementById('soil-sp-off').value = soilConfig.setpointOff;
+        document.getElementById('soil-max-run').value = Math.round(soilConfig.maxRunSec / 60);
+        document.getElementById('soil-delay').value   = Math.round(soilConfig.delayAfterSec / 60);
+        hideSoilAlert();
+        document.getElementById('soil-settings-overlay').style.display = 'flex';
+        lucide.createIcons();
+      }
+
+      function closeSoilSettings() {
+        document.getElementById('soil-settings-overlay').style.display = 'none';
+      }
+
+      function onSoilToggleChange() {
+        // Visual feedback only; actual save happens on button click
+      }
+
+      function hideSoilAlert() {
+        const el = document.getElementById('soil-modal-alert');
+        if (el) el.style.display = 'none';
+      }
+
+      function showSoilAlert(msg, type) {
+        const el = document.getElementById('soil-modal-alert');
+        if (!el) return;
+        el.className = 'sett-alert sett-alert-' + type;
+        const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info';
+        el.innerHTML = '<i data-lucide="' + icon + '" style="width:14px;height:14px;flex-shrink:0"></i><span>' + escHtml(msg) + '</span>';
+        el.style.display = 'flex';
+        lucide.createIcons();
+        if (type === 'success') setTimeout(hideSoilAlert, 3000);
+      }
+
+      function saveSoilConfig() {
+        if (!currentUser || currentUser.role === 'VIEWER') {
+          showSoilAlert('Operator or Admin access required.', 'error');
+          return;
+        }
+        const spOn  = parseFloat(document.getElementById('soil-sp-on').value);
+        const spOff = parseFloat(document.getElementById('soil-sp-off').value);
+        const maxRun = parseInt(document.getElementById('soil-max-run').value);
+        const delay  = parseInt(document.getElementById('soil-delay').value);
+
+        if (isNaN(spOn) || spOn < 0 || spOn > 100) { showSoilAlert('Setpoint ON must be 0–100%.', 'error'); return; }
+        if (isNaN(spOff) || spOff < 0 || spOff > 100) { showSoilAlert('Setpoint OFF must be 0–100%.', 'error'); return; }
+        if (spOff <= spOn) { showSoilAlert('Setpoint OFF must be greater than Setpoint ON.', 'error'); return; }
+        if (isNaN(maxRun) || maxRun < 1) { showSoilAlert('Max run time must be ≥ 1 minute.', 'error'); return; }
+        if (isNaN(delay) || delay < 1)   { showSoilAlert('Delay must be ≥ 1 minute.', 'error'); return; }
+
+        const cfg = {
+          enabled:       document.getElementById('soil-enabled-toggle').checked,
+          controlZone:   parseInt(document.getElementById('soil-ctrl-zone-select').value),
+          setpointOn:    spOn,
+          setpointOff:   spOff,
+          maxRunSec:     maxRun * 60,
+          delayAfterSec: delay * 60
+        };
+
+        if (!db) { showSoilAlert('Firebase not connected.', 'error'); return; }
+        db.ref('/irrigation/soil/config').set(cfg)
+          .then(() => {
+            soilConfig = cfg;
+            syncSoilConfigUI();
+            renderSoilChart();
+            showSoilAlert('Soil config saved successfully.', 'success');
+            appendLog('Soil moisture config updated by ' + currentUser.id, 'success');
+          })
+          .catch(err => showSoilAlert('Firebase error: ' + err.message, 'error'));
+      }
+
+      // ─── Hook into bootApp ────────────────────────────────────────
+      const _origBootApp = typeof bootApp !== 'undefined' ? bootApp : null;
+      // We override bootApp below by patching the startFirebaseListeners call
 
       /* ═══════════ INIT ═══════════ */
       window.onload = () => {
