@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Irrigation Pro Dashboard</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         .glass-card {
@@ -21,7 +18,6 @@
         }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
         
-        /* Custom scrollbar for range selector */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -77,9 +73,8 @@
       </nav>
 
       <main class="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
-        <!-- Live Stats with Icons on the Right -->
+        <!-- Live Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Soil Moisture -->
             <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
                 <div>
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Soil Moisture</p>
@@ -90,7 +85,6 @@
                 </div>
             </div>
 
-            <!-- Air Temp -->
             <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-orange-500 flex justify-between items-center">
                 <div>
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Air Temperature</p>
@@ -101,7 +95,6 @@
                 </div>
             </div>
 
-            <!-- Air Humidity -->
             <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-indigo-500 flex justify-between items-center">
                 <div>
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Air Humidity</p>
@@ -112,7 +105,6 @@
                 </div>
             </div>
 
-            <!-- System Dual Status (Water Pump & Sprayer Pump) -->
             <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500 flex flex-col justify-center gap-1">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-1.5">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Water Pump</span>
@@ -128,53 +120,61 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Setpoint Controls -->
             <div class="glass-card p-6 rounded-2xl shadow-md space-y-6">
-                <h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="sliders"></i> Setpoints</h2>
+                <h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="sliders"></i> System Configurations</h2>
                 <div class="space-y-5">
-                    <div>
-                        <div class="flex justify-between mb-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase">Turn ON Threshold</label>
-                            <span id="lblSetON" class="text-emerald-600 font-bold">50%</span>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Soil ON (%)</label>
+                            <input type="number" id="inputSetON" min="0" max="100" value="50" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
                         </div>
-                        <input type="range" id="inputSetON" min="0" max="100" value="50" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500">
-                    </div>
-                    <div>
-                        <div class="flex justify-between mb-2">
-                            <label class="text-xs font-bold text-slate-500 uppercase">Turn OFF Threshold</label>
-                            <span id="lblSetOFF" class="text-blue-600 font-bold">65%</span>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Soil OFF (%)</label>
+                            <input type="number" id="inputSetOFF" min="0" max="100" value="65" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold">
                         </div>
-                        <input type="range" id="inputSetOFF" min="0" max="100" value="65" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500">
                     </div>
                     
-                    <div class="grid grid-cols-3 gap-2 pt-2">
+                    <div class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-3">
                         <div>
-                            <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Pump (Min)</label>
-                            <input type="number" id="inputPumpTime" value="1" class="w-full border rounded-lg px-2 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Pump Run Time (Min)</label>
+                            <input type="number" id="inputPumpTime" value="1" min="1" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
                         </div>
                         <div>
-                            <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Delay (Min)</label>
-                            <input type="number" id="inputDelayTime" value="1" class="w-full border rounded-lg px-2 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Pump Delay Time (Min)</label>
+                            <input type="number" id="inputDelayTime" value="1" min="0" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
                         </div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-3 space-y-4">
                         <div>
-                            <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">Spray ON (°C)</label>
-                            <input type="number" id="inputTempSet" value="35" step="0.5" class="w-full border rounded-lg px-2 py-1.5 text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <label class="text-[10px] font-black text-slate-600 uppercase block mb-1">Sprayer Target Trigger Temp (°C)</label>
+                            <input type="number" id="inputTempSet" value="35" step="0.5" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Spray Run Time (Min)</label>
+                                <input type="number" id="inputSprayerTime" value="1" min="1" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Spray Delay Time (Min)</label>
+                                <input type="number" id="inputSprayerDelay" value="1" min="0" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold">
+                            </div>
                         </div>
                     </div>
 
                     <button id="btnSync" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
                         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                        Save Setpoints
+                        Save Configurations
                     </button>
                 </div>
             </div>
 
             <!-- Graph Area -->
-            <div class="glass-card p-6 rounded-2xl shadow-md lg:col-span-2 flex flex-col min-h-[500px]">
+            <div class="glass-card p-6 rounded-2xl shadow-md lg:col-span-2 flex flex-col min-h-[520px]">
                 <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
                     <div>
                         <h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="line-chart"></i> Environment Trends</h2>
                         <p class="text-[10px] text-slate-400 uppercase font-bold mt-1">History & Live Data</p>
                     </div>
-                    
                     <div class="flex items-center gap-2">
                         <button id="btnExportCSV" class="flex items-center gap-1 bg-slate-100 text-slate-700 text-[10px] px-3 py-2 rounded-lg font-bold hover:bg-slate-200 transition-colors border border-slate-200">
                             <i data-lucide="download" class="w-3 h-3"></i> EXPORT
@@ -182,7 +182,6 @@
                     </div>
                 </div>
 
-                <!-- Period Selector -->
                 <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl mb-6 overflow-x-auto no-scrollbar">
                     <button data-period="live" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap tab-active">LIVE</button>
                     <button data-period="1D" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">1 DAY</button>
@@ -211,7 +210,6 @@
             </div>
         </div>
 
-        <!-- System Summary -->
         <div class="glass-card p-6 rounded-2xl shadow-md">
             <div class="flex items-start gap-4">
                 <div class="p-3 bg-emerald-100 rounded-xl">
@@ -236,7 +234,6 @@
       const loginForm = document.getElementById("loginForm");
       const btnLogout = document.getElementById("btnLogout");
 
-      // LOGIN SUBMIT
       loginForm.addEventListener("submit", function (e) {
         e.preventDefault();
         const id = document.getElementById("loginId").value;
@@ -250,7 +247,6 @@
         }
       });
 
-      // LOGOUT CLICK
       btnLogout.addEventListener("click", function () {
         localStorage.removeItem("isLoggedIn");
         location.reload();
@@ -260,18 +256,11 @@
         document.getElementById("loginWrapper").classList.add("hidden");
         document.getElementById("dashboardWrapper").classList.remove("hidden");
         const body = document.getElementById("mainBody");
-        body.classList.remove(
-          "bg-slate-900",
-          "flex",
-          "items-center",
-          "justify-center",
-        );
+        body.classList.remove("bg-slate-900", "flex", "items-center", "justify-center");
         body.classList.add("bg-slate-50", "block");
-
         if (typeof lucide !== "undefined") lucide.createIcons();
       }
 
-      // Initialize state
       if (localStorage.getItem("isLoggedIn") === "true") {
         showDashboard();
       } else {
@@ -282,22 +271,8 @@
     <!-- Firebase SDKs -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import {
-        getDatabase,
-        ref,
-        onValue,
-        set,
-        update,
-        query,
-        limitToLast,
-        get,
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
-      import {
-        getAuth,
-        signInAnonymously,
-        onAuthStateChanged,
-        signInWithCustomToken,
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { getDatabase, ref, onValue, set, update, query, limitToLast, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+      import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyBOb0Qn5InkPkQ2N5MCDojOodjiTPFfrzs",
@@ -313,51 +288,18 @@
 
       let chart;
       let currentPeriod = "live";
-      const liveLog = []; // Temporary log for live view
-      let historyData = []; // Data fetched from history node
+      const liveLog = [];
+      let historyData = [];
 
-      if (typeof lucide !== "undefined") lucide.createIcons();
-
-      // Chart Setup
       const ctx = document.getElementById("historyChart").getContext("2d");
       chart = new Chart(ctx, {
         type: "line",
         data: {
           labels: [],
           datasets: [
-            {
-              label: "Soil Moisture %",
-              borderColor: "#3b82f6",
-              backgroundColor: "rgba(59, 130, 246, 0.05)",
-              borderWidth: 2,
-              pointRadius: currentPeriod === "live" ? 0 : 2,
-              data: [],
-              tension: 0.4,
-              fill: true,
-              yAxisID: "y",
-            },
-            {
-              label: "Air Temp °C",
-              borderColor: "#f97316",
-              backgroundColor: "transparent",
-              borderWidth: 2,
-              pointRadius: currentPeriod === "live" ? 0 : 2,
-              data: [],
-              tension: 0.4,
-              fill: false,
-              yAxisID: "y",
-            },
-            {
-              label: "Air Hum %",
-              borderColor: "#6366f1",
-              backgroundColor: "transparent",
-              borderWidth: 2,
-              pointRadius: currentPeriod === "live" ? 0 : 2,
-              data: [],
-              tension: 0.4,
-              fill: false,
-              yAxisID: "y",
-            },
+            { label: "Soil Moisture %", borderColor: "#3b82f6", backgroundColor: "rgba(59, 130, 246, 0.05)", borderWidth: 2, data: [], tension: 0.4, fill: true, yAxisID: "y" },
+            { label: "Air Temp °C", borderColor: "#f97316", backgroundColor: "transparent", borderWidth: 2, data: [], tension: 0.4, fill: false, yAxisID: "y" },
+            { label: "Air Hum %", borderColor: "#6366f1", backgroundColor: "transparent", borderWidth: 2, data: [], tension: 0.4, fill: false, yAxisID: "y" },
           ],
         },
         options: {
@@ -365,84 +307,31 @@
           maintainAspectRatio: false,
           interaction: { intersect: false, mode: "index" },
           plugins: {
-            legend: {
-              display: true,
-              position: "top",
-              labels: {
-                boxWidth: 8,
-                font: { size: 10, weight: "bold" },
-                padding: 20,
-              },
-            },
-            tooltip: {
-              backgroundColor: "rgba(255, 255, 255, 0.9)",
-              titleColor: "#1e293b",
-              bodyColor: "#475569",
-              borderColor: "#e2e8f0",
-              borderWidth: 1,
-              padding: 10,
-              displayColors: true,
-              boxPadding: 5,
-            },
+            legend: { display: true, position: "top", labels: { boxWidth: 8, font: { size: 10, weight: "bold" }, padding: 20 } },
           },
           scales: {
-            y: {
-              min: 0,
-              max: 100,
-              grid: { color: "#f1f5f9" },
-              ticks: { font: { size: 10 } },
-            },
-            x: {
-              grid: { display: false },
-              ticks: {
-                font: { size: 9 },
-                maxRotation: 0,
-                autoSkip: true,
-                maxTicksLimit: 8,
-              },
-            },
+            y: { min: 0, max: 100, grid: { color: "#f1f5f9" }, ticks: { font: { size: 10 } } },
+            x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
           },
         },
       });
 
-      const initAuth = async () => {
-        try {
-          if (
-            typeof __initial_auth_token !== "undefined" &&
-            __initial_auth_token
-          ) {
-            try {
-              await signInWithCustomToken(auth, __initial_auth_token);
-            } catch (e) {
-              await signInAnonymously(auth);
-            }
-          } else {
-            await signInAnonymously(auth);
-          }
-        } catch (err) {
-          document.getElementById("connText").innerText = "Auth Error";
-        }
-      };
-
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          document.getElementById("connIndicator").className =
-            "w-2 h-2 rounded-full bg-emerald-400 status-pulse";
+          document.getElementById("connIndicator").className = "w-2 h-2 rounded-full bg-emerald-400 status-pulse";
           document.getElementById("connText").innerText = "LIVE: Connected";
           startListening();
         } else {
-          initAuth();
+          signInAnonymously(auth).catch(() => { document.getElementById("connText").innerText = "Auth Error"; });
         }
       });
 
       function startListening() {
-        // Sensor Node
         onValue(ref(db, "hydroponic"), (snapshot) => {
           const data = snapshot.val();
           if (data) updateLiveUI(data);
         });
 
-        // Settings Node
         onValue(ref(db, "settings"), (snapshot) => {
           const settings = snapshot.val();
           if (settings && document.activeElement.tagName !== "INPUT") {
@@ -451,7 +340,8 @@
             document.getElementById("inputPumpTime").value = settings.pTime || 1;
             document.getElementById("inputDelayTime").value = settings.dTime || 1;
             document.getElementById("inputTempSet").value = settings.tempSet || 35.0;
-            updateLabelColors();
+            document.getElementById("inputSprayerTime").value = settings.sTime || 1;
+            document.getElementById("inputSprayerDelay").value = settings.sdTime || 1;
           }
         });
       }
@@ -463,11 +353,7 @@
         const pumpStatus = data.pump || "OFF";
         const sprayerStatus = data.sprayer || "OFF";
         const now = new Date();
-        const timeStr = now.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        });
+        const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
         document.getElementById("valMoisture").innerText = moisture.toFixed(1) + "%";
         document.getElementById("valTemp").innerText = temp.toFixed(1) + "°C";
@@ -475,173 +361,72 @@
         document.getElementById("valLastUpdate").innerText = timeStr;
 
         const pumpEl = document.getElementById("valPump");
-        if (pumpStatus === "ON") {
-          pumpEl.innerText = "ACTIVE💦";
-          pumpEl.className = "text-sm font-bold text-blue-600 uppercase";
-        } else {
-          pumpEl.innerText = "NOT ACTIVE";
-          pumpEl.className = "text-sm font-bold text-slate-400 uppercase";
-        }
+        pumpEl.innerText = pumpStatus === "ON" ? "ACTIVE 💦" : "NOT ACTIVE";
+        pumpEl.className = pumpStatus === "ON" ? "text-sm font-bold text-blue-600" : "text-sm font-bold text-slate-400";
 
         const sprayerEl = document.getElementById("valSprayer");
-        if (sprayerEl) {
-          if (sprayerStatus === "ON") {
-            sprayerEl.innerText = "SPRAYING💨";
-            sprayerEl.className = "text-sm font-bold text-orange-600 uppercase";
-          } else {
-            sprayerEl.innerText = "NOT ACTIVE";
-            sprayerEl.className = "text-sm font-bold text-slate-400 uppercase";
-          }
-        }
+        sprayerEl.innerText = sprayerStatus === "ON" ? "SPRAYING 💨" : "NOT ACTIVE";
+        sprayerEl.className = sprayerStatus === "ON" ? "text-sm font-bold text-orange-600" : "text-sm font-bold text-slate-400";
 
-        // Save to local live buffer
-        const entry = {
-          t: timeStr,
-          s: moisture,
-          te: temp,
-          h: humidity,
-          p: pumpStatus,
-          iso: now.toISOString(),
-        };
+        const entry = { t: timeStr, s: moisture, te: temp, h: humidity, p: pumpStatus, iso: now.toISOString() };
         liveLog.push(entry);
         if (liveLog.length > 50) liveLog.shift();
-
-        if (currentPeriod === "live") {
-          refreshChart(liveLog);
-        }
+        if (currentPeriod === "live") refreshChart(liveLog);
       }
 
       async function fetchHistory(period) {
         const loader = document.getElementById("chartLoading");
-        const info = document.getElementById("dataInfo");
         loader.classList.remove("hidden");
-
         let limit = 100;
-        switch (period) {
-          case "1D":
-            limit = 144;
-            break;
-          case "3D":
-            limit = 432;
-            break;
-          case "1W":
-            limit = 1000;
-            break;
-          case "1M":
-            limit = 2000;
-            break;
-          default:
-            limit = 3000;
-        }
+        if (period === "1D") limit = 144;
+        else if (period === "3D") limit = 432;
+        else if (period === "1W") limit = 1000;
 
         try {
-          const historyRef = ref(db, "history");
-          const q = query(historyRef, limitToLast(limit));
-          const snapshot = await get(q);
-
+          const snapshot = await get(query(ref(db, "history"), limitToLast(limit)));
           let dataArray = [];
           if (snapshot.exists()) {
-            snapshot.forEach((child) => {
-              dataArray.push(child.val());
-            });
+            snapshot.forEach((child) => { dataArray.push(child.val()); });
           } else {
             dataArray = generateMockHistory(limit, period);
           }
-
           historyData = dataArray;
           refreshChart(dataArray);
-          info.innerText = `Displaying historical records for period: ${period}`;
         } catch (err) {
-          console.error("History fetch failed:", err);
-          info.innerText = "Error loading history.";
+          console.error(err);
         } finally {
           loader.classList.add("hidden");
         }
       }
 
       function refreshChart(data) {
-        chart.data.labels = data.map(
-          (d) => d.t || new Date(d.iso).toLocaleDateString(),
-        );
+        chart.data.labels = data.map((d) => d.t || new Date(d.iso).toLocaleDateString());
         chart.data.datasets[0].data = data.map((d) => d.s);
         chart.data.datasets[1].data = data.map((d) => d.te);
         chart.data.datasets[2].data = data.map((d) => d.h);
-
         const radius = data.length > 100 ? 0 : 2;
         chart.data.datasets.forEach((ds) => (ds.pointRadius = radius));
-
         chart.update("none");
       }
 
       document.querySelectorAll(".period-btn").forEach((btn) => {
         btn.onclick = () => {
-          document
-            .querySelectorAll(".period-btn")
-            .forEach(
-              (b) =>
-                (b.className =
-                  "period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600"),
-            );
-          btn.className =
-            "period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap tab-active";
-
+          document.querySelectorAll(".period-btn").forEach((b) => b.className = "period-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:text-emerald-600 whitespace-nowrap");
+          btn.className = "period-btn px-4 py-1.5 rounded-lg text-xs font-bold tab-active whitespace-nowrap";
           currentPeriod = btn.dataset.period;
-          if (currentPeriod === "live") {
-            document.getElementById("dataInfo").innerText =
-              "Showing live incoming data streams";
-            refreshChart(liveLog);
-          } else {
-            fetchHistory(currentPeriod);
-          }
+          if (currentPeriod === "live") refreshChart(liveLog);
+          else fetchHistory(currentPeriod);
         };
       });
-
-      function generateMockHistory(count, period) {
-        const mock = [];
-        const now = new Date();
-        for (let i = 0; i < count; i++) {
-          const time = new Date(now.getTime() - (count - i) * 600000);
-          mock.push({
-            t:
-              count > 200
-                ? time.toLocaleDateString()
-                : time.getHours() + ":" + time.getMinutes(),
-            iso: time.toISOString(),
-            s: 40 + Math.random() * 20,
-            te: 25 + Math.random() * 5,
-            h: 60 + Math.random() * 10,
-            p: "OFF",
-          });
-        }
-        return mock;
-      }
 
       document.getElementById("btnExportCSV").onclick = () => {
         const dataToExport = currentPeriod === "live" ? liveLog : historyData;
         if (dataToExport.length === 0) return;
-
         let csv = "Timestamp,Soil Moisture %,Temp C,Humidity %,Pump\n";
-        dataToExport.forEach((d) => {
-          csv += `${d.iso},${d.s},${d.te},${d.h},${d.p}\n`;
-        });
-
+        dataToExport.forEach((d) => { csv += `${d.iso},${d.s},${d.te},${d.h},${d.p}\n`; });
         const blob = new Blob([csv], { type: "text/csv" });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.setAttribute("href", url);
-        a.setAttribute("download", `irrigation_history_${currentPeriod}.csv`);
-        a.click();
+        window.open(URL.createObjectURL(blob));
       };
-
-      const updateLabelColors = () => {
-        document.getElementById("lblSetON").innerText =
-          document.getElementById("inputSetON").value + "%";
-        document.getElementById("lblSetOFF").innerText =
-          document.getElementById("inputSetOFF").value + "%";
-      };
-
-      document.getElementById("inputSetON").oninput = updateLabelColors;
-      document.getElementById("inputSetOFF").oninput = updateLabelColors;
 
       document.getElementById("btnSync").onclick = async () => {
         const btn = document.getElementById("btnSync");
@@ -652,18 +437,17 @@
             setOFF: parseInt(document.getElementById("inputSetOFF").value),
             pTime: parseInt(document.getElementById("inputPumpTime").value),
             dTime: parseInt(document.getElementById("inputDelayTime").value),
-            tempSet: parseFloat(document.getElementById("inputTempSet").value)
+            tempSet: parseFloat(document.getElementById("inputTempSet").value),
+            sTime: parseInt(document.getElementById("inputSprayerTime").value),
+            sdTime: parseInt(document.getElementById("inputSprayerDelay").value)
           });
           btn.innerText = "Saved!";
-          setTimeout(() => {
-            btn.innerText = "Save Setpoints";
-            btn.disabled = false;
-          }, 2000);
+          setTimeout(() => { btn.innerText = "Save Configurations"; btn.disabled = false; }, 2000);
         } catch (e) {
           btn.innerText = "Error";
           btn.disabled = false;
         }
       };
     </script>
-  </body>
+</body>
 </html>
