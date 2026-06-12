@@ -1,35 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Irrigation Pro Dashboard</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HyTech Cloud Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-        }
-        .status-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-        
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .tab-active {
-            background-color: #059669;
-            color: white;
-        }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+      }
+      .status-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .tab-active { background-color: #059669; color: white; }
+      .modal-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+        z-index: 1000; display: flex; align-items: center; justify-content: center;
+        padding: 1rem;
+      }
+      .modal-box {
+        background: white; border-radius: 1.5rem; width: 100%;
+        max-width: 560px; max-height: 90vh; overflow-y: auto;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+      }
+      .role-badge-admin { background:#dcfce7; color:#166534; }
+      .role-badge-operator { background:#dbeafe; color:#1e40af; }
+      .role-badge-viewer { background:#f1f5f9; color:#475569; }
+      .tab-settings-active { border-bottom: 2px solid #059669; color: #059669; font-weight: 700; }
+      .tab-settings-inactive { border-bottom: 2px solid transparent; color: #94a3b8; }
     </style>
-</head>
-<body id="mainBody" class="bg-slate-900 flex items-center justify-center min-h-screen text-slate-800 font-sans">
+  </head>
+  <body id="mainBody" class="bg-slate-900 flex items-center justify-center min-h-screen text-slate-800 font-sans">
+
+    <!-- ========== LOGIN ========== -->
     <div id="loginWrapper">
-      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-fade-in">
+      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
         <div class="bg-emerald-600 p-8 text-white text-center">
           <div class="inline-flex p-4 bg-emerald-500 rounded-2xl mb-4">
             <i data-lucide="droplets" class="w-12 h-12"></i>
@@ -37,34 +50,47 @@
           <h2 class="text-2xl font-black">HYTECH</h2>
           <p class="text-emerald-100 text-sm mt-1">Green Products</p>
         </div>
-
-        <form id="loginForm" class="p-8 space-y-6">
+        <form id="loginForm" class="p-8 space-y-5">
           <div id="loginError" class="hidden bg-red-50 text-red-600 text-xs font-bold p-3 rounded-lg">
             Invalid User ID or Password
           </div>
-          <input id="loginId" type="text" placeholder="User ID" class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" required />
-          <input id="loginPass" type="password" placeholder="Password" class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" required />
-          <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all">
+          <input id="loginId" type="text" placeholder="User ID"
+            class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" required />
+          <input id="loginPass" type="password" placeholder="Password"
+            class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" required />
+          <button type="submit"
+            class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all">
             Login
           </button>
         </form>
       </div>
     </div>
 
+    <!-- ========== DASHBOARD ========== -->
     <div id="dashboardWrapper" class="hidden w-full min-h-screen bg-slate-50">
       <nav class="bg-emerald-600 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
           <div class="flex items-center gap-2">
             <i data-lucide="droplets" class="w-8 h-8"></i>
-            <h1 class="text-xl font-bold tracking-tight">HYTECH CLOUD</h1>
+            <div>
+              <h1 class="text-xl font-bold tracking-tight leading-none">HYTECH CLOUD</h1>
+              <span id="navUserBadge" class="text-[10px] text-emerald-200 font-bold uppercase"></span>
+            </div>
           </div>
-
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
             <div id="cloudStatus" class="hidden sm:flex items-center gap-2 bg-emerald-700 px-3 py-1 rounded-full text-xs">
               <span id="connIndicator" class="w-2 h-2 rounded-full bg-red-400"></span>
               <span id="connText">Initializing...</span>
             </div>
-            <button id="btnLogout" class="flex items-center gap-2 bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-md">
+            <!-- Settings button — admin only -->
+            <button id="btnSettings"
+              class="hidden items-center gap-2 bg-emerald-700 hover:bg-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition-colors shadow-md"
+              title="Admin Settings">
+              <i data-lucide="settings" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">SETTINGS</span>
+            </button>
+            <button id="btnLogout"
+              class="flex items-center gap-2 bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-md">
               <i data-lucide="log-out" class="w-4 h-4"></i>
               LOGOUT
             </button>
@@ -75,180 +101,357 @@
       <main class="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
         <!-- Live Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
-                <div>
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Soil Moisture</p>
-                    <h3 id="valMoisture" class="text-3xl font-black text-slate-800 mt-1">--%</h3>
-                </div>
-                <div class="p-3 bg-blue-50 rounded-xl">
-                    <i data-lucide="sprout" class="w-8 h-8 text-blue-500"></i>
-                </div>
+          <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
+            <div>
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Soil Moisture</p>
+              <h3 id="valMoisture" class="text-3xl font-black text-slate-800 mt-1">--%</h3>
             </div>
-
-            <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-orange-500 flex justify-between items-center">
-                <div>
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Air Temperature</p>
-                    <h3 id="valTemp" class="text-3xl font-black text-slate-800 mt-1">--°C</h3>
-                </div>
-                <div class="p-3 bg-orange-50 rounded-xl">
-                    <i data-lucide="thermometer" class="w-8 h-8 text-orange-500"></i>
-                </div>
+            <div class="p-3 bg-blue-50 rounded-xl"><i data-lucide="sprout" class="w-8 h-8 text-blue-500"></i></div>
+          </div>
+          <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-orange-500 flex justify-between items-center">
+            <div>
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Air Temperature</p>
+              <h3 id="valTemp" class="text-3xl font-black text-slate-800 mt-1">--°C</h3>
             </div>
-
-            <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-indigo-500 flex justify-between items-center">
-                <div>
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Air Humidity</p>
-                    <h3 id="valHum" class="text-3xl font-black text-slate-800 mt-1">--%</h3>
-                </div>
-                <div class="p-3 bg-indigo-50 rounded-xl">
-                    <i data-lucide="droplets" class="w-8 h-8 text-indigo-500"></i>
-                </div>
+            <div class="p-3 bg-orange-50 rounded-xl"><i data-lucide="thermometer" class="w-8 h-8 text-orange-500"></i></div>
+          </div>
+          <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-indigo-500 flex justify-between items-center">
+            <div>
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Air Humidity</p>
+              <h3 id="valHum" class="text-3xl font-black text-slate-800 mt-1">--%</h3>
             </div>
-
-            <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500 flex flex-col justify-center gap-1">
-                <div class="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-1.5">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Water Pump</span>
-                    <span id="valPump" class="text-xs font-bold text-slate-400 italic uppercase">Offline</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Sprayer Pump</span>
-                    <span id="valSprayer" class="text-xs font-bold text-slate-400 italic uppercase">Offline</span>
-                </div>
+            <div class="p-3 bg-indigo-50 rounded-xl"><i data-lucide="droplets" class="w-8 h-8 text-indigo-500"></i></div>
+          </div>
+          <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500 flex flex-col justify-center gap-1">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-1.5">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Water Pump</span>
+              <span id="valPump" class="text-xs font-bold text-slate-400 italic uppercase">Offline</span>
             </div>
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Sprayer Pump</span>
+              <span id="valSprayer" class="text-xs font-bold text-slate-400 italic uppercase">Offline</span>
+            </div>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Setpoint Controls -->
-            <div class="glass-card p-6 rounded-2xl shadow-md space-y-6">
-                <h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="sliders"></i> System Configurations</h2>
-                <div class="space-y-5">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Soil ON (%)</label>
-                            <input type="number" id="inputSetON" min="0" max="100" value="50" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Soil OFF (%)</label>
-                            <input type="number" id="inputSetOFF" min="0" max="100" value="65" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold">
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-3">
-                        <div>
-                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Pump Run Time (Min)</label>
-                            <input type="number" id="inputPumpTime" value="1" min="1" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Pump Delay Time (Min)</label>
-                            <input type="number" id="inputDelayTime" value="1" min="0" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold">
-                        </div>
-                    </div>
-
-                    <div class="border-t border-slate-100 pt-3 space-y-4">
-                        <div>
-                            <label class="text-[10px] font-black text-slate-600 uppercase block mb-1">Sprayer Target Trigger Temp (°C)</label>
-                            <input type="number" id="inputTempSet" value="35" step="0.5" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Spray Run Time (Min)</label>
-                                <input type="number" id="inputSprayerTime" value="1" min="1" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold">
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Spray Delay Time (Min)</label>
-                                <input type="number" id="inputSprayerDelay" value="1" min="0" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold">
-                            </div>
-                        </div>
-                    </div>
-
-                    <button id="btnSync" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
-                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                        Save Configurations
-                    </button>
+          <!-- Setpoint Controls -->
+          <div class="glass-card p-6 rounded-2xl shadow-md space-y-6">
+            <h2 class="text-lg font-bold flex items-center gap-2">
+              <i data-lucide="sliders"></i> System Configurations
+            </h2>
+            <div class="space-y-5">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Soil ON (%)</label>
+                  <input type="number" id="inputSetON" min="0" max="100" value="50"
+                    class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" />
                 </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Soil OFF (%)</label>
+                  <input type="number" id="inputSetOFF" min="0" max="100" value="65"
+                    class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-3">
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Pump Run Time (Min)</label>
+                  <input type="number" id="inputPumpTime" value="1" min="1"
+                    class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" />
+                </div>
+                <div>
+                  <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Pump Delay Time (Min)</label>
+                  <input type="number" id="inputDelayTime" value="1" min="0"
+                    class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" />
+                </div>
+              </div>
+              <div class="border-t border-slate-100 pt-3 space-y-4">
+                <div>
+                  <label class="text-[10px] font-black text-slate-600 uppercase block mb-1">Sprayer Target Trigger Temp (°C)</label>
+                  <input type="number" id="inputTempSet" value="35" step="0.5"
+                    class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold" />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Spray Run Time (Min)</label>
+                    <input type="number" id="inputSprayerTime" value="1" min="1"
+                      class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold" />
+                  </div>
+                  <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Spray Delay Time (Min)</label>
+                    <input type="number" id="inputSprayerDelay" value="1" min="0"
+                      class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold" />
+                  </div>
+                </div>
+              </div>
+              <button id="btnSync"
+                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                Save Configurations
+              </button>
             </div>
+          </div>
 
-            <!-- Graph Area -->
-            <div class="glass-card p-6 rounded-2xl shadow-md lg:col-span-2 flex flex-col min-h-[520px]">
-                <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
-                    <div>
-                        <h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="line-chart"></i> Environment Trends</h2>
-                        <p class="text-[10px] text-slate-400 uppercase font-bold mt-1">History & Live Data</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button id="btnExportCSV" class="flex items-center gap-1 bg-slate-100 text-slate-700 text-[10px] px-3 py-2 rounded-lg font-bold hover:bg-slate-200 transition-colors border border-slate-200">
-                            <i data-lucide="download" class="w-3 h-3"></i> EXPORT
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl mb-6 overflow-x-auto no-scrollbar">
-                    <button data-period="live" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap tab-active">LIVE</button>
-                    <button data-period="1D" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">1 DAY</button>
-                    <button data-period="3D" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">3 DAY</button>
-                    <button data-period="1W" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">1 WEEK</button>
-                    <button data-period="1M" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">1 MONTH</button>
-                    <button data-period="2M" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">2 MONTH</button>
-                    <button data-period="3M" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">3 MONTH</button>
-                    <button data-period="1Y" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">1 YEAR</button>
-                </div>
-
-                <div class="flex-grow relative">
-                    <div id="chartLoading" class="absolute inset-0 bg-white/50 z-10 flex items-center justify-center hidden">
-                        <div class="flex flex-col items-center gap-2">
-                            <i data-lucide="loader-2" class="w-8 h-8 text-emerald-600 animate-spin"></i>
-                            <span class="text-xs font-bold text-slate-500">Fetching History...</span>
-                        </div>
-                    </div>
-                    <canvas id="historyChart"></canvas>
-                </div>
-                
-                <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-                    <span id="dataInfo" class="text-[10px] text-slate-400 italic">Showing live incoming data streams</span>
-                    <span id="valLastUpdate" class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-mono">--:--:--</span>
-                </div>
+          <!-- Graph Area -->
+          <div class="glass-card p-6 rounded-2xl shadow-md lg:col-span-2 flex flex-col min-h-[520px]">
+            <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+              <div>
+                <h2 class="text-lg font-bold flex items-center gap-2">
+                  <i data-lucide="line-chart"></i> Environment Trends
+                </h2>
+                <p class="text-[10px] text-slate-400 uppercase font-bold mt-1">History & Live Data</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="btnExportCSV"
+                  class="flex items-center gap-1 bg-slate-100 text-slate-700 text-[10px] px-3 py-2 rounded-lg font-bold hover:bg-slate-200 transition-colors border border-slate-200">
+                  <i data-lucide="download" class="w-3 h-3"></i> EXPORT
+                </button>
+              </div>
             </div>
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl mb-6 overflow-x-auto no-scrollbar">
+              <button data-period="live" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap tab-active">LIVE</button>
+              <button data-period="1D" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">1 DAY</button>
+              <button data-period="3D" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">3 DAY</button>
+              <button data-period="1W" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">1 WEEK</button>
+              <button data-period="3W" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">3 WEEK</button>
+              <button data-period="1M" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">1 MONTH</button>
+              <button data-period="2M" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">2 MONTH</button>
+              <button data-period="3M" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">3 MONTH</button>
+              <button data-period="1Y" class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600">1 YEAR</button>
+            </div>
+            <div class="flex-grow relative">
+              <div id="chartLoading" class="absolute inset-0 bg-white/50 z-10 flex items-center justify-center hidden">
+                <div class="flex flex-col items-center gap-2">
+                  <i data-lucide="loader-2" class="w-8 h-8 text-emerald-600 animate-spin"></i>
+                  <span class="text-xs font-bold text-slate-500">Fetching History...</span>
+                </div>
+              </div>
+              <canvas id="historyChart"></canvas>
+            </div>
+            <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
+              <span id="dataInfo" class="text-[10px] text-slate-400 italic">Showing live incoming data streams</span>
+              <span id="valLastUpdate" class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-mono">--:--:--</span>
+            </div>
+          </div>
         </div>
 
         <div class="glass-card p-6 rounded-2xl shadow-md">
-            <div class="flex items-start gap-4">
-                <div class="p-3 bg-emerald-100 rounded-xl">
-                    <i data-lucide="info" class="text-emerald-600"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-slate-800">System Intelligence</h3>
-                    <p id="systemInsight" class="text-sm text-slate-600 mt-1 leading-relaxed">
-                        More Information Contact To Mr.PALI (0969809656)
-                        <span class="font-mono text-xs">/HyTech</span>...
-                    </p>
-                </div>
+          <div class="flex items-start gap-4">
+            <div class="p-3 bg-emerald-100 rounded-xl"><i data-lucide="info" class="text-emerald-600"></i></div>
+            <div>
+              <h3 class="font-bold text-slate-800">System Intelligence</h3>
+              <p id="systemInsight" class="text-sm text-slate-600 mt-1 leading-relaxed">
+                More Information Contact To Mr.PALI (0969809656)
+                <span class="font-mono text-xs">/HyTech</span>...
+              </p>
             </div>
+          </div>
         </div>
       </main>
     </div>
 
+    <!-- ========== ADMIN SETTINGS MODAL ========== -->
+    <div id="settingsModal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <!-- Header -->
+        <div class="bg-emerald-600 text-white p-6 rounded-t-3xl flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-emerald-500 rounded-xl"><i data-lucide="settings" class="w-5 h-5"></i></div>
+            <div>
+              <h2 class="font-black text-lg">Admin Settings</h2>
+              <p class="text-emerald-200 text-xs">Manage users & Firebase configuration</p>
+            </div>
+          </div>
+          <button id="btnCloseSettings" class="p-2 hover:bg-emerald-700 rounded-xl transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex border-b border-slate-200 px-6 bg-white">
+          <button id="tabUsers" onclick="switchSettingsTab('users')"
+            class="tab-settings-active px-4 py-3 text-sm mr-2 transition-all">
+            <span class="flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4"></i> Users</span>
+          </button>
+          <button id="tabFirebase" onclick="switchSettingsTab('firebase')"
+            class="tab-settings-inactive px-4 py-3 text-sm transition-all">
+            <span class="flex items-center gap-1.5"><i data-lucide="database" class="w-4 h-4"></i> Firebase</span>
+          </button>
+        </div>
+
+        <!-- Tab: Users -->
+        <div id="panelUsers" class="p-6 space-y-5">
+          <!-- Add User Form -->
+          <div class="bg-slate-50 rounded-2xl p-4 space-y-3 border border-slate-200">
+            <h3 class="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> Add New User
+            </h3>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Username</label>
+                <input id="newUserId" type="text" placeholder="e.g. operator1"
+                  class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
+              <div>
+                <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Password</label>
+                <input id="newUserPass" type="password" placeholder="Password"
+                  class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+              </div>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Role</label>
+              <select id="newUserRole"
+                class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white font-semibold">
+                <option value="admin">Admin — Full access</option>
+                <option value="operator" selected>Operator — View + control</option>
+                <option value="viewer">Viewer — View only</option>
+              </select>
+            </div>
+            <div id="addUserError" class="hidden text-red-600 text-xs font-bold bg-red-50 p-2 rounded-lg"></div>
+            <button onclick="addUser()"
+              class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+              <i data-lucide="plus" class="w-4 h-4"></i> Add User
+            </button>
+          </div>
+
+          <!-- User List -->
+          <div>
+            <h3 class="text-xs font-black text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <i data-lucide="list" class="w-3.5 h-3.5"></i> Current Users
+            </h3>
+            <div id="userList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+
+        <!-- Tab: Firebase -->
+        <div id="panelFirebase" class="p-6 space-y-4 hidden">
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5"></i>
+            <p class="text-xs text-amber-700 font-semibold">Changes apply on next page reload. Make sure your Firebase project has Realtime Database enabled and anonymous auth allowed.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Firebase API Key</label>
+              <input id="fbApiKey" type="text" placeholder="AIzaSy..."
+                class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-xs" />
+            </div>
+            <div>
+              <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Database URL</label>
+              <input id="fbDbUrl" type="text" placeholder="https://your-project-default-rtdb.firebaseio.com"
+                class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-xs" />
+            </div>
+            <div>
+              <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Auth Domain</label>
+              <input id="fbAuthDomain" type="text" placeholder="your-project.firebaseapp.com"
+                class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-xs" />
+            </div>
+            <div>
+              <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Project ID</label>
+              <input id="fbProjectId" type="text" placeholder="your-project-id"
+                class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-mono text-xs" />
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button onclick="saveFirebaseConfig()"
+              class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2">
+              <i data-lucide="save" class="w-4 h-4"></i> Save & Reload
+            </button>
+            <button onclick="resetFirebaseConfig()"
+              class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl transition-all text-sm">
+              Reset Default
+            </button>
+          </div>
+
+          <!-- Active config display -->
+          <div class="bg-slate-50 rounded-xl p-3 border border-slate-200">
+            <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Active Configuration</p>
+            <div id="activeConfigDisplay" class="space-y-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SCRIPTS ========== -->
     <script>
-      const CORRECT_ID = "admin";
-      const CORRECT_PASS = "123456";
+      // ===== DEFAULT FIREBASE CONFIG =====
+      const DEFAULT_FB_CONFIG = {
+        apiKey: "AIzaSyBOb0Qn5InkPkQ2N5MCDojOodjiTPFfrzs",
+        authDomain: "weatherstation-c4dc5.firebaseapp.com",
+        databaseURL: "https://weatherstation-c4dc5-default-rtdb.firebaseio.com",
+        projectId: "weatherstation-c4dc5",
+        storageBucket: "weatherstation-c4dc5.firebasestorage.app",
+      };
 
-      const loginForm = document.getElementById("loginForm");
-      const btnLogout = document.getElementById("btnLogout");
+      // ===== USER MANAGEMENT =====
+      function getUsers() {
+        try {
+          const stored = localStorage.getItem("hytech_users");
+          if (stored) return JSON.parse(stored);
+        } catch(e) {}
+        // Default admin user
+        return [{ id: "admin", pass: "123456", role: "admin" }];
+      }
 
-      loginForm.addEventListener("submit", function (e) {
+      function saveUsers(users) {
+        localStorage.setItem("hytech_users", JSON.stringify(users));
+      }
+
+      function findUser(id, pass) {
+        return getUsers().find(u => u.id === id && u.pass === pass) || null;
+      }
+
+      // ===== FIREBASE CONFIG =====
+      function getFirebaseConfig() {
+        try {
+          const stored = localStorage.getItem("hytech_fb_config");
+          if (stored) return { ...DEFAULT_FB_CONFIG, ...JSON.parse(stored) };
+        } catch(e) {}
+        return { ...DEFAULT_FB_CONFIG };
+      }
+
+      function saveFirebaseConfig() {
+        const cfg = {
+          apiKey: document.getElementById("fbApiKey").value.trim(),
+          databaseURL: document.getElementById("fbDbUrl").value.trim(),
+          authDomain: document.getElementById("fbAuthDomain").value.trim(),
+          projectId: document.getElementById("fbProjectId").value.trim(),
+        };
+        if (!cfg.apiKey || !cfg.databaseURL) {
+          alert("API Key and Database URL are required.");
+          return;
+        }
+        localStorage.setItem("hytech_fb_config", JSON.stringify(cfg));
+        alert("Firebase config saved! Reloading...");
+        location.reload();
+      }
+
+      function resetFirebaseConfig() {
+        if (!confirm("Reset to default HyTech Firebase config?")) return;
+        localStorage.removeItem("hytech_fb_config");
+        location.reload();
+      }
+
+      // ===== AUTH / LOGIN =====
+      let currentUser = null;
+
+      document.getElementById("loginForm").addEventListener("submit", function(e) {
         e.preventDefault();
-        const id = document.getElementById("loginId").value;
+        const id = document.getElementById("loginId").value.trim();
         const pass = document.getElementById("loginPass").value;
-
-        if (id === CORRECT_ID && pass === CORRECT_PASS) {
-          localStorage.setItem("isLoggedIn", "true");
+        const user = findUser(id, pass);
+        if (user) {
+          currentUser = user;
+          sessionStorage.setItem("hytech_session", JSON.stringify(user));
           showDashboard();
         } else {
           document.getElementById("loginError").classList.remove("hidden");
         }
       });
 
-      btnLogout.addEventListener("click", function () {
-        localStorage.removeItem("isLoggedIn");
+      document.getElementById("btnLogout").addEventListener("click", function() {
+        sessionStorage.removeItem("hytech_session");
         location.reload();
       });
 
@@ -258,30 +461,182 @@
         const body = document.getElementById("mainBody");
         body.classList.remove("bg-slate-900", "flex", "items-center", "justify-center");
         body.classList.add("bg-slate-50", "block");
+
+        // Show user badge
+        const roleColors = { admin: "text-yellow-300", operator: "text-emerald-200", viewer: "text-emerald-300" };
+        document.getElementById("navUserBadge").innerHTML =
+          `<span class="${roleColors[currentUser.role] || 'text-emerald-200'}">${currentUser.id} · ${currentUser.role.toUpperCase()}</span>`;
+
+        // Show settings button for admin only
+        if (currentUser.role === "admin") {
+          document.getElementById("btnSettings").classList.remove("hidden");
+          document.getElementById("btnSettings").classList.add("flex");
+        }
+
+        // Lock down config panel for non-admins
+        if (currentUser.role !== "admin") {
+          ["inputSetON","inputSetOFF","inputPumpTime","inputDelayTime","inputTempSet","inputSprayerTime","inputSprayerDelay"]
+            .forEach(id => { const el = document.getElementById(id); if(el) el.disabled = true; });
+          const syncBtn = document.getElementById("btnSync");
+          if (syncBtn) { syncBtn.disabled = true; syncBtn.classList.add("opacity-50", "cursor-not-allowed"); }
+        }
+
         if (typeof lucide !== "undefined") lucide.createIcons();
       }
 
-      if (localStorage.getItem("isLoggedIn") === "true") {
-        showDashboard();
-      } else {
+      // Restore session
+      try {
+        const sess = sessionStorage.getItem("hytech_session");
+        if (sess) {
+          currentUser = JSON.parse(sess);
+          showDashboard();
+        } else {
+          if (typeof lucide !== "undefined") lucide.createIcons();
+        }
+      } catch(e) {
         if (typeof lucide !== "undefined") lucide.createIcons();
+      }
+
+      // ===== SETTINGS MODAL =====
+      document.getElementById("btnSettings").addEventListener("click", function() {
+        openSettingsModal();
+      });
+      document.getElementById("btnCloseSettings").addEventListener("click", function() {
+        document.getElementById("settingsModal").classList.add("hidden");
+      });
+      document.getElementById("settingsModal").addEventListener("click", function(e) {
+        if (e.target === this) this.classList.add("hidden");
+      });
+
+      function openSettingsModal() {
+        document.getElementById("settingsModal").classList.remove("hidden");
+        switchSettingsTab("users");
+        renderUserList();
+        loadFirebaseInputs();
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      }
+
+      function switchSettingsTab(tab) {
+        document.getElementById("panelUsers").classList.toggle("hidden", tab !== "users");
+        document.getElementById("panelFirebase").classList.toggle("hidden", tab !== "firebase");
+        document.getElementById("tabUsers").className = tab === "users"
+          ? "tab-settings-active px-4 py-3 text-sm mr-2 transition-all"
+          : "tab-settings-inactive px-4 py-3 text-sm mr-2 transition-all";
+        document.getElementById("tabFirebase").className = tab === "firebase"
+          ? "tab-settings-active px-4 py-3 text-sm transition-all"
+          : "tab-settings-inactive px-4 py-3 text-sm transition-all";
+        if (typeof lucide !== "undefined") lucide.createIcons();
+      }
+
+      function renderUserList() {
+        const users = getUsers();
+        const list = document.getElementById("userList");
+        if (users.length === 0) {
+          list.innerHTML = '<p class="text-xs text-slate-400 italic text-center py-4">No users found.</p>';
+          return;
+        }
+        list.innerHTML = users.map((u, i) => {
+          const roleClass = { admin: "role-badge-admin", operator: "role-badge-operator", viewer: "role-badge-viewer" }[u.role] || "role-badge-viewer";
+          const isCurrentUser = currentUser && u.id === currentUser.id;
+          return `
+          <div class="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-4 py-3 gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                <span class="text-xs font-black text-emerald-700">${u.id[0].toUpperCase()}</span>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-bold text-slate-800 truncate">${u.id} ${isCurrentUser ? '<span class="text-[9px] text-emerald-600 font-bold">(YOU)</span>' : ''}</p>
+                <p class="text-[10px] text-slate-400">••••••</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${roleClass}">${u.role.toUpperCase()}</span>
+              ${!isCurrentUser ? `<button onclick="deleteUser(${i})" class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete user">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
+              </button>` : '<div class="w-7"></div>'}
+            </div>
+          </div>`;
+        }).join("");
+      }
+
+      function addUser() {
+        const id = document.getElementById("newUserId").value.trim();
+        const pass = document.getElementById("newUserPass").value;
+        const role = document.getElementById("newUserRole").value;
+        const errEl = document.getElementById("addUserError");
+
+        errEl.classList.add("hidden");
+        if (!id || !pass) { errEl.textContent = "Username and password are required."; errEl.classList.remove("hidden"); return; }
+        if (id.length < 3) { errEl.textContent = "Username must be at least 3 characters."; errEl.classList.remove("hidden"); return; }
+        if (pass.length < 4) { errEl.textContent = "Password must be at least 4 characters."; errEl.classList.remove("hidden"); return; }
+
+        const users = getUsers();
+        if (users.find(u => u.id === id)) { errEl.textContent = `User "${id}" already exists.`; errEl.classList.remove("hidden"); return; }
+
+        users.push({ id, pass, role });
+        saveUsers(users);
+        document.getElementById("newUserId").value = "";
+        document.getElementById("newUserPass").value = "";
+        document.getElementById("newUserRole").value = "operator";
+        renderUserList();
+      }
+
+      function deleteUser(index) {
+        const users = getUsers();
+        const user = users[index];
+        if (!confirm(`Delete user "${user.id}"?`)) return;
+        users.splice(index, 1);
+        saveUsers(users);
+        renderUserList();
+      }
+
+      function loadFirebaseInputs() {
+        const cfg = getFirebaseConfig();
+        document.getElementById("fbApiKey").value = cfg.apiKey || "";
+        document.getElementById("fbDbUrl").value = cfg.databaseURL || "";
+        document.getElementById("fbAuthDomain").value = cfg.authDomain || "";
+        document.getElementById("fbProjectId").value = cfg.projectId || "";
+
+        // Show active config summary
+        const display = document.getElementById("activeConfigDisplay");
+        display.innerHTML = [
+          ["Project", cfg.projectId || "—"],
+          ["Database", cfg.databaseURL || "—"],
+        ].map(([k,v]) => `
+          <div class="flex justify-between gap-2">
+            <span class="text-[10px] font-bold text-slate-400 uppercase">${k}</span>
+            <span class="text-[10px] font-mono text-slate-600 truncate max-w-[200px]" title="${v}">${v}</span>
+          </div>`).join("");
       }
     </script>
 
     <!-- Firebase SDKs -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import { getDatabase, ref, onValue, set, update, query, limitToLast, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
-      import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import {
+        getDatabase, ref, onValue, set, update, query, limitToLast, get,
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+      import {
+        getAuth, signInAnonymously, onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyBOb0Qn5InkPkQ2N5MCDojOodjiTPFfrzs",
-        authDomain: "weatherstation-c4dc5.firebaseapp.com",
-        databaseURL: "https://weatherstation-c4dc5-default-rtdb.firebaseio.com",
-        projectId: "weatherstation-c4dc5",
-        storageBucket: "weatherstation-c4dc5.firebasestorage.app",
-      };
+      // Load config from localStorage (set by admin settings)
+      function getFirebaseConfig() {
+        const DEFAULT = {
+          apiKey: "AIzaSyBOb0Qn5InkPkQ2N5MCDojOodjiTPFfrzs",
+          authDomain: "weatherstation-c4dc5.firebaseapp.com",
+          databaseURL: "https://weatherstation-c4dc5-default-rtdb.firebaseio.com",
+          projectId: "weatherstation-c4dc5",
+          storageBucket: "weatherstation-c4dc5.firebasestorage.app",
+        };
+        try {
+          const stored = localStorage.getItem("hytech_fb_config");
+          if (stored) return { ...DEFAULT, ...JSON.parse(stored) };
+        } catch(e) {}
+        return DEFAULT;
+      }
 
+      const firebaseConfig = getFirebaseConfig();
       const app = initializeApp(firebaseConfig);
       const db = getDatabase(app);
       const auth = getAuth(app);
@@ -297,9 +652,24 @@
         data: {
           labels: [],
           datasets: [
-            { label: "Soil Moisture %", borderColor: "#3b82f6", backgroundColor: "rgba(59, 130, 246, 0.05)", borderWidth: 2, data: [], tension: 0.4, fill: true, yAxisID: "y" },
-            { label: "Air Temp °C", borderColor: "#f97316", backgroundColor: "transparent", borderWidth: 2, data: [], tension: 0.4, fill: false, yAxisID: "y" },
-            { label: "Air Hum %", borderColor: "#6366f1", backgroundColor: "transparent", borderWidth: 2, data: [], tension: 0.4, fill: false, yAxisID: "y" },
+            {
+              label: "Soil Moisture %",
+              borderColor: "#3b82f6",
+              backgroundColor: "rgba(59, 130, 246, 0.05)",
+              borderWidth: 2, data: [], tension: 0.4, fill: true, yAxisID: "y",
+            },
+            {
+              label: "Air Temp °C",
+              borderColor: "#f97316",
+              backgroundColor: "transparent",
+              borderWidth: 2, data: [], tension: 0.4, fill: false, yAxisID: "y",
+            },
+            {
+              label: "Air Hum %",
+              borderColor: "#6366f1",
+              backgroundColor: "transparent",
+              borderWidth: 2, data: [], tension: 0.4, fill: false, yAxisID: "y",
+            },
           ],
         },
         options: {
@@ -307,11 +677,13 @@
           maintainAspectRatio: false,
           interaction: { intersect: false, mode: "index" },
           plugins: {
-            legend: { display: true, position: "top", labels: { boxWidth: 8, font: { size: 10, weight: "bold" }, padding: 20 } },
+            legend: { display: true, position: "top",
+              labels: { boxWidth: 8, font: { size: 10, weight: "bold" }, padding: 20 } },
           },
           scales: {
             y: { min: 0, max: 100, grid: { color: "#f1f5f9" }, ticks: { font: { size: 10 } } },
-            x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
+            x: { grid: { display: false },
+              ticks: { font: { size: 9 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
           },
         },
       });
@@ -320,9 +692,13 @@
         if (user) {
           document.getElementById("connIndicator").className = "w-2 h-2 rounded-full bg-emerald-400 status-pulse";
           document.getElementById("connText").innerText = "LIVE: Connected";
+          document.getElementById("cloudStatus").classList.remove("hidden");
           startListening();
         } else {
-          signInAnonymously(auth).catch(() => { document.getElementById("connText").innerText = "Auth Error"; });
+          signInAnonymously(auth).catch(() => {
+            document.getElementById("connText").innerText = "Auth Error";
+            document.getElementById("cloudStatus").classList.remove("hidden");
+          });
         }
       });
 
@@ -371,17 +747,18 @@
         const entry = { t: timeStr, s: moisture, te: temp, h: humidity, p: pumpStatus, iso: now.toISOString() };
         liveLog.push(entry);
         if (liveLog.length > 50) liveLog.shift();
-        if (currentPeriod === "live") refreshChart(liveLog);
+        if (currentPeriod === "live") refreshChart(liveLog, "live");
       }
+
+      const PERIOD_LIMITS = {
+        "1D": 144, "3D": 432, "1W": 1008, "3W": 3024,
+        "1M": 4320, "2M": 8640, "3M": 13104, "1Y": 52560,
+      };
 
       async function fetchHistory(period) {
         const loader = document.getElementById("chartLoading");
         loader.classList.remove("hidden");
-        let limit = 100;
-        if (period === "1D") limit = 144;
-        else if (period === "3D") limit = 432;
-        else if (period === "1W") limit = 1000;
-
+        const limit = PERIOD_LIMITS[period] || 144;
         try {
           const snapshot = await get(query(ref(db, "history"), limitToLast(limit)));
           let dataArray = [];
@@ -391,41 +768,80 @@
             dataArray = generateMockHistory(limit, period);
           }
           historyData = dataArray;
-          refreshChart(dataArray);
+          const thinStep = Math.max(1, Math.floor(dataArray.length / 200));
+          const thinned = dataArray.filter((_, i) => i % thinStep === 0);
+          refreshChart(thinned, period);
+          document.getElementById("dataInfo").innerText = `Showing ${dataArray.length} records for ${period} period`;
         } catch (err) {
           console.error(err);
+          document.getElementById("dataInfo").innerText = "Error fetching data";
         } finally {
           loader.classList.add("hidden");
         }
       }
 
-      function refreshChart(data) {
-        chart.data.labels = data.map((d) => d.t || new Date(d.iso).toLocaleDateString());
+      function generateMockHistory(count, period) {
+        const now = Date.now();
+        const interval = period === "1Y" ? 3600000 : period === "3M" ? 1800000 : period === "1M" ? 600000 : 300000;
+        return Array.from({ length: Math.min(count, 200) }, (_, i) => {
+          const dt = new Date(now - (count - i) * interval);
+          return {
+            iso: dt.toISOString(), t: dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            s: 50 + Math.sin(i * 0.1) * 15 + Math.random() * 5,
+            te: 28 + Math.sin(i * 0.05) * 5 + Math.random() * 2,
+            h: 65 + Math.cos(i * 0.08) * 10 + Math.random() * 3,
+            p: Math.random() > 0.8 ? "ON" : "OFF",
+          };
+        });
+      }
+
+      function refreshChart(data, period) {
+        const useDateLabel = period && period !== "live" && ["3W","1M","2M","3M","1Y"].includes(period);
+        chart.data.labels = data.map((d) => {
+          if (d.iso) {
+            const dt = new Date(d.iso);
+            return useDateLabel
+              ? dt.toLocaleDateString([], { month: "short", day: "numeric" })
+              : dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          }
+          return d.t || "";
+        });
         chart.data.datasets[0].data = data.map((d) => d.s);
         chart.data.datasets[1].data = data.map((d) => d.te);
         chart.data.datasets[2].data = data.map((d) => d.h);
-        const radius = data.length > 100 ? 0 : 2;
+        const radius = data.length > 60 ? 0 : 2;
         chart.data.datasets.forEach((ds) => (ds.pointRadius = radius));
         chart.update("none");
       }
 
       document.querySelectorAll(".period-btn").forEach((btn) => {
         btn.onclick = () => {
-          document.querySelectorAll(".period-btn").forEach((b) => b.className = "period-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:text-emerald-600 whitespace-nowrap");
+          document.querySelectorAll(".period-btn").forEach((b) =>
+            (b.className = "period-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:text-emerald-600 whitespace-nowrap")
+          );
           btn.className = "period-btn px-4 py-1.5 rounded-lg text-xs font-bold tab-active whitespace-nowrap";
           currentPeriod = btn.dataset.period;
-          if (currentPeriod === "live") refreshChart(liveLog);
+          if (currentPeriod === "live") refreshChart(liveLog, "live");
           else fetchHistory(currentPeriod);
         };
       });
 
       document.getElementById("btnExportCSV").onclick = () => {
         const dataToExport = currentPeriod === "live" ? liveLog : historyData;
-        if (dataToExport.length === 0) return;
-        let csv = "Timestamp,Soil Moisture %,Temp C,Humidity %,Pump\n";
-        dataToExport.forEach((d) => { csv += `${d.iso},${d.s},${d.te},${d.h},${d.p}\n`; });
+        if (dataToExport.length === 0) { alert("No data to export yet."); return; }
+        let csv = "Timestamp,Soil Moisture %,Temp C,Humidity %,Pump,Sprayer\n";
+        dataToExport.forEach((d) => {
+          const ts = d.iso || d.t || "";
+          csv += `${ts},${d.s ?? ""},${d.te ?? ""},${d.h ?? ""},${d.p ?? ""},${d.sp ?? ""}\n`;
+        });
         const blob = new Blob([csv], { type: "text/csv" });
-        window.open(URL.createObjectURL(blob));
+        const url = URL.createObjectURL(blob);
+        const now = new Date();
+        const stamp = now.toISOString().slice(0,19).replace(/[T:]/g, "-");
+        const a = document.createElement("a");
+        a.href = url; a.download = `hytech_${currentPeriod}_${stamp}.csv`;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
       };
 
       document.getElementById("btnSync").onclick = async () => {
@@ -439,15 +855,20 @@
             dTime: parseInt(document.getElementById("inputDelayTime").value),
             tempSet: parseFloat(document.getElementById("inputTempSet").value),
             sTime: parseInt(document.getElementById("inputSprayerTime").value),
-            sdTime: parseInt(document.getElementById("inputSprayerDelay").value)
+            sdTime: parseInt(document.getElementById("inputSprayerDelay").value),
           });
-          btn.innerText = "Saved!";
-          setTimeout(() => { btn.innerText = "Save Configurations"; btn.disabled = false; }, 2000);
+          btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Saved!';
+          if (typeof lucide !== "undefined") lucide.createIcons();
+          setTimeout(() => {
+            btn.innerHTML = '<i data-lucide="refresh-cw" class="w-4 h-4"></i> Save Configurations';
+            btn.disabled = false;
+            if (typeof lucide !== "undefined") lucide.createIcons();
+          }, 2000);
         } catch (e) {
-          btn.innerText = "Error";
+          btn.innerText = "Error — Retry";
           btn.disabled = false;
         }
       };
     </script>
-</body>
+  </body>
 </html>
