@@ -30,7 +30,7 @@
         }
     </style>
 </head>
-<body id="mainBody" class="bg-slate-900 flex items-center justify-center min-h-screen text-slate-800 font-sans">
+<body id="mainBody" class="bg-slate-900 flex items-center justify-center min-h-screen text-slate-800 font-sans transition-all duration-300">
     
     <!-- Login Interface -->
     <div id="loginWrapper" class="w-full max-w-md p-4">
@@ -42,7 +42,6 @@
           <h2 class="text-2xl font-black">HYTECH</h2>
           <p class="text-emerald-100 text-sm mt-1">Green Products</p>
           
-          <!-- Database Setup shortcut on login screen -->
           <button id="btnOpenDbModalLogin" class="absolute top-4 right-4 text-emerald-100 hover:text-white p-2 rounded-xl hover:bg-emerald-700 transition-all" title="Database Configuration">
             <i data-lucide="database" class="w-5 h-5"></i>
           </button>
@@ -50,12 +49,12 @@
 
         <form id="loginForm" class="p-8 space-y-6">
           <div id="loginError" class="hidden bg-red-50 text-red-600 text-xs font-bold p-3 rounded-lg flex items-center gap-2">
-            <i data-lucide="alert-circle" class="w-4 h-4"></i>
-            <span>Invalid User ID or Password</span>
+            <i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i>
+            <span id="loginErrorMsg">Invalid User ID or Password</span>
           </div>
           <div class="space-y-4">
-            <input id="loginId" type="text" placeholder="User ID" class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" required />
-            <input id="loginPass" type="password" placeholder="Password" class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" required />
+            <input id="loginId" type="text" placeholder="User ID" class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-sm" required />
+            <input id="loginPass" type="password" placeholder="Password" class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-sm" required />
           </div>
           <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md">
             Login
@@ -77,7 +76,7 @@
             <!-- Navigation Switches -->
             <div class="flex items-center bg-emerald-700 p-1 rounded-xl shadow-inner text-xs font-bold">
                 <button id="tabDashboard" class="px-4 py-2 rounded-lg bg-emerald-600 text-white shadow">DASHBOARD</button>
-                <button id="tabAdmin" class="px-4 py-2 rounded-lg text-emerald-100 hover:text-white">ADMIN PANEL</button>
+                <button id="tabAdmin" class="px-4 py-2 rounded-lg text-emerald-100 hover:text-white hidden">ADMIN PANEL</button>
             </div>
 
             <div id="cloudStatus" class="hidden sm:flex items-center gap-2 bg-emerald-700 px-3 py-1 rounded-full text-xs">
@@ -96,7 +95,6 @@
         
         <!-- ================= VIEW 1: DASHBOARD VIEW ================= -->
         <div id="viewDashboard" class="space-y-8 animate-fade-in">
-            <!-- Live Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
                     <div>
@@ -238,82 +236,117 @@
 
         <!-- ================= VIEW 2: ADMIN PANEL VIEW ================= -->
         <div id="viewAdmin" class="hidden space-y-8 animate-fade-in">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                <!-- Card A: Firebase Connection Settings -->
-                <div class="glass-card p-6 rounded-2xl shadow-md space-y-6">
+                <!-- Left: Database Connections Setup -->
+                <div class="glass-card p-6 rounded-2xl shadow-md space-y-6 lg:col-span-1 h-fit">
                     <div class="border-b pb-4 border-slate-100">
                         <h2 class="text-lg font-bold flex items-center gap-2 text-slate-800">
                             <i data-lucide="database" class="text-emerald-600"></i> 
                             Custom Database Setup
                         </h2>
-                        <p class="text-xs text-slate-400 mt-1">Connect this dashboard interface to your own hardware node's Firebase Project.</p>
+                        <p class="text-xs text-slate-400 mt-1">Configure your dashboard to sync with your hardware node's Firebase credentials.</p>
                     </div>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1.5">Firebase Database URL</label>
-                            <input type="text" id="dbInputUrl" placeholder="https://your-project-id-default-rtdb.firebaseio.com" class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold font-mono">
+                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Firebase RTDB URL</label>
+                            <input type="text" id="dbInputUrl" placeholder="https://your-project-id.firebaseio.com" class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-mono">
                         </div>
                         <div>
-                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1.5">Firebase Web API Key</label>
-                            <input type="password" id="dbInputApiKey" placeholder="AIzaSy..." class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold font-mono">
+                            <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Firebase Web API Key</label>
+                            <input type="password" id="dbInputApiKey" placeholder="AIzaSy..." class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-mono">
                         </div>
-
-                        <div class="bg-amber-50 rounded-xl p-4 border border-amber-200 text-amber-800 text-xs leading-relaxed space-y-1">
-                            <p class="font-bold">⚠️ Connection Pre-requisite:</p>
-                            <p>Verify that your Realtime Database rules authorize public read and write configurations, or match authenticated client read tokens.</p>
-                        </div>
-
-                        <div class="flex gap-4 pt-2">
-                            <button id="btnSaveCustomDb" class="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-md text-sm">
-                                Connect & Reconnect
+                        
+                        <div class="flex gap-2 pt-2">
+                            <button id="btnSaveCustomDb" class="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-md text-xs">
+                                Connect Custom
                             </button>
-                            <button id="btnRevertDb" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 rounded-xl transition-all text-sm" title="Restore Default Settings">
-                                Reset Default
+                            <button id="btnRevertDb" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-2.5 rounded-xl transition-all text-xs" title="Reset Default Settings">
+                                Restore Default
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Card B: Cloud User Management -->
-                <div class="glass-card p-6 rounded-2xl shadow-md space-y-6">
-                    <div class="border-b pb-4 border-slate-100">
-                        <h2 class="text-lg font-bold flex items-center gap-2 text-slate-800">
-                            <i data-lucide="users" class="text-emerald-600"></i>
-                            User Credentials Management
-                        </h2>
-                        <p class="text-xs text-slate-400 mt-1">Authorized identities will be synchronized inside the active cloud database.</p>
+                <!-- Right: High-fidelity User Account Creation & Management -->
+                <div class="glass-card p-6 rounded-2xl shadow-md space-y-6 lg:col-span-2">
+                    <div class="flex justify-between items-start border-b pb-4 border-slate-100">
+                        <div>
+                            <h2 class="text-lg font-bold flex items-center gap-2 text-slate-800">
+                                <i data-lucide="users" class="text-emerald-600"></i>
+                                User Directory
+                            </h2>
+                            <p class="text-xs text-slate-400 mt-1">Manage system logins, access configurations, and permission credentials.</p>
+                        </div>
+                        <button id="btnToggleAddUser" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i> Create Account
+                        </button>
                     </div>
 
-                    <form id="addUserForm" class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <p class="text-xs font-black text-slate-500 uppercase">Add New Authorized Access</p>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <input type="text" id="newUserId" placeholder="User ID" class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" required>
-                            </div>
-                            <div>
-                                <input type="password" id="newUserPass" placeholder="Password" class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" required>
-                            </div>
+                    <!-- Create User Section -->
+                    <div id="addUserBox" class="hidden bg-slate-50 rounded-2xl p-5 border border-slate-100 space-y-4 animate-fade-in">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                <i data-lucide="shield-alert" class="w-4 h-4 text-emerald-600"></i>
+                                Register New System User
+                            </h3>
+                            <button id="btnCancelAddUser" class="text-xs font-bold text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
                         </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-sm">
-                            <i data-lucide="user-plus" class="w-4 h-4"></i>
-                            Authorize User
-                        </button>
-                    </form>
+                        <form id="addUserForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Full Name</label>
+                                    <input type="text" id="newFullName" placeholder="e.g. John Doe" class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" required>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">User ID / Username</label>
+                                    <input type="text" id="newUserId" placeholder="e.g. operator12" class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" required>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Security Password</label>
+                                    <input type="password" id="newUserPass" placeholder="Enter password" class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" required>
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Access Role</label>
+                                    <select id="newUserRole" class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold bg-white">
+                                        <option value="operator">Operator (Dashboard Control Only)</option>
+                                        <option value="admin">Administrator (Full Systems + Admin Panels)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex justify-end gap-2">
+                                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-xl text-xs transition-all shadow-sm">
+                                    Authorize New Account
+                                </button>
+                            </div>
+                        </form>
+                    </div>
 
-                    <div class="space-y-3">
-                        <p class="text-xs font-black text-slate-500 uppercase tracking-wider">Active Authorized Users</p>
-                        <div class="border rounded-xl divide-y bg-white max-h-[180px] overflow-y-auto no-scrollbar" id="authorizedUsersList">
-                            <div class="p-3 text-xs text-slate-400 text-center italic">Loading authorized cloud accounts...</div>
-                        </div>
-                        <p class="text-[10px] text-slate-400 italic">Notice: Default administrator account "admin" is always active locally for security reasons.</p>
+                    <!-- User Table -->
+                    <div class="overflow-x-auto border rounded-2xl bg-white shadow-inner">
+                        <table class="w-full border-collapse text-left text-xs text-slate-600">
+                            <thead class="bg-slate-50 font-bold uppercase text-slate-500 tracking-wider border-b border-slate-100">
+                                <tr>
+                                    <th class="p-4">Profile</th>
+                                    <th class="p-4">User ID</th>
+                                    <th class="p-4">Role</th>
+                                    <th class="p-4">Status</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="authorizedUsersList" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="5" class="p-8 text-center text-slate-400 italic">Syncing user directory...</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- System Intelligence Summary -->
+        <!-- System Information Footer -->
         <div class="glass-card p-6 rounded-2xl shadow-md mt-8">
             <div class="flex items-start gap-4">
                 <div class="p-3 bg-emerald-100 rounded-xl">
@@ -355,6 +388,25 @@
         </div>
     </div>
 
+    <!-- Custom Modal Dialog System (Replacing default browser popups) -->
+    <div id="customDialog" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 space-y-4 border border-slate-100">
+            <div class="flex items-start gap-3">
+                <div id="dialogIconBox" class="p-2 rounded-xl bg-slate-100 text-slate-600">
+                    <i id="dialogIcon" data-lucide="help-circle" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 id="dialogTitle" class="text-base font-bold text-slate-800">Confirm Action</h3>
+                    <p id="dialogMessage" class="text-xs text-slate-500 mt-1 leading-relaxed">Are you sure you want to perform this operation?</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button id="dialogBtnCancel" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition-colors">Cancel</button>
+                <button id="dialogBtnConfirm" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow-sm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Core Local Credentials Handling Script -->
     <script>
       const MASTER_ID = "admin";
@@ -362,6 +414,57 @@
 
       const loginForm = document.getElementById("loginForm");
       const btnLogout = document.getElementById("btnLogout");
+
+      // Custom dialog trigger helper
+      let activeConfirmCallback = null;
+      let activeCancelCallback = null;
+
+      window.triggerDialog = function(title, msg, type = "info", onConfirm = null, onCancel = null) {
+          const dialog = document.getElementById("customDialog");
+          const dTitle = document.getElementById("dialogTitle");
+          const dMsg = document.getElementById("dialogMessage");
+          const dIcon = document.getElementById("dialogIcon");
+          const dIconBox = document.getElementById("dialogIconBox");
+          const btnCancel = document.getElementById("dialogBtnCancel");
+          const btnConfirm = document.getElementById("dialogBtnConfirm");
+
+          dTitle.innerText = title;
+          dMsg.innerText = msg;
+
+          // Style changes according to type
+          if (type === "warning" || type === "danger") {
+              dIconBox.className = "p-2 rounded-xl bg-red-50 text-red-600";
+              dIcon.setAttribute("data-lucide", "alert-triangle");
+              btnConfirm.className = "bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow-sm";
+          } else {
+              dIconBox.className = "p-2 rounded-xl bg-emerald-50 text-emerald-600";
+              dIcon.setAttribute("data-lucide", "help-circle");
+              btnConfirm.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow-sm";
+          }
+
+          if (typeof lucide !== "undefined") lucide.createIcons();
+
+          if (onConfirm) {
+              btnCancel.classList.remove("hidden");
+              activeConfirmCallback = onConfirm;
+          } else {
+              btnCancel.classList.add("hidden");
+              activeConfirmCallback = () => {};
+          }
+
+          activeCancelCallback = onCancel;
+          dialog.classList.remove("hidden");
+      };
+
+      document.getElementById("dialogBtnConfirm").onclick = () => {
+          document.getElementById("customDialog").classList.add("hidden");
+          if (activeConfirmCallback) activeConfirmCallback();
+      };
+
+      document.getElementById("dialogBtnCancel").onclick = () => {
+          document.getElementById("customDialog").classList.add("hidden");
+          if (activeCancelCallback) activeCancelCallback();
+      };
 
       // Dynamic view transitions
       const tabDashboard = document.getElementById("tabDashboard");
@@ -387,6 +490,7 @@
 
       btnLogout.addEventListener("click", function () {
         localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("userRole");
         location.reload();
       });
 
@@ -396,6 +500,15 @@
         const body = document.getElementById("mainBody");
         body.classList.remove("bg-slate-900", "flex", "items-center", "justify-center");
         body.classList.add("bg-slate-50", "block");
+
+        // Role-based UI masking
+        const role = localStorage.getItem("userRole");
+        if (role === "admin") {
+            tabAdmin.classList.remove("hidden");
+        } else {
+            tabAdmin.classList.add("hidden");
+        }
+
         if (typeof lucide !== "undefined") lucide.createIcons();
       }
 
@@ -452,7 +565,6 @@
       // Boot Firebase instance dynamically
       async function setupFirebaseConnection(configData) {
           try {
-              // Delete existing application instance if running
               try {
                   const currentApp = getApp();
                   await deleteApp(currentApp);
@@ -462,12 +574,10 @@
               db = getDatabase(app);
               auth = getAuth(app);
               
-              // Handle anonymous sign-in setup for reading DB paths
               signInAnonymously(auth).catch((err) => {
                   console.error("Firebase Auth Exception:", err);
               });
 
-              // Re-bind listeners
               startListening();
           } catch (err) {
               console.error("Failed to boot custom configuration:", err);
@@ -482,7 +592,7 @@
       const liveLog = [];
       let historyData = [];
 
-      // Populating current text input values with active configs
+      // Populating UI configurations
       function populateConfigInputUI() {
           const active = getActiveConfig();
           document.getElementById("dbInputUrl").value = active.databaseURL || "";
@@ -502,7 +612,7 @@
           const url = document.getElementById("modalInputUrl").value.trim();
           const key = document.getElementById("modalInputApiKey").value.trim();
           if(!url || !key) {
-              alert("Please verify all fields are populated correctly.");
+              window.triggerDialog("Error", "Please verify all fields are populated correctly.");
               return;
           }
           const projId = extractProjectId(url);
@@ -518,7 +628,7 @@
           await setupFirebaseConnection(activeConfig);
           populateConfigInputUI();
           dbModal.classList.add("hidden");
-          alert("Database configuration updated successfully.");
+          window.triggerDialog("Success", "Database configurations applied and reconnected.");
       };
 
       // Reset modal configurations
@@ -528,7 +638,7 @@
           await setupFirebaseConnection(activeConfig);
           populateConfigInputUI();
           dbModal.classList.add("hidden");
-          alert("Returned to default HYTECH database parameters.");
+          window.triggerDialog("Success", "Returned to default HYTECH database parameters.");
       };
 
       // Direct admin panel config saves
@@ -536,7 +646,7 @@
           const url = document.getElementById("dbInputUrl").value.trim();
           const key = document.getElementById("dbInputApiKey").value.trim();
           if(!url || !key) {
-              alert("Please input valid strings.");
+              window.triggerDialog("Error", "Please input valid settings.");
               return;
           }
           const projId = extractProjectId(url);
@@ -551,7 +661,7 @@
           activeConfig = newConfig;
           await setupFirebaseConnection(activeConfig);
           populateConfigInputUI();
-          alert("Database settings updated and reconnected.");
+          window.triggerDialog("Success", "Custom settings synced and active configurations reloaded.");
       };
 
       document.getElementById("btnRevertDb").onclick = async () => {
@@ -559,62 +669,86 @@
           activeConfig = defaultFirebaseConfig;
           await setupFirebaseConnection(activeConfig);
           populateConfigInputUI();
-          alert("Returned to default configurations.");
+          window.triggerDialog("Success", "Returned to default configurations.");
       };
 
-      // Handle custom local and database validation for logging in
+      // Toggle new user creator panels
+      const addUserBox = document.getElementById("addUserBox");
+      document.getElementById("btnToggleAddUser").onclick = () => addUserBox.classList.remove("hidden");
+      document.getElementById("btnCancelAddUser").onclick = () => addUserBox.classList.add("hidden");
+
+      // Handle login action
       loginForm.addEventListener("submit", async function (e) {
           e.preventDefault();
           const id = document.getElementById("loginId").value.trim();
           const pass = document.getElementById("loginPass").value.trim();
+          const loginError = document.getElementById("loginError");
+          const loginErrorMsg = document.getElementById("loginErrorMsg");
 
-          // 1. Check local emergency fallback credential immediately
+          // Local master fallback
           if (id === MASTER_ID && pass === MASTER_PASS) {
               localStorage.setItem("isLoggedIn", "true");
+              localStorage.setItem("userRole", "admin");
               showDashboard();
               return;
           }
 
-          // 2. Query authorized database profiles
           try {
               const userSnap = await get(ref(db, `authorized_users/${id}`));
               if (userSnap.exists()) {
                   const dbProfile = userSnap.val();
                   if (dbProfile && dbProfile.password === pass) {
+                      if (dbProfile.status === "Suspended") {
+                          loginErrorMsg.innerText = "This account is suspended. Please contact Admin.";
+                          loginError.classList.remove("hidden");
+                          return;
+                      }
                       localStorage.setItem("isLoggedIn", "true");
+                      localStorage.setItem("userRole", dbProfile.role || "operator");
                       showDashboard();
                       return;
                   }
               }
-              document.getElementById("loginError").classList.remove("hidden");
+              loginErrorMsg.innerText = "Invalid User ID or Password";
+              loginError.classList.remove("hidden");
           } catch(err) {
-              console.error("Cloud login verification failed:", err);
-              document.getElementById("loginError").classList.remove("hidden");
+              console.error("Cloud verification error:", err);
+              loginErrorMsg.innerText = "Failed to communicate with database server.";
+              loginError.classList.remove("hidden");
           }
       });
 
-      // User additions handler
+      // Account creation form submissions
       document.getElementById("addUserForm").onsubmit = async (e) => {
           e.preventDefault();
-          const uid = document.getElementById("newUserId").value.trim();
-          const upass = document.getElementById("newUserPass").value.trim();
-          
-          if(uid.toLowerCase() === "admin") {
-              alert("User profile 'admin' is a restricted system reserved name.");
+          const fn = document.getElementById("newFullName").value.trim();
+          const id = document.getElementById("newUserId").value.trim().toLowerCase();
+          const pass = document.getElementById("newUserPass").value.trim();
+          const role = document.getElementById("newUserRole").value;
+
+          if (id === "admin") {
+              window.triggerDialog("Access Error", "The root user account 'admin' is system-reserved.", "warning");
               return;
           }
 
           try {
-              await set(ref(db, `authorized_users/${uid}`), { password: upass });
+              await set(ref(db, `authorized_users/${id}`), {
+                  fullName: fn,
+                  password: pass,
+                  role: role,
+                  status: "Active"
+              });
+              document.getElementById("newFullName").value = "";
               document.getElementById("newUserId").value = "";
               document.getElementById("newUserPass").value = "";
-              alert(`Successfully registered new database user profile: ${uid}`);
-          } catch(err) {
-              alert("Action failed. Verify database rules write permissions.");
+              addUserBox.classList.add("hidden");
+              window.triggerDialog("User Added", `Successfully registered system account: ${id}`);
+          } catch (err) {
+              window.triggerDialog("Database Error", "Failed to register user. Verify write rules permission settings.", "warning");
           }
       };
 
-      // Chart setup configurations
+      // Chart initialization configurations
       const ctx = document.getElementById("historyChart").getContext("2d");
       chart = new Chart(ctx, {
         type: "line",
@@ -647,7 +781,6 @@
         }
       });
 
-      // Active state synchronization
       function startListening() {
         onValue(ref(db, "hydroponic"), (snapshot) => {
           const data = snapshot.val();
@@ -669,43 +802,92 @@
           }
         });
 
-        // Pull credential updates dynamically
+        // Realtime sync of User Table
         onValue(ref(db, "authorized_users"), (snapshot) => {
-            const listContainer = document.getElementById("authorizedUsersList");
-            listContainer.innerHTML = "";
+            const tableBody = document.getElementById("authorizedUsersList");
+            tableBody.innerHTML = "";
             const users = snapshot.val();
             
             if(!users) {
-                listContainer.innerHTML = `<div class="p-4 text-xs text-slate-400 text-center italic">No custom user profiles synced inside this database.</div>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 italic">No user accounts found in this database.</td></tr>`;
                 return;
             }
 
             Object.keys(users).forEach(username => {
-                const row = document.createElement("div");
-                row.className = "flex justify-between items-center p-3 text-xs text-slate-700 font-semibold";
-                row.innerHTML = `
-                  <div class="flex items-center gap-2">
-                     <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
-                     <span>${username}</span>
-                  </div>
-                  <button class="delete-user-btn text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded-lg transition-all" data-username="${username}">
-                     <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
+                const item = users[username];
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50 transition-colors";
+                
+                const roleBadge = item.role === "admin" 
+                    ? `<span class="bg-purple-50 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-purple-100">Administrator</span>` 
+                    : `<span class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-100">Operator</span>`;
+
+                const statusBadge = item.status === "Suspended" 
+                    ? `<span class="bg-red-50 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-100">Suspended</span>`
+                    : `<span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-100">Active</span>`;
+
+                tr.innerHTML = `
+                  <td class="p-4 flex items-center gap-2.5">
+                     <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs uppercase border">
+                         ${(item.fullName || username).substring(0,2)}
+                     </div>
+                     <div>
+                         <p class="font-bold text-slate-800 text-xs">${item.fullName || 'Anonymous'}</p>
+                         <p class="text-[10px] text-slate-400">Synced user data</p>
+                     </div>
+                  </td>
+                  <td class="p-4 font-mono text-slate-700 font-bold">${username}</td>
+                  <td class="p-4">${roleBadge}</td>
+                  <td class="p-4">${statusBadge}</td>
+                  <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
+                      <button class="toggle-status-btn text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 border rounded-lg transition-all" data-username="${username}" data-status="${item.status || 'Active'}">
+                         Toggle Status
+                      </button>
+                      <button class="delete-user-btn text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 border border-transparent hover:border-red-100 rounded-lg transition-all inline-flex" data-username="${username}">
+                         <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      </button>
+                  </td>
                 `;
-                listContainer.appendChild(row);
+                tableBody.appendChild(tr);
             });
 
-            // Bind trash click delegates
-            document.querySelectorAll(".delete-user-btn").forEach(btn => {
+            // Bind Table Action buttons dynamically
+            document.querySelectorAll(".toggle-status-btn").forEach(btn => {
                 btn.onclick = async () => {
-                    const targetName = btn.dataset.username;
-                    if(confirm(`Are you sure you want to revoke access permission for: ${targetName}?`)) {
-                        try {
-                            await set(ref(db, `authorized_users/${targetName}`), null);
-                        } catch(e) {
-                            alert("Action restricted. Check rules permission logs.");
+                    const targetUser = btn.dataset.username;
+                    const curStatus = btn.dataset.status;
+                    const nextStatus = curStatus === "Suspended" ? "Active" : "Suspended";
+
+                    window.triggerDialog(
+                        "Change Access Status", 
+                        `Are you sure you want to change account access status for '${targetUser}' to '${nextStatus}'?`,
+                        "info",
+                        async () => {
+                            try {
+                                await update(ref(db, `authorized_users/${targetUser}`), { status: nextStatus });
+                            } catch (e) {
+                                window.triggerDialog("Error", "Failed to update user account. Check write rules permissions.", "warning");
+                            }
                         }
-                    }
+                    );
+                };
+            });
+
+            document.querySelectorAll(".delete-user-btn").forEach(btn => {
+                btn.onclick = () => {
+                    const targetUser = btn.dataset.username;
+                    window.triggerDialog(
+                        "Delete User Account", 
+                        `Are you sure you want to delete and revoke authorization credentials for '${targetUser}'? This cannot be undone.`,
+                        "danger",
+                        async () => {
+                            try {
+                                await set(ref(db, `authorized_users/${targetUser}`), null);
+                            } catch(e) {
+                                window.triggerDialog("Error", "Failed to clear user entry. Check security rules.", "warning");
+                            }
+                        }
+                    );
                 };
             });
 
@@ -865,10 +1047,11 @@
           }
       };
 
+      // Upgraded Excel exporter to show true formatted dates
       document.getElementById("btnExportCSV").onclick = () => {
         const dataToExport = currentPeriod === "live" ? liveLog : historyData;
         if (dataToExport.length === 0) {
-            alert("No target data values available to export inside the selected window.");
+            window.triggerDialog("No Data", "No target data values available to export inside the selected window.");
             return;
         }
         
