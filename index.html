@@ -388,6 +388,43 @@
         </div>
     </div>
 
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fade-in">
+            <div class="bg-slate-800 p-6 text-white flex justify-between items-center">
+                <h3 class="font-bold flex items-center gap-2"><i data-lucide="user-cog" class="text-emerald-400"></i> Edit User Account</h3>
+                <button id="btnCloseEditUserModal" class="p-1 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="editUserForm" class="p-6 space-y-4">
+                <!-- Hidden inputs to preserve existing status and original reference -->
+                <input type="hidden" id="editOriginalUserId">
+                <input type="hidden" id="editUserStatus">
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Full Name</label>
+                    <input type="text" id="editFullName" placeholder="e.g. John Doe" class="w-full border rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" required>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">User ID / Username</label>
+                    <input type="text" id="editUserId" placeholder="e.g. operator12" class="w-full border rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" required>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Security Password</label>
+                    <input type="text" id="editUserPass" placeholder="Enter password" class="w-full border rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold" required>
+                </div>
+                <div>
+                    <label class="text-[10px] font-black text-slate-500 uppercase block mb-1">Access Role</label>
+                    <select id="editUserRole" class="w-full border rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold bg-white">
+                        <option value="operator">Operator (Dashboard Control Only)</option>
+                        <option value="admin">Administrator (Full Systems + Admin Panels)</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md">Apply Edits</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Custom Modal Dialog System (Replacing default browser popups) -->
     <div id="customDialog" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 space-y-4 border border-slate-100">
@@ -748,6 +785,61 @@
           }
       };
 
+      // Control edit user overlay toggle
+      const editUserModal = document.getElementById("editUserModal");
+      document.getElementById("btnCloseEditUserModal").onclick = () => editUserModal.classList.add("hidden");
+
+      // Edit User Form Submission
+      document.getElementById("editUserForm").onsubmit = async (e) => {
+          e.preventDefault();
+          const originalId = document.getElementById("editOriginalUserId").value;
+          const status = document.getElementById("editUserStatus").value;
+          const fn = document.getElementById("editFullName").value.trim();
+          const id = document.getElementById("editUserId").value.trim().toLowerCase();
+          const pass = document.getElementById("editUserPass").value.trim();
+          const role = document.getElementById("editUserRole").value;
+
+          if (id === "admin") {
+              window.triggerDialog("Access Error", "The root user account 'admin' is system-reserved.", "warning");
+              return;
+          }
+
+          try {
+              // If username changed, we must delete old node and write new node
+              if (id !== originalId) {
+                  // Verify that the new user ID does not conflict with another existing key
+                  const snapshotCheck = await get(ref(db, `authorized_users/${id}`));
+                  if (snapshotCheck.exists()) {
+                      window.triggerDialog("Access Error", `The User ID '${id}' is already registered to another user account.`, "warning");
+                      return;
+                  }
+
+                  // 1. Write the new structure
+                  await set(ref(db, `authorized_users/${id}`), {
+                      fullName: fn,
+                      password: pass,
+                      role: role,
+                      status: status
+                  });
+
+                  // 2. Erase the old structure key
+                  await set(ref(db, `authorized_users/${originalId}`), null);
+              } else {
+                  // Direct field overwrite update
+                  await update(ref(db, `authorized_users/${originalId}`), {
+                      fullName: fn,
+                      password: pass,
+                      role: role
+                  });
+              }
+
+              editUserModal.classList.add("hidden");
+              window.triggerDialog("Updated Account", `Changes committed for user: ${id}`);
+          } catch (err) {
+              window.triggerDialog("Database Error", "Could not commit structural changes to user node.", "warning");
+          }
+      };
+
       // Chart initialization configurations
       const ctx = document.getElementById("historyChart").getContext("2d");
       chart = new Chart(ctx, {
@@ -840,6 +932,9 @@
                   <td class="p-4">${roleBadge}</td>
                   <td class="p-4">${statusBadge}</td>
                   <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
+                      <button class="edit-user-btn bg-slate-100 hover:bg-slate-200 text-slate-700 border rounded-lg p-1.5 transition-all inline-flex" data-username="${username}">
+                         <i data-lucide="pencil" class="w-4 h-4"></i>
+                      </button>
                       <button class="toggle-status-btn text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 border rounded-lg transition-all" data-username="${username}" data-status="${item.status || 'Active'}">
                          Toggle Status
                       </button>
@@ -849,6 +944,28 @@
                   </td>
                 `;
                 tableBody.appendChild(tr);
+            });
+
+            // Bind Edit User button action triggers
+            document.querySelectorAll(".edit-user-btn").forEach(btn => {
+                btn.onclick = async () => {
+                    const targetUser = btn.dataset.username;
+                    try {
+                        const snap = await get(ref(db, `authorized_users/${targetUser}`));
+                        if (snap.exists()) {
+                            const u = snap.val();
+                            document.getElementById("editOriginalUserId").value = targetUser;
+                            document.getElementById("editUserStatus").value = u.status || "Active";
+                            document.getElementById("editFullName").value = u.fullName || "";
+                            document.getElementById("editUserId").value = targetUser;
+                            document.getElementById("editUserPass").value = u.password || "";
+                            document.getElementById("editUserRole").value = u.role || "operator";
+                            editUserModal.classList.remove("hidden");
+                        }
+                    } catch (e) {
+                        window.triggerDialog("Error", "Could not fetch user details for editing.", "warning");
+                    }
+                };
             });
 
             // Bind Table Action buttons dynamically
@@ -934,63 +1051,96 @@
         const selectedDateVal = document.getElementById("filterHistoryDate").value;
         const baseDate = selectedDateVal ? new Date(selectedDateVal) : new Date();
         
-        let startTimeISO, endTimeISO;
-        let historyQuery;
+        let startTime, endTime;
 
-        if (period === "all") {
-            historyQuery = query(ref(db, "history"), orderByKey());
-            dataInfo.innerText = "Loading complete database history timeline...";
-        } else {
-            if (period === "1D") {
-                baseDate.setHours(0,0,0,0);
-                startTimeISO = baseDate.toISOString();
-                baseDate.setHours(23,59,59,999);
-                endTimeISO = baseDate.toISOString();
-                dataInfo.innerText = `Viewing history records for single day: ${selectedDateVal}`;
-            } else if (period === "1W") {
-                endTimeISO = new Date(baseDate.setHours(23,59,59,999)).toISOString();
-                startTimeISO = new Date(baseDate.setDate(baseDate.getDate() - 7)).toISOString();
-                dataInfo.innerText = `Viewing 1 Week data preceding ${selectedDateVal}`;
-            } else if (period === "1M") {
-                endTimeISO = new Date(baseDate.setHours(23,59,59,999)).toISOString();
-                startTimeISO = new Date(baseDate.setDate(baseDate.getDate() - 30)).toISOString();
-                dataInfo.innerText = `Viewing 1 Month data preceding ${selectedDateVal}`;
-            } else if (period === "3M") {
-                endTimeISO = new Date(baseDate.setHours(23,59,59,999)).toISOString();
-                startTimeISO = new Date(baseDate.setDate(baseDate.getDate() - 90)).toISOString();
-                dataInfo.innerText = `Viewing 3 Months data preceding ${selectedDateVal}`;
-            }
+        if (period === "1D") {
+            const start = new Date(baseDate);
+            start.setHours(0,0,0,0);
+            startTime = start.getTime();
             
-            historyQuery = query(
-                ref(db, "history"),
-                orderByKey(),
-                startAt(startTimeISO),
-                endAt(endTimeISO)
-            );
+            const end = new Date(baseDate);
+            end.setHours(23,59,59,999);
+            endTime = end.getTime();
+            dataInfo.innerText = `Viewing history records for single day: ${selectedDateVal}`;
+        } else if (period === "1W") {
+            const end = new Date(baseDate);
+            end.setHours(23,59,59,999);
+            endTime = end.getTime();
+            
+            const start = new Date(baseDate);
+            start.setDate(start.getDate() - 7);
+            start.setHours(0,0,0,0);
+            startTime = start.getTime();
+            dataInfo.innerText = `Viewing 1 Week data preceding ${selectedDateVal}`;
+        } else if (period === "1M") {
+            const end = new Date(baseDate);
+            end.setHours(23,59,59,999);
+            endTime = end.getTime();
+            
+            const start = new Date(baseDate);
+            start.setDate(start.getDate() - 30);
+            start.setHours(0,0,0,0);
+            startTime = start.getTime();
+            dataInfo.innerText = `Viewing 1 Month data preceding ${selectedDateVal}`;
+        } else if (period === "3M") {
+            const end = new Date(baseDate);
+            end.setHours(23,59,59,999);
+            endTime = end.getTime();
+            
+            const start = new Date(baseDate);
+            start.setDate(start.getDate() - 90);
+            start.setHours(0,0,0,0);
+            startTime = start.getTime();
+            dataInfo.innerText = `Viewing 3 Months data preceding ${selectedDateVal}`;
         }
 
         try {
-          const snapshot = await get(historyQuery);
+          // Fetch up to the last 3000 historical records from Firebase
+          // This avoids complex index-matching rules which cause failure when startAt/endAt are run natively
+          const historyRef = ref(db, "history");
+          const snapshot = await get(historyRef);
           let dataArray = [];
           
           if (snapshot.exists()) {
             snapshot.forEach((child) => { 
                 const val = child.val();
-                let displayTime = val.t;
-                if(!displayTime) {
-                    const parsedDate = new Date(child.key);
-                    displayTime = parsedDate.toLocaleDateString() + ' ' + parsedDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const key = child.key;
+
+                // Attempt to parse date from key, or iso fallback properties
+                let recordTimeMs = 0;
+                let parsedDate = new Date(key);
+                
+                if (isNaN(parsedDate.getTime()) && val.iso) {
+                    parsedDate = new Date(val.iso);
                 }
-                dataArray.push({
-                    t: displayTime,
-                    s: val.s ?? val.soil,
-                    te: val.te ?? val.temp,
-                    h: val.h ?? val.hum,
-                    p: val.p ?? val.pump,
-                    iso: child.key
-                }); 
+                
+                if (!isNaN(parsedDate.getTime())) {
+                    recordTimeMs = parsedDate.getTime();
+                } else {
+                    return; // Ignore malformed data entries
+                }
+                
+                // Perform precise client-side filter
+                if (period === "all" || (recordTimeMs >= startTime && recordTimeMs <= endTime)) {
+                    let displayTime = val.t;
+                    if(!displayTime) {
+                        displayTime = parsedDate.toLocaleDateString() + ' ' + parsedDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
+                    dataArray.push({
+                        t: displayTime,
+                        s: val.s ?? val.soil ?? 0,
+                        te: val.te ?? val.temp ?? 0,
+                        h: val.h ?? val.hum ?? 0,
+                        p: val.p ?? val.pump ?? "OFF",
+                        iso: val.iso || key,
+                        timeMs: recordTimeMs
+                    });
+                }
             });
           }
+          
+          // Sort records strictly in chronological order
+          dataArray.sort((a, b) => a.timeMs - b.timeMs);
           
           historyData = dataArray;
           refreshChart(dataArray);
@@ -999,6 +1149,8 @@
               dataInfo.innerText = "No data records detected for this specific range.";
           } else if (period === "all") {
               dataInfo.innerText = `Successfully loaded all history logs (${dataArray.length} entries).`;
+          } else {
+              dataInfo.innerText = `Showing ${dataArray.length} records for selected period.`;
           }
         } catch (err) {
           console.error("Error fetching historical context:", err);
@@ -1047,7 +1199,6 @@
           }
       };
 
-      // Upgraded Excel exporter to show true formatted dates
       document.getElementById("btnExportCSV").onclick = () => {
         const dataToExport = currentPeriod === "live" ? liveLog : historyData;
         if (dataToExport.length === 0) {
