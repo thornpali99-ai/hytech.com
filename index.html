@@ -480,8 +480,8 @@
             currentUser.role === "admin" ? "SETTINGS" : "FIREBASE";
         }
 
-        // Lock down config panel for non-admins
-        if (currentUser.role !== "admin") {
+        // Lock down config panel for viewers only
+        if (currentUser.role === "viewer") {
           ["inputSetON","inputSetOFF","inputPumpTime","inputDelayTime","inputTempSet","inputSprayerTime","inputSprayerDelay"]
             .forEach(id => { const el = document.getElementById(id); if(el) el.disabled = true; });
           const syncBtn = document.getElementById("btnSync");
