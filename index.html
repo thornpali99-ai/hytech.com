@@ -83,6 +83,13 @@
               <span id="connIndicator" class="w-2 h-2 rounded-full bg-red-400"></span>
               <span id="connText">Initializing...</span>
             </div>
+
+            <!-- Custom Database Setup Button accessible to both Admins & Operators -->
+            <button id="btnOpenDbModalDashboard" class="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-md" title="Configure Database Connection">
+              <i data-lucide="database" class="w-4 h-4"></i>
+              DATABASE SETUP
+            </button>
+
             <button id="btnLogout" class="flex items-center gap-2 bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-md">
               <i data-lucide="log-out" class="w-4 h-4"></i>
               LOGOUT
@@ -518,6 +525,11 @@
       };
 
       tabAdmin.onclick = () => {
+          const role = localStorage.getItem("userRole");
+          if (role !== "admin") {
+              window.triggerDialog("Access Denied", "Only administrators are permitted to view the Admin Panel.", "warning");
+              return;
+          }
           tabAdmin.className = "px-4 py-2 rounded-lg bg-emerald-600 text-white shadow";
           tabDashboard.className = "px-4 py-2 rounded-lg text-emerald-100 hover:text-white";
           viewAdmin.classList.remove("hidden");
@@ -642,6 +654,13 @@
       // UI Config Modal triggers
       const dbModal = document.getElementById("dbModal");
       document.getElementById("btnOpenDbModalLogin").onclick = () => dbModal.classList.remove("hidden");
+      
+      // Open DB configuration modal directly from active dashboard for all roles (Operators and Admins)
+      document.getElementById("btnOpenDbModalDashboard").onclick = () => {
+          populateConfigInputUI();
+          dbModal.classList.remove("hidden");
+      };
+      
       document.getElementById("btnCloseDbModal").onclick = () => dbModal.classList.add("hidden");
 
       // Save modal database settings
@@ -758,6 +777,11 @@
       // Account creation form submissions
       document.getElementById("addUserForm").onsubmit = async (e) => {
           e.preventDefault();
+          const curRole = localStorage.getItem("userRole");
+          if (curRole !== "admin") {
+              window.triggerDialog("Access Denied", "Only administrators can register new user accounts.", "warning");
+              return;
+          }
           const fn = document.getElementById("newFullName").value.trim();
           const id = document.getElementById("newUserId").value.trim().toLowerCase();
           const pass = document.getElementById("newUserPass").value.trim();
@@ -792,6 +816,11 @@
       // Edit User Form Submission
       document.getElementById("editUserForm").onsubmit = async (e) => {
           e.preventDefault();
+          const curRole = localStorage.getItem("userRole");
+          if (curRole !== "admin") {
+              window.triggerDialog("Access Denied", "Only administrators can modify user records.", "warning");
+              return;
+          }
           const originalId = document.getElementById("editOriginalUserId").value;
           const status = document.getElementById("editUserStatus").value;
           const fn = document.getElementById("editFullName").value.trim();
@@ -949,6 +978,11 @@
             // Bind Edit User button action triggers
             document.querySelectorAll(".edit-user-btn").forEach(btn => {
                 btn.onclick = async () => {
+                    const curRole = localStorage.getItem("userRole");
+                    if (curRole !== "admin") {
+                        window.triggerDialog("Access Denied", "Only administrators are permitted to edit user details.", "warning");
+                        return;
+                    }
                     const targetUser = btn.dataset.username;
                     try {
                         const snap = await get(ref(db, `authorized_users/${targetUser}`));
@@ -971,6 +1005,11 @@
             // Bind Table Action buttons dynamically
             document.querySelectorAll(".toggle-status-btn").forEach(btn => {
                 btn.onclick = async () => {
+                    const curRole = localStorage.getItem("userRole");
+                    if (curRole !== "admin") {
+                        window.triggerDialog("Access Denied", "Only administrators are permitted to change account statuses.", "warning");
+                        return;
+                    }
                     const targetUser = btn.dataset.username;
                     const curStatus = btn.dataset.status;
                     const nextStatus = curStatus === "Suspended" ? "Active" : "Suspended";
@@ -992,6 +1031,11 @@
 
             document.querySelectorAll(".delete-user-btn").forEach(btn => {
                 btn.onclick = () => {
+                    const curRole = localStorage.getItem("userRole");
+                    if (curRole !== "admin") {
+                        window.triggerDialog("Access Denied", "Only administrators are permitted to delete accounts.", "warning");
+                        return;
+                    }
                     const targetUser = btn.dataset.username;
                     window.triggerDialog(
                         "Delete User Account", 
@@ -1034,7 +1078,7 @@
         sprayerEl.innerText = sprayerStatus === "ON" ? "SPRAYING 💨" : "NOT ACTIVE";
         sprayerEl.className = sprayerStatus === "ON" ? "text-sm font-bold text-orange-600" : "text-sm font-bold text-slate-400";
 
-        const entry = { t: timeStr, s: moisture, te: temp, h: humidity, p: pumpStatus, iso: now.toISOString() };
+        const entry = { t: timeStr, s: moisture, te: temp, h: humidity, p: pumpStatus, sp: sprayerStatus, iso: now.toISOString() };
         liveLog.push(entry);
         if (liveLog.length > 50) liveLog.shift();
         
@@ -1132,6 +1176,7 @@
                         te: val.te ?? val.temp ?? 0,
                         h: val.h ?? val.hum ?? 0,
                         p: val.p ?? val.pump ?? "OFF",
+                        sp: val.sp ?? val.sprayer ?? "OFF",
                         iso: val.iso || key,
                         timeMs: recordTimeMs
                     });
@@ -1206,7 +1251,7 @@
             return;
         }
         
-        let csv = "Local Timestamp (YYYY-MM-DD HH:mm:ss),Time,Soil Moisture %,Temperature C,Humidity %,Pump Status\n";
+        let csv = "Local Timestamp (YYYY-MM-DD HH:mm:ss),Time,Soil Moisture %,Temperature C,Humidity %,Pump Status,Sprayer Status\n";
         dataToExport.forEach((d) => { 
             let dateFormattedStr = "N/A";
             if (d.iso) {
@@ -1226,7 +1271,7 @@
                     dateFormattedStr = "N/A";
                 }
             }
-            csv += `${dateFormattedStr},${d.t},${d.s}%,${d.te}°C,${d.h}%,${d.p || 'OFF'}\n`; 
+            csv += `${dateFormattedStr},${d.t},${d.s}%,${d.te}°C,${d.h}%,${d.p || 'OFF'},${d.sp || 'OFF'}\n`; 
         });
         
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
