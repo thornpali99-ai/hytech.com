@@ -82,12 +82,12 @@
               <span id="connIndicator" class="w-2 h-2 rounded-full bg-red-400"></span>
               <span id="connText">Initializing...</span>
             </div>
-            <!-- Settings button — admin only -->
+            <!-- Settings button — admin & operator -->
             <button id="btnSettings"
               class="hidden items-center gap-2 bg-emerald-700 hover:bg-emerald-800 px-3 py-2 rounded-xl text-xs font-bold transition-colors shadow-md"
-              title="Admin Settings">
+              title="Settings">
               <i data-lucide="settings" class="w-4 h-4"></i>
-              <span class="hidden sm:inline">SETTINGS</span>
+              <span id="btnSettingsLabel" class="hidden sm:inline">SETTINGS</span>
             </button>
             <button id="btnLogout"
               class="flex items-center gap-2 bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-md">
@@ -258,8 +258,8 @@
           <div class="flex items-center gap-3">
             <div class="p-2 bg-emerald-500 rounded-xl"><i data-lucide="settings" class="w-5 h-5"></i></div>
             <div>
-              <h2 class="font-black text-lg">Admin Settings</h2>
-              <p class="text-emerald-200 text-xs">Manage users & Firebase configuration</p>
+              <h2 id="settingsModalTitle" class="font-black text-lg">Admin Settings</h2>
+              <p id="settingsModalSub" class="text-emerald-200 text-xs">Manage users & Firebase configuration</p>
             </div>
           </div>
           <button id="btnCloseSettings" class="p-2 hover:bg-emerald-700 rounded-xl transition-colors">
@@ -328,6 +328,11 @@
           <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2">
             <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5"></i>
             <p class="text-xs text-amber-700 font-semibold">Changes apply on next page reload. Make sure your Firebase project has Realtime Database enabled and anonymous auth allowed.</p>
+          </div>
+          <!-- Operator-only info note -->
+          <div id="operatorFbNote" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-3 flex gap-2">
+            <i data-lucide="info" class="w-4 h-4 text-blue-500 shrink-0 mt-0.5"></i>
+            <p class="text-xs text-blue-700 font-semibold">As an Operator, you can connect this dashboard to your own Firebase project by entering your API Key and Database URL below.</p>
           </div>
 
           <div class="space-y-4">
@@ -467,10 +472,12 @@
         document.getElementById("navUserBadge").innerHTML =
           `<span class="${roleColors[currentUser.role] || 'text-emerald-200'}">${currentUser.id} · ${currentUser.role.toUpperCase()}</span>`;
 
-        // Show settings button for admin only
-        if (currentUser.role === "admin") {
+        // Show settings button for admin and operator
+        if (currentUser.role === "admin" || currentUser.role === "operator") {
           document.getElementById("btnSettings").classList.remove("hidden");
           document.getElementById("btnSettings").classList.add("flex");
+          document.getElementById("btnSettingsLabel").textContent =
+            currentUser.role === "admin" ? "SETTINGS" : "FIREBASE";
         }
 
         // Lock down config panel for non-admins
@@ -510,9 +517,22 @@
 
       function openSettingsModal() {
         document.getElementById("settingsModal").classList.remove("hidden");
-        switchSettingsTab("users");
-        renderUserList();
+        const isOperator = currentUser && currentUser.role === "operator";
+        // Update modal title for operator
+        if (isOperator) {
+          document.getElementById("settingsModalTitle").textContent = "Firebase Settings";
+          document.getElementById("settingsModalSub").textContent = "Configure your Firebase connection";
+        } else {
+          document.getElementById("settingsModalTitle").textContent = "Admin Settings";
+          document.getElementById("settingsModalSub").textContent = "Manage users & Firebase configuration";
+        }
+        // Operators go straight to Firebase tab; hide Users tab for them
+        switchSettingsTab(isOperator ? "firebase" : "users");
+        if (!isOperator) renderUserList();
         loadFirebaseInputs();
+        // Hide users tab for operator; show/hide operator note
+        document.getElementById("tabUsers").style.display = isOperator ? "none" : "";
+        document.getElementById("operatorFbNote").classList.toggle("hidden", !isOperator);
         if (typeof lucide !== "undefined") lucide.createIcons();
       }
 
