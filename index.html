@@ -1,160 +1,176 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Irrigation Pro Dashboard</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyTech SCADA - Industrial Control Terminal</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
-      .glass-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(226, 232, 240, 0.8);
-      }
-      .status-pulse {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-      }
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;800;900&display=swap');
+        
+        .font-mono-scada {
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
         }
-        50% {
-          opacity: 0.5;
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090d16;
+            background-image: 
+                radial-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 0),
+                radial-gradient(rgba(249, 115, 22, 0.03) 1px, transparent 0);
+            background-size: 24px 24px;
+            background-position: 0 0, 12px 12px;
         }
-      }
 
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
+        /* Industrial Bezel & Steel plates */
+        .scada-bezel {
+            background: linear-gradient(135deg, #151f32 0%, #0d1527 100%);
+            border: 2px solid #1e293b;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
 
-      .tab-active {
-        background-color: #059669;
-        color: white;
-      }
+        .scada-panel {
+            background: #0f172a;
+            border: 1px solid #334155;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Glowing LED alerts */
+        .led-pulse-green {
+            animation: led-glow-green 1.5s infinite alternate;
+        }
+        @keyframes led-glow-green {
+            0% { box-shadow: 0 0 4px #10b981, inset 0 1px 0 rgba(255,255,255,0.4); background-color: #059669; }
+            100% { box-shadow: 0 0 12px #10b981, inset 0 1px 0 rgba(255,255,255,0.4); background-color: #34d399; }
+        }
+
+        .led-pulse-amber {
+            animation: led-glow-amber 1.5s infinite alternate;
+        }
+        @keyframes led-glow-amber {
+            0% { box-shadow: 0 0 4px #f59e0b, inset 0 1px 0 rgba(255,255,255,0.4); background-color: #d97706; }
+            100% { box-shadow: 0 0 12px #fbbf24, inset 0 1px 0 rgba(255,255,255,0.4); background-color: #fbbf24; }
+        }
+
+        .led-pulse-red {
+            animation: led-glow-red 1s infinite alternate;
+        }
+        @keyframes led-glow-red {
+            0% { box-shadow: 0 0 4px #ef4444, inset 0 1px 0 rgba(255,255,255,0.4); background-color: #b91c1c; }
+            100% { box-shadow: 0 0 14px #f87171, inset 0 1px 0 rgba(255,255,255,0.4); background-color: #ef4444; }
+        }
+
+        /* Touch target improvements */
+        .btn-industrial {
+            position: relative;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #475569;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            transition: all 0.15s ease-in-out;
+        }
+        .btn-industrial:active {
+            transform: translateY(1px);
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.8);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .tab-active {
+            background-color: #f97316;
+            color: #ffffff;
+            border-color: #ea580c;
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
+        }
     </style>
-  </head>
-  <body
-    id="mainBody"
-    class="bg-slate-900 flex items-center justify-center min-h-screen text-slate-800 font-sans transition-all duration-300"
-  >
+</head>
+<body id="mainBody" class="min-h-screen text-slate-100 flex items-center justify-center p-2 sm:p-4">
+    
     <!-- Login Interface -->
-    <div id="loginWrapper" class="w-full max-w-md p-4">
-      <div
-        class="bg-white w-full rounded-3xl shadow-2xl overflow-hidden animate-fade-in"
-      >
-        <div class="bg-emerald-600 p-8 text-white text-center relative">
-          <div class="inline-flex p-4 bg-emerald-500 rounded-2xl mb-4">
-            <i data-lucide="droplets" class="w-12 h-12"></i>
+    <div id="loginWrapper" class="w-full max-w-md p-2">
+      <div class="scada-bezel rounded-2xl overflow-hidden shadow-2xl border-2 border-slate-700 animate-fade-in">
+        
+        <!-- Industrial Caution Stripe Header -->
+        <div class="h-3 bg-gradient-to-r from-amber-500 via-slate-900 to-amber-500 bg-[size:40px_40px] animate-[stripe-slide_2s_linear_infinite]" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, #000 10px, #000 20px);"></div>
+        
+        <div class="p-6 text-center relative border-b border-slate-800">
+          <div class="inline-flex p-4 bg-slate-900/80 border border-slate-700 rounded-2xl mb-4 shadow-inner">
+            <i data-lucide="cpu" class="w-12 h-12 text-amber-500"></i>
           </div>
-          <h2 class="text-2xl font-black">HYTECH</h2>
-          <p class="text-emerald-100 text-sm mt-1">Green Products</p>
-
-          <button
-            id="btnOpenDbModalLogin"
-            class="absolute top-4 right-4 text-emerald-100 hover:text-white p-2 rounded-xl hover:bg-emerald-700 transition-all"
-            title="Database Configuration"
-          >
+          <h2 class="text-3xl font-black tracking-widest font-mono-scada text-white">HYTECH SCADA</h2>
+          <p class="text-amber-500 text-xs font-bold uppercase tracking-widest mt-1">Green Hydroponics System</p>
+          
+          <button id="btnOpenDbModalLogin" class="absolute top-4 right-4 text-slate-400 hover:text-amber-400 p-2 rounded-xl hover:bg-slate-800/60 border border-transparent hover:border-slate-700 transition-all" title="SCADA Database Configuration">
             <i data-lucide="database" class="w-5 h-5"></i>
           </button>
         </div>
 
-        <form id="loginForm" class="p-8 space-y-6">
-          <div
-            id="loginError"
-            class="hidden bg-red-50 text-red-600 text-xs font-bold p-3 rounded-lg flex items-center gap-2"
-          >
-            <i data-lucide="alert-circle" class="w-4 h-4 text-red-500"></i>
-            <span id="loginErrorMsg">Invalid User ID or Password</span>
+        <form id="loginForm" class="p-6 sm:p-8 space-y-6 bg-slate-950/40">
+          <div id="loginError" class="hidden bg-red-950/80 text-red-400 border border-red-800/60 text-xs font-bold p-3.5 rounded-xl flex items-center gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500"></i>
+            <span id="loginErrorMsg">Invalid Operator ID or Password</span>
           </div>
           <div class="space-y-4">
-            <input
-              id="loginId"
-              type="text"
-              placeholder="User ID"
-              class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-sm"
-              required
-            />
-            <input
-              id="loginPass"
-              type="password"
-              placeholder="Password"
-              class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-medium text-sm"
-              required
-            />
+            <div>
+              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">OPERATOR ID</label>
+              <input id="loginId" type="text" placeholder="ID / Username" class="w-full bg-slate-900/85 border border-slate-700 p-3.5 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none font-semibold text-sm text-slate-100 placeholder-slate-500" required />
+            </div>
+            <div>
+              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">ACCESS SECURITY KEY</label>
+              <input id="loginPass" type="password" placeholder="Password" class="w-full bg-slate-900/85 border border-slate-700 p-3.5 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none font-semibold text-sm text-slate-100 placeholder-slate-500" required />
+            </div>
           </div>
-          <button
-            type="submit"
-            class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-md"
-          >
-            Login
+          <button type="submit" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-4 rounded-xl font-bold hover:from-amber-500 hover:to-orange-500 transition-all shadow-lg shadow-amber-900/20 uppercase tracking-wider text-xs flex items-center justify-center gap-2 border border-amber-600">
+            <i data-lucide="unlock" class="w-4 h-4"></i> Initialize Operator Session
           </button>
         </form>
       </div>
     </div>
 
     <!-- Dashboard Master Interface -->
-    <div id="dashboardWrapper" class="hidden w-full min-h-screen bg-slate-50">
-      <nav class="bg-emerald-600 text-white p-4 shadow-lg sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <i data-lucide="droplets" class="w-8 h-8"></i>
-            <h1 class="text-xl font-bold tracking-tight">HYTECH CLOUD</h1>
+    <div id="dashboardWrapper" class="hidden w-full min-h-screen">
+      <!-- High-fidelity Navigation Bar -->
+      <nav class="bg-slate-950/80 backdrop-blur-md border-b border-slate-800 text-white p-4 sticky top-0 z-40 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-md shadow-orange-950">
+              <i data-lucide="gauge" class="w-6 h-6 text-white"></i>
+            </div>
+            <div>
+              <h1 class="text-lg font-black tracking-widest font-mono-scada">HYTECH CLOUD SCADA</h1>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 led-pulse-green"></span>
+                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">SYSTEM MONITOR ACTIVE</span>
+              </div>
+            </div>
           </div>
 
-          <div class="flex items-center gap-4">
-            <!-- Navigation Switches -->
-            <div
-              class="flex items-center bg-emerald-700 p-1 rounded-xl shadow-inner text-xs font-bold"
-            >
-              <button
-                id="tabDashboard"
-                class="px-4 py-2 rounded-lg bg-emerald-600 text-white shadow"
-              >
-                DASHBOARD
-              </button>
-              <button
-                id="tabAdmin"
-                class="px-4 py-2 rounded-lg text-emerald-100 hover:text-white hidden"
-              >
-                ADMIN PANEL
-              </button>
+          <div class="flex flex-wrap items-center justify-center md:justify-end gap-3 w-full md:w-auto">
+            <!-- Navigation Switches styled like mechanical controls -->
+            <div class="flex bg-slate-900/90 border border-slate-700 p-1 rounded-xl text-[10px] font-black tracking-widest shadow-inner">
+                <button id="tabDashboard" class="px-4 py-2.5 rounded-lg text-white font-bold transition-all duration-150 uppercase bg-amber-600/10 tab-active">CONSOLE</button>
+                <button id="tabAdmin" class="px-4 py-2.5 rounded-lg text-slate-400 hover:text-white font-bold transition-all duration-150 uppercase hidden">SYSTEM ACCESS</button>
             </div>
 
-            <div
-              id="cloudStatus"
-              class="hidden sm:flex items-center gap-2 bg-emerald-700 px-3 py-1 rounded-full text-xs"
-            >
-              <span
-                id="connIndicator"
-                class="w-2 h-2 rounded-full bg-red-400"
-              ></span>
-              <span id="connText">Initializing...</span>
+            <!-- Heartbeat Signal Indicator -->
+            <div id="cloudStatus" class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl text-[10px] font-bold font-mono-scada">
+              <span id="connIndicator" class="w-2 h-2 rounded-full bg-red-500"></span>
+              <span id="connText" class="text-slate-400 uppercase tracking-wider">OFFLINE</span>
             </div>
 
-            <!-- Custom Database Setup Button accessible to both Admins & Operators -->
-            <button
-              id="btnOpenDbModalDashboard"
-              class="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-md"
-              title="Configure Database Connection"
-            >
-              <i data-lucide="database" class="w-4 h-4"></i>
-              DATABASE SETUP
+            <!-- Custom Database Configuration -->
+            <button id="btnOpenDbModalDashboard" class="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3.5 py-2.5 rounded-xl text-[10px] font-black tracking-widest transition-colors shadow-inner uppercase" title="Configure active hardware databases">
+              <i data-lucide="database" class="w-4 h-4 text-amber-500"></i>
+              DB SETUP
             </button>
 
-            <button
-              id="btnLogout"
-              class="flex items-center gap-2 bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl text-xs font-bold transition-colors shadow-md"
-            >
+            <button id="btnLogout" class="flex items-center gap-1.5 bg-red-950/80 hover:bg-red-900 border border-red-800/50 text-red-400 px-3.5 py-2.5 rounded-xl text-[10px] font-black tracking-widest transition-colors shadow-inner uppercase">
               <i data-lucide="log-out" class="w-4 h-4"></i>
               LOGOUT
             </button>
@@ -162,792 +178,411 @@
         </div>
       </nav>
 
-      <main class="max-w-7xl mx-auto p-4 md:p-8">
-        <!-- ================= VIEW 1: DASHBOARD VIEW ================= -->
-        <div id="viewDashboard" class="space-y-8 animate-fade-in">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div
-              class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center"
-            >
-              <div>
-                <p
-                  class="text-xs font-bold text-slate-500 uppercase tracking-wider"
-                >
-                  Soil Moisture
-                </p>
-                <h3
-                  id="valMoisture"
-                  class="text-3xl font-black text-slate-800 mt-1"
-                >
-                  --%
-                </h3>
-              </div>
-              <div class="p-3 bg-blue-50 rounded-xl">
-                <i data-lucide="sprout" class="w-8 h-8 text-blue-500"></i>
-              </div>
-            </div>
-
-            <div
-              class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-orange-500 flex justify-between items-center"
-            >
-              <div>
-                <p
-                  class="text-xs font-bold text-slate-500 uppercase tracking-wider"
-                >
-                  Air Temperature
-                </p>
-                <h3
-                  id="valTemp"
-                  class="text-3xl font-black text-slate-800 mt-1"
-                >
-                  --°C
-                </h3>
-              </div>
-              <div class="p-3 bg-orange-50 rounded-xl">
-                <i
-                  data-lucide="thermometer"
-                  class="w-8 h-8 text-orange-500"
-                ></i>
-              </div>
-            </div>
-
-            <div
-              class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-indigo-500 flex justify-between items-center"
-            >
-              <div>
-                <p
-                  class="text-xs font-bold text-slate-500 uppercase tracking-wider"
-                >
-                  Air Humidity
-                </p>
-                <h3 id="valHum" class="text-3xl font-black text-slate-800 mt-1">
-                  --%
-                </h3>
-              </div>
-              <div class="p-3 bg-indigo-50 rounded-xl">
-                <i data-lucide="droplets" class="w-8 h-8 text-indigo-500"></i>
-              </div>
-            </div>
-
-            <div
-              class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500 flex flex-col justify-center gap-1"
-            >
-              <div
-                class="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-1.5"
-              >
-                <span
-                  class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
-                  >Water Pump</span
-                >
-                <span
-                  id="valPump"
-                  class="text-xs font-bold text-slate-400 italic uppercase"
-                  >Offline</span
-                >
-              </div>
-              <div class="flex justify-between items-center">
-                <span
-                  class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
-                  >Sprayer Pump</span
-                >
-                <span
-                  id="valSprayer"
-                  class="text-xs font-bold text-slate-400 italic uppercase"
-                  >Offline</span
-                >
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Setpoint Controls -->
-            <div class="glass-card p-6 rounded-2xl shadow-md space-y-6">
-              <h2 class="text-lg font-bold flex items-center gap-2">
-                <i data-lucide="sliders"></i> System Configurations
-              </h2>
-              <div class="space-y-5">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                      >Soil ON (%)</label
-                    >
-                    <input
-                      type="number"
-                      id="inputSetON"
-                      min="0"
-                      max="100"
-                      value="50"
-                      class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                      >Soil OFF (%)</label
-                    >
-                    <input
-                      type="number"
-                      id="inputSetOFF"
-                      min="0"
-                      max="100"
-                      value="65"
-                      class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-semibold"
-                    />
-                  </div>
-                </div>
-
-                <div
-                  class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-3"
-                >
-                  <div>
-                    <label
-                      class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                      >Pump Run Time (Min)</label
-                    >
-                    <input
-                      type="number"
-                      id="inputPumpTime"
-                      value="1"
-                      min="1"
-                      class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                      >Pump Delay Time (Min)</label
-                    >
-                    <input
-                      type="number"
-                      id="inputDelayTime"
-                      value="1"
-                      min="0"
-                      class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"
-                    />
-                  </div>
-                </div>
-
-                <div class="border-t border-slate-100 pt-3 space-y-4">
-                  <div>
-                    <label
-                      class="text-[10px] font-black text-slate-600 uppercase block mb-1"
-                      >Sprayer Target Trigger Temp (°C)</label
-                    >
-                    <input
-                      type="number"
-                      id="inputTempSet"
-                      value="35"
-                      step="0.5"
-                      class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold"
-                    />
-                  </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                        >Spray Run Time (Min)</label
-                      >
-                      <input
-                        type="number"
-                        id="inputSprayerTime"
-                        value="1"
-                        min="1"
-                        class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold"
-                      />
+      <main class="max-w-7xl mx-auto p-2 sm:p-4 md:p-6 space-y-6">
+        
+        <!-- ================= VIEW 1: SCADA DASHBOARD VIEW ================= -->
+        <div id="viewDashboard" class="space-y-6 animate-fade-in">
+            <!-- Glowing Sensor Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- Soil Moisture Node -->
+                <div class="scada-bezel p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between border-l-4 border-l-blue-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">SOIL MOISTURE</p>
+                            <p class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">Hydration Node</p>
+                        </div>
+                        <div class="p-2 bg-blue-950/60 border border-blue-900/40 rounded-xl">
+                            <i data-lucide="droplet" class="w-5 h-5 text-blue-400"></i>
+                        </div>
                     </div>
-                    <div>
-                      <label
-                        class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                        >Spray Delay Time (Min)</label
-                      >
-                      <input
-                        type="number"
-                        id="inputSprayerDelay"
-                        value="1"
-                        min="0"
-                        class="w-full border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-orange-500 outline-none font-semibold"
-                      />
+                    <div class="mt-4 flex items-baseline gap-1">
+                        <h3 id="valMoisture" class="text-4xl font-black font-mono-scada text-white leading-none tracking-tight">--%</h3>
                     </div>
-                  </div>
                 </div>
 
-                <button
-                  id="btnSync"
-                  class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
-                >
-                  <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                  Save Configurations
-                </button>
-              </div>
+                <!-- Temperature Node -->
+                <div class="scada-bezel p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between border-l-4 border-l-orange-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">AIR TEMPERATURE</p>
+                            <p class="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-0.5">Thermal Monitor</p>
+                        </div>
+                        <div class="p-2 bg-orange-950/60 border border-orange-900/40 rounded-xl">
+                            <i data-lucide="thermometer" class="w-5 h-5 text-orange-400"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-baseline gap-1">
+                        <h3 id="valTemp" class="text-4xl font-black font-mono-scada text-white leading-none tracking-tight">--°C</h3>
+                    </div>
+                </div>
+
+                <!-- Humidity Node -->
+                <div class="scada-bezel p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between border-l-4 border-l-indigo-500">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">AIR HUMIDITY</p>
+                            <p class="text-[9px] font-bold text-indigo-500 uppercase tracking-widest mt-0.5">Ambient Saturation</p>
+                        </div>
+                        <div class="p-2 bg-indigo-950/60 border border-indigo-900/40 rounded-xl">
+                            <i data-lucide="wind" class="w-5 h-5 text-indigo-400"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-baseline gap-1">
+                        <h3 id="valHum" class="text-4xl font-black font-mono-scada text-white leading-none tracking-tight">--%</h3>
+                    </div>
+                </div>
+
+                <!-- Relays Power Mimic Panel -->
+                <div class="scada-bezel p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between border-l-4 border-l-amber-500">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">MIMIC PANEL</span>
+                        <span class="text-[9px] font-mono-scada bg-amber-950/50 border border-amber-900/40 px-1.5 py-0.5 rounded text-amber-500 uppercase">SOLENOIDS</span>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center bg-slate-950/50 p-2 rounded-xl border border-slate-800/80">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Water Pump</span>
+                            <span id="valPump" class="text-xs font-black uppercase tracking-wider text-slate-500">Offline</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-slate-950/50 p-2 rounded-xl border border-slate-800/80">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Sprayer Pump</span>
+                            <span id="valSprayer" class="text-xs font-black uppercase tracking-wider text-slate-500">Offline</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Graph Area -->
-            <div
-              class="glass-card p-6 rounded-2xl shadow-md lg:col-span-2 flex flex-col min-h-[520px]"
-            >
-              <div
-                class="flex flex-wrap justify-between items-center mb-4 gap-4"
-              >
-                <div>
-                  <h2 class="text-lg font-bold flex items-center gap-2">
-                    <i data-lucide="line-chart"></i> Environment Trends
-                  </h2>
-                  <p
-                    class="text-[10px] text-slate-400 uppercase font-bold mt-1"
-                  >
-                    History & Live Data Operations
-                  </p>
-                </div>
-                <div class="flex items-center gap-3">
-                  <div
-                    id="datePickerContainer"
-                    class="flex items-center gap-1.5 bg-white border rounded-xl px-2 py-1 shadow-sm"
-                  >
-                    <i
-                      data-lucide="calendar"
-                      class="w-3.5 h-3.5 text-slate-400"
-                    ></i>
-                    <input
-                      type="date"
-                      id="filterHistoryDate"
-                      class="text-xs font-semibold text-slate-600 outline-none cursor-pointer bg-transparent"
-                    />
-                  </div>
-                  <button
-                    id="btnExportCSV"
-                    class="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] px-3 py-2 rounded-xl font-bold hover:bg-emerald-100 transition-colors border border-emerald-200 shadow-sm"
-                    title="Download Excel CSV Sheet"
-                  >
-                    <i data-lucide="download" class="w-3 h-3"></i> EXPORT
-                    HISTORY
-                  </button>
-                </div>
-              </div>
+            <!-- Layout split: Controls & System Trend -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- SCADA Valve / Solenoid Control Settings Panel -->
+                <div class="scada-bezel p-5 sm:p-6 rounded-2xl space-y-6">
+                    <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
+                        <h2 class="text-sm font-black tracking-widest uppercase flex items-center gap-2">
+                            <i data-lucide="sliders" class="text-amber-500"></i>
+                            PLC AUTOMATION CONTROLS
+                        </h2>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Soil Moisture setpoint -->
+                        <div class="bg-slate-950/50 p-3.5 rounded-xl border border-slate-800">
+                            <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest block mb-2">SOIL MOISTURE THRESHOLDS (%)</span>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-500 block mb-1">PUMP START (ON)</label>
+                                    <input type="number" id="inputSetON" min="0" max="100" value="50" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-100">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-500 block mb-1">PUMP STOP (OFF)</label>
+                                    <input type="number" id="inputSetOFF" min="0" max="100" value="65" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold text-slate-100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Water Pump Timer intervals -->
+                        <div class="bg-slate-950/50 p-3.5 rounded-xl border border-slate-800">
+                            <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest block mb-2">SOLENOID RUNTIMING (MIN)</span>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-500 block mb-1">MAX RUN TIME</label>
+                                    <input type="number" id="inputPumpTime" value="1" min="1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-100">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-500 block mb-1">COOLDOWN LOCK</label>
+                                    <input type="number" id="inputDelayTime" value="1" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-100">
+                                </div>
+                            </div>
+                        </div>
 
-              <div
-                class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl mb-6 overflow-x-auto no-scrollbar"
-              >
-                <button
-                  data-period="live"
-                  class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap tab-active"
-                >
-                  LIVE
-                </button>
-                <button
-                  data-period="1D"
-                  class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600"
-                >
-                  1 DAY
-                </button>
-                <button
-                  data-period="1W"
-                  class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600"
-                >
-                  1 WEEK
-                </button>
-                <button
-                  data-period="1M"
-                  class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600"
-                >
-                  1 MONTH
-                </button>
-                <button
-                  data-period="3M"
-                  class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600"
-                >
-                  3 MONTH
-                </button>
-                <button
-                  data-period="all"
-                  class="period-btn px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-slate-500 hover:text-emerald-600 bg-emerald-100/50"
-                >
-                  ✨ ALL HISTORY
-                </button>
-              </div>
+                        <!-- Thermal Sprayer controls -->
+                        <div class="bg-slate-950/50 p-3.5 rounded-xl border border-slate-800 space-y-3">
+                            <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest block">SPRAYER THERMAL OVERRIDE</span>
+                            <div>
+                                <label class="text-[9px] font-black text-slate-500 block mb-1">TRIGGER THRESHOLD (°C)</label>
+                                <input type="number" id="inputTempSet" value="35" step="0.5" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none font-bold text-slate-100">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-500 block mb-1">SPRAYER RUN TIME</label>
+                                    <input type="number" id="inputSprayerTime" value="1" min="1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none font-bold text-slate-100">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-500 block mb-1">SPRAY COOLDOWN</label>
+                                    <input type="number" id="inputSprayerDelay" value="1" min="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none font-bold text-slate-100">
+                                </div>
+                            </div>
+                        </div>
 
-              <div class="flex-grow relative">
-                <div
-                  id="chartLoading"
-                  class="absolute inset-0 bg-white/50 z-10 flex items-center justify-center hidden"
-                >
-                  <div class="flex flex-col items-center gap-2">
-                    <i
-                      data-lucide="loader-2"
-                      class="w-8 h-8 text-emerald-600 animate-spin"
-                    ></i>
-                    <span class="text-xs font-bold text-slate-500"
-                      >Fetching Database History...</span
-                    >
-                  </div>
+                        <button id="btnSync" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold py-3.5 rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all shadow-md text-xs uppercase tracking-wider border border-amber-600">
+                            <i data-lucide="save" class="w-4 h-4 inline-block mr-1"></i>
+                            Save PLC Configurations
+                        </button>
+                    </div>
                 </div>
-                <canvas id="historyChart"></canvas>
-              </div>
 
-              <div
-                class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center"
-              >
-                <span id="dataInfo" class="text-[10px] text-slate-400 italic"
-                  >Showing live incoming data streams</span
-                >
-                <span
-                  id="valLastUpdate"
-                  class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-mono"
-                  >--:--:--</span
-                >
-              </div>
+                <!-- TREND GRAPH CONTAINER -->
+                <div class="scada-bezel p-5 sm:p-6 rounded-2xl lg:col-span-2 flex flex-col min-h-[500px]">
+                    <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+                        <div>
+                            <h2 class="text-sm font-black tracking-widest uppercase flex items-center gap-2">
+                                <i data-lucide="activity" class="text-amber-500"></i> telemetry real-time logs
+                            </h2>
+                            <p class="text-[9px] text-slate-500 font-bold uppercase mt-1">SCADA Trend Analysis Mimic Panel</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div id="datePickerContainer" class="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 shadow-inner">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-500"></i>
+                                <input type="date" id="filterHistoryDate" class="text-[10px] font-bold text-slate-300 bg-transparent outline-none cursor-pointer">
+                            </div>
+                            <button id="btnExportCSV" class="flex items-center gap-1 bg-slate-900 border border-slate-800 text-[9px] text-slate-300 px-3 py-2 rounded-xl font-bold hover:bg-slate-800 transition-colors uppercase tracking-wider shadow" title="Export current dataset to CSV format">
+                                <i data-lucide="download" class="w-3 h-3 text-amber-500"></i> EXPORT
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter period toggle switches -->
+                    <div class="flex items-center gap-1 bg-slate-950 border border-slate-850 p-1 rounded-xl mb-4 overflow-x-auto no-scrollbar">
+                        <button data-period="live" class="period-btn px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all whitespace-nowrap tab-active">LIVE</button>
+                        <button data-period="1D" class="period-btn px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all whitespace-nowrap text-slate-400 hover:text-white">1 DAY</button>
+                        <button data-period="1W" class="period-btn px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all whitespace-nowrap text-slate-400 hover:text-white">1 WEEK</button>
+                        <button data-period="1M" class="period-btn px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all whitespace-nowrap text-slate-400 hover:text-white">1 MONTH</button>
+                        <button data-period="3M" class="period-btn px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all whitespace-nowrap text-slate-400 hover:text-white">3 MONTH</button>
+                        <button data-period="all" class="period-btn px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all whitespace-nowrap text-slate-400 hover:text-white bg-slate-900">✨ ALL TIME</button>
+                    </div>
+
+                    <!-- Chart Workspace Area -->
+                    <div class="flex-grow relative h-72">
+                        <div id="chartLoading" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl hidden">
+                            <div class="flex flex-col items-center gap-2">
+                                <i data-lucide="loader-2" class="w-8 h-8 text-amber-500 animate-spin"></i>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Querying Cloud Registry...</span>
+                            </div>
+                        </div>
+                        <canvas id="historyChart"></canvas>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-slate-800/80 flex justify-between items-center">
+                        <span id="dataInfo" class="text-[9px] text-slate-500 font-semibold tracking-wider uppercase italic">Listening to telemetry broadcasts</span>
+                        <span id="valLastUpdate" class="text-[10px] font-mono-scada bg-slate-950 border border-slate-850 text-amber-500 px-2.5 py-1 rounded">--:--:--</span>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
 
         <!-- ================= VIEW 2: ADMIN PANEL VIEW ================= -->
-        <div id="viewAdmin" class="hidden space-y-8 animate-fade-in">
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left: Database Connections Setup -->
-            <div
-              class="glass-card p-6 rounded-2xl shadow-md space-y-6 lg:col-span-1 h-fit"
-            >
-              <div class="border-b pb-4 border-slate-100">
-                <h2
-                  class="text-lg font-bold flex items-center gap-2 text-slate-800"
-                >
-                  <i data-lucide="database" class="text-emerald-600"></i>
-                  Custom Database Setup
-                </h2>
-                <p class="text-xs text-slate-400 mt-1">
-                  Configure your dashboard to sync with your hardware node's
-                  Firebase credentials.
-                </p>
-              </div>
-
-              <div class="space-y-4">
-                <div>
-                  <label
-                    class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                    >Firebase RTDB URL</label
-                  >
-                  <input
-                    type="text"
-                    id="dbInputUrl"
-                    placeholder="https://your-project-id.firebaseio.com"
-                    class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-mono"
-                  />
-                </div>
-                <div>
-                  <label
-                    class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                    >Firebase Web API Key</label
-                  >
-                  <input
-                    type="password"
-                    id="dbInputApiKey"
-                    placeholder="AIzaSy..."
-                    class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-mono"
-                  />
+        <div id="viewAdmin" class="hidden space-y-6 animate-fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Database Connections Configuration Box -->
+                <div class="scada-bezel p-5 sm:p-6 rounded-2xl space-y-6 lg:col-span-1 h-fit">
+                    <div class="border-b border-slate-800 pb-3">
+                        <h2 class="text-sm font-black tracking-widest uppercase flex items-center gap-2">
+                            <i data-lucide="database" class="text-amber-500"></i> 
+                            Custom Target database setup
+                        </h2>
+                        <p class="text-[10px] text-slate-500 uppercase font-semibold mt-1">Bind this console to any active ESP32 PLC node.</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Firebase RTDB Endpoint URL</label>
+                            <input type="text" id="dbInputUrl" placeholder="https://your-project-id.firebaseio.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-mono-scada text-slate-300">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Firebase Web API Access Key</label>
+                            <input type="password" id="dbInputApiKey" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-mono-scada text-slate-300">
+                        </div>
+                        
+                        <div class="flex gap-2 pt-2">
+                            <button id="btnSaveCustomDb" class="flex-grow bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold py-3 rounded-xl transition-all shadow-md text-xs uppercase tracking-wider border border-amber-600">
+                                Apply Config
+                            </button>
+                            <button id="btnRevertDb" class="bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold px-4 py-3 rounded-xl border border-slate-750 transition-all text-xs uppercase tracking-wider" title="Restore HYTECH default database paths">
+                                Default
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex gap-2 pt-2">
-                  <button
-                    id="btnSaveCustomDb"
-                    class="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition-all shadow-md text-xs"
-                  >
-                    Connect Custom
-                  </button>
-                  <button
-                    id="btnRevertDb"
-                    class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-3 py-2.5 rounded-xl transition-all text-xs"
-                    title="Reset Default Settings"
-                  >
-                    Restore Default
-                  </button>
+                <!-- High-fidelity Operator Registry Management -->
+                <div class="scada-bezel p-5 sm:p-6 rounded-2xl space-y-6 lg:col-span-2">
+                    <div class="flex flex-wrap justify-between items-start border-b border-slate-800 pb-3 gap-3">
+                        <div>
+                            <h2 class="text-sm font-black tracking-widest uppercase flex items-center gap-2">
+                                <i data-lucide="users" class="text-amber-500"></i>
+                                Operator Directory Registry
+                            </h2>
+                            <p class="text-[10px] text-slate-500 uppercase font-semibold mt-1">Manage system logins, access configurations, and security level permissions.</p>
+                        </div>
+                        <button id="btnToggleAddUser" class="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all shadow-md flex items-center gap-1.5 uppercase tracking-wider border border-amber-650">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i> Add Operator
+                        </button>
+                    </div>
+
+                    <!-- Register Operator Section -->
+                    <div id="addUserBox" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4 animate-fade-in">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xs font-black text-amber-500 flex items-center gap-2 uppercase tracking-widest">
+                                <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                                Register system access credential
+                            </h3>
+                            <button id="btnCancelAddUser" class="text-xs text-slate-500 hover:text-white transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
+                        </div>
+                        <form id="addUserForm" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">FULL NAME / SURNAME</label>
+                                    <input type="text" id="newFullName" placeholder="Operator Name" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">OPERATOR ID (USERNAME)</label>
+                                    <input type="text" id="newUserId" placeholder="operator_id" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">SESSION PASSWORD</label>
+                                    <input type="password" id="newUserPass" placeholder="Enter password" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-black text-slate-500 uppercase block mb-1">SECURITY ACCESS ROLE</label>
+                                    <select id="newUserRole" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-200 bg-slate-900">
+                                        <option value="operator">Operator (Dashboard Control Only)</option>
+                                        <option value="admin">Administrator (Full Systems + Admin Panels)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex justify-end gap-2">
+                                <button type="submit" class="bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold px-5 py-3 rounded-xl text-xs transition-all shadow-md uppercase tracking-wider border border-amber-650">
+                                    Authorize Access
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Operator directory Table -->
+                    <div class="overflow-x-auto border border-slate-800 rounded-2xl bg-slate-950 shadow-inner">
+                        <table class="w-full border-collapse text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900 font-bold uppercase text-[9px] text-slate-400 tracking-wider border-b border-slate-800">
+                                <tr>
+                                    <th class="p-4">operator details</th>
+                                    <th class="p-4">system ID</th>
+                                    <th class="p-4">access role</th>
+                                    <th class="p-4">session status</th>
+                                    <th class="p-4 text-right">actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="authorizedUsersList" class="divide-y divide-slate-900">
+                                <tr>
+                                    <td colspan="5" class="p-8 text-center text-slate-500 italic uppercase font-bold tracking-widest animate-pulse">Syncing system operator directory...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-              </div>
             </div>
-
-            <!-- Right: High-fidelity User Account Creation & Management -->
-            <div
-              class="glass-card p-6 rounded-2xl shadow-md space-y-6 lg:col-span-2"
-            >
-              <div
-                class="flex justify-between items-start border-b pb-4 border-slate-100"
-              >
-                <div>
-                  <h2
-                    class="text-lg font-bold flex items-center gap-2 text-slate-800"
-                  >
-                    <i data-lucide="users" class="text-emerald-600"></i>
-                    User Directory
-                  </h2>
-                  <p class="text-xs text-slate-400 mt-1">
-                    Manage system logins, access configurations, and permission
-                    credentials.
-                  </p>
-                </div>
-                <button
-                  id="btnToggleAddUser"
-                  class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
-                >
-                  <i data-lucide="user-plus" class="w-4 h-4"></i> Create Account
-                </button>
-              </div>
-
-              <!-- Create User Section -->
-              <div
-                id="addUserBox"
-                class="hidden bg-slate-50 rounded-2xl p-5 border border-slate-100 space-y-4 animate-fade-in"
-              >
-                <div class="flex justify-between items-center">
-                  <h3
-                    class="text-sm font-bold text-slate-700 flex items-center gap-2"
-                  >
-                    <i
-                      data-lucide="shield-alert"
-                      class="w-4 h-4 text-emerald-600"
-                    ></i>
-                    Register New System User
-                  </h3>
-                  <button
-                    id="btnCancelAddUser"
-                    class="text-xs font-bold text-slate-400 hover:text-slate-600"
-                  >
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                  </button>
-                </div>
-                <form id="addUserForm" class="space-y-4">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                        >Full Name</label
-                      >
-                      <input
-                        type="text"
-                        id="newFullName"
-                        placeholder="e.g. John Doe"
-                        class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label
-                        class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                        >User ID / Username</label
-                      >
-                      <input
-                        type="text"
-                        id="newUserId"
-                        placeholder="e.g. operator12"
-                        class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label
-                        class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                        >Security Password</label
-                      >
-                      <input
-                        type="password"
-                        id="newUserPass"
-                        placeholder="Enter password"
-                        class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label
-                        class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-                        >Access Role</label
-                      >
-                      <select
-                        id="newUserRole"
-                        class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold bg-white"
-                      >
-                        <option value="operator">
-                          Operator (Dashboard Control Only)
-                        </option>
-                        <option value="admin">
-                          Administrator (Full Systems + Admin Panels)
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="flex justify-end gap-2">
-                    <button
-                      type="submit"
-                      class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-xl text-xs transition-all shadow-sm"
-                    >
-                      Authorize New Account
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              <!-- User Table -->
-              <div
-                class="overflow-x-auto border rounded-2xl bg-white shadow-inner"
-              >
-                <table
-                  class="w-full border-collapse text-left text-xs text-slate-600"
-                >
-                  <thead
-                    class="bg-slate-50 font-bold uppercase text-slate-500 tracking-wider border-b border-slate-100"
-                  >
-                    <tr>
-                      <th class="p-4">Profile</th>
-                      <th class="p-4">User ID</th>
-                      <th class="p-4">Role</th>
-                      <th class="p-4">Status</th>
-                      <th class="p-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    id="authorizedUsersList"
-                    class="divide-y divide-slate-100"
-                  >
-                    <tr>
-                      <td
-                        colspan="5"
-                        class="p-8 text-center text-slate-400 italic"
-                      >
-                        Syncing user directory...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- System Information Footer -->
-        <div class="glass-card p-6 rounded-2xl shadow-md mt-8">
-          <div class="flex items-start gap-4">
-            <div class="p-3 bg-emerald-100 rounded-xl">
-              <i data-lucide="info" class="text-emerald-600"></i>
+        <!-- System Information Terminal Bar -->
+        <div class="scada-bezel p-5 rounded-2xl border-l-4 border-l-amber-500">
+            <div class="flex items-start gap-4">
+                <div class="p-3 bg-amber-950/40 border border-amber-900/30 rounded-xl">
+                    <i data-lucide="radio" class="text-amber-500 animate-pulse w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="font-black tracking-widest text-white text-xs uppercase">Terminal Intelligence Broadcast</h3>
+                    <p id="systemInsight" class="text-xs text-slate-400 mt-1 leading-relaxed uppercase tracking-wider font-semibold">
+                        System telemetry link operational. For technical issues, contact lead engineer: Mr. PALI (0969809656)
+                        <span class="font-mono-scada text-amber-500 text-xs ml-1 font-bold">/HYTECH</span>
+                    </p>
+                </div>
             </div>
-            <div>
-              <h3 class="font-bold text-slate-800">System Intelligence</h3>
-              <p
-                id="systemInsight"
-                class="text-sm text-slate-600 mt-1 leading-relaxed"
-              >
-                More Information Contact To Mr.PALI (0969809656)
-                <span class="font-mono text-xs">/HyTech</span>...
-              </p>
-            </div>
-          </div>
         </div>
       </main>
     </div>
 
     <!-- DB Config Modal Login Overlay -->
-    <div
-      id="dbModal"
-      class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4"
-    >
-      <div
-        class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fade-in"
-      >
-        <div
-          class="bg-slate-800 p-6 text-white flex justify-between items-center"
-        >
-          <h3 class="font-bold flex items-center gap-2">
-            <i data-lucide="database" class="text-emerald-400"></i> Setup Active
-            Firebase
-          </h3>
-          <button
-            id="btnCloseDbModal"
-            class="p-1 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white"
-          >
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
+    <div id="dbModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-md rounded-3xl overflow-hidden border border-slate-700 shadow-2xl animate-fade-in">
+            <div class="bg-slate-950 border-b border-slate-800 p-5 text-white flex justify-between items-center">
+                <h3 class="font-black font-mono-scada uppercase tracking-wider flex items-center gap-2"><i data-lucide="database" class="text-amber-500"></i> Setup Active Firebase</h3>
+                <button id="btnCloseDbModal" class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6 space-y-4 bg-slate-950/40">
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Database URL Endpoint</label>
+                    <input type="text" id="modalInputUrl" placeholder="https://..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-mono-scada text-slate-300">
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">API Authentication Key</label>
+                    <input type="password" id="modalInputApiKey" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-mono-scada text-slate-300">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button id="btnModalSave" class="flex-grow bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white py-3 rounded-xl text-xs font-black transition-all uppercase tracking-wider border border-amber-650">Apply Configuration</button>
+                    <button id="btnModalReset" class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-750 px-4 py-3 rounded-xl text-xs font-black transition-all uppercase tracking-wider">Reset Defaults</button>
+                </div>
+            </div>
         </div>
-        <div class="p-6 space-y-4">
-          <div>
-            <label
-              class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-              >Database URL Link</label
-            >
-            <input
-              type="text"
-              id="modalInputUrl"
-              placeholder="https://..."
-              class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-mono"
-            />
-          </div>
-          <div>
-            <label
-              class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-              >API Key Link</label
-            >
-            <input
-              type="password"
-              id="modalInputApiKey"
-              placeholder="AIzaSy..."
-              class="w-full border rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-mono"
-            />
-          </div>
-          <div class="flex gap-3 pt-2">
-            <button
-              id="btnModalSave"
-              class="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md"
-            >
-              Apply Configuration
-            </button>
-            <button
-              id="btnModalReset"
-              class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-bold transition-all"
-            >
-              Reset Default
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Edit User Modal -->
-    <div
-      id="editUserModal"
-      class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4"
-    >
-      <div
-        class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fade-in"
-      >
-        <div
-          class="bg-slate-800 p-6 text-white flex justify-between items-center"
-        >
-          <h3 class="font-bold flex items-center gap-2">
-            <i data-lucide="user-cog" class="text-emerald-400"></i> Edit User
-            Account
-          </h3>
-          <button
-            id="btnCloseEditUserModal"
-            class="p-1 rounded-lg hover:bg-slate-700 text-slate-300 hover:text-white"
-          >
-            <i data-lucide="x" class="w-5 h-5"></i>
-          </button>
+    <div id="editUserModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-md rounded-3xl overflow-hidden border border-slate-700 shadow-2xl animate-fade-in">
+            <div class="bg-slate-950 border-b border-slate-800 p-5 text-white flex justify-between items-center">
+                <h3 class="font-black font-mono-scada uppercase tracking-wider flex items-center gap-2"><i data-lucide="user-cog" class="text-amber-500"></i> Edit User Account</h3>
+                <button id="btnCloseEditUserModal" class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="editUserForm" class="p-6 space-y-4 bg-slate-950/40">
+                <!-- Hidden inputs to preserve existing status and original reference -->
+                <input type="hidden" id="editOriginalUserId">
+                <input type="hidden" id="editUserStatus">
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Full Name</label>
+                    <input type="text" id="editFullName" placeholder="Operator Name" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required>
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Operator ID / Username</label>
+                    <input type="text" id="editUserId" placeholder="operator_id" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required>
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Session Password</label>
+                    <input type="text" id="editUserPass" placeholder="Enter password" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required>
+                </div>
+                <div>
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Access Role</label>
+                    <select id="editUserRole" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-200 bg-slate-900">
+                        <option value="operator">Operator (Dashboard Control Only)</option>
+                        <option value="admin">Administrator (Full Systems + Admin Panels)</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-grow bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white py-3 rounded-xl text-xs font-black transition-all uppercase tracking-wider border border-amber-650">Apply Edits</button>
+                </div>
+            </form>
         </div>
-        <form id="editUserForm" class="p-6 space-y-4">
-          <!-- Hidden inputs to preserve existing status and original reference -->
-          <input type="hidden" id="editOriginalUserId" />
-          <input type="hidden" id="editUserStatus" />
-          <div>
-            <label
-              class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-              >Full Name</label
-            >
-            <input
-              type="text"
-              id="editFullName"
-              placeholder="e.g. John Doe"
-              class="w-full border rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"
-              required
-            />
-          </div>
-          <div>
-            <label
-              class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-              >User ID / Username</label
-            >
-            <input
-              type="text"
-              id="editUserId"
-              placeholder="e.g. operator12"
-              class="w-full border rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"
-              required
-            />
-          </div>
-          <div>
-            <label
-              class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-              >Security Password</label
-            >
-            <input
-              type="text"
-              id="editUserPass"
-              placeholder="Enter password"
-              class="w-full border rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold"
-              required
-            />
-          </div>
-          <div>
-            <label
-              class="text-[10px] font-black text-slate-500 uppercase block mb-1"
-              >Access Role</label
-            >
-            <select
-              id="editUserRole"
-              class="w-full border rounded-xl px-3.5 py-2 text-xs focus:ring-2 focus:ring-emerald-500 outline-none font-semibold bg-white"
-            >
-              <option value="operator">
-                Operator (Dashboard Control Only)
-              </option>
-              <option value="admin">
-                Administrator (Full Systems + Admin Panels)
-              </option>
-            </select>
-          </div>
-          <div class="flex gap-3 pt-2">
-            <button
-              type="submit"
-              class="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md"
-            >
-              Apply Edits
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
 
     <!-- Custom Modal Dialog System (Replacing default browser popups) -->
-    <div
-      id="customDialog"
-      class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4"
-    >
-      <div
-        class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 space-y-4 border border-slate-100"
-      >
-        <div class="flex items-start gap-3">
-          <div
-            id="dialogIconBox"
-            class="p-2 rounded-xl bg-slate-100 text-slate-600"
-          >
-            <i id="dialogIcon" data-lucide="help-circle" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <h3 id="dialogTitle" class="text-base font-bold text-slate-800">
-              Confirm Action
-            </h3>
-            <p
-              id="dialogMessage"
-              class="text-xs text-slate-500 mt-1 leading-relaxed"
-            >
-              Are you sure you want to perform this operation?
-            </p>
-          </div>
+    <div id="customDialog" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 w-full max-w-sm rounded-2xl border border-slate-750 shadow-2xl p-6 space-y-4">
+            <div class="flex items-start gap-3">
+                <div id="dialogIconBox" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-400">
+                    <i id="dialogIcon" data-lucide="help-circle" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 id="dialogTitle" class="text-sm font-black uppercase text-white tracking-wider">Confirm Action</h3>
+                    <p id="dialogMessage" class="text-xs text-slate-400 mt-1 leading-relaxed uppercase tracking-wide font-semibold">Are you sure you want to perform this operation?</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button id="dialogBtnCancel" class="bg-slate-950 hover:bg-slate-800 text-slate-400 border border-slate-800 font-bold px-4 py-2 rounded-xl text-xs transition-colors uppercase tracking-wider">Cancel</button>
+                <button id="dialogBtnConfirm" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow uppercase tracking-wider border border-amber-650">Confirm</button>
+            </div>
         </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button
-            id="dialogBtnCancel"
-            class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            id="dialogBtnConfirm"
-            class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow-sm"
-          >
-            Confirm
-          </button>
-        </div>
-      </div>
     </div>
 
     <!-- Core Local Credentials Handling Script -->
     <script>
       const MASTER_ID = "admin";
-      const MASTER_PASS = "x112233";
+      const MASTER_PASS = "123456";
 
       const loginForm = document.getElementById("loginForm");
       const btnLogout = document.getElementById("btnLogout");
@@ -956,59 +591,51 @@
       let activeConfirmCallback = null;
       let activeCancelCallback = null;
 
-      window.triggerDialog = function (
-        title,
-        msg,
-        type = "info",
-        onConfirm = null,
-        onCancel = null,
-      ) {
-        const dialog = document.getElementById("customDialog");
-        const dTitle = document.getElementById("dialogTitle");
-        const dMsg = document.getElementById("dialogMessage");
-        const dIcon = document.getElementById("dialogIcon");
-        const dIconBox = document.getElementById("dialogIconBox");
-        const btnCancel = document.getElementById("dialogBtnCancel");
-        const btnConfirm = document.getElementById("dialogBtnConfirm");
+      window.triggerDialog = function(title, msg, type = "info", onConfirm = null, onCancel = null) {
+          const dialog = document.getElementById("customDialog");
+          const dTitle = document.getElementById("dialogTitle");
+          const dMsg = document.getElementById("dialogMessage");
+          const dIcon = document.getElementById("dialogIcon");
+          const dIconBox = document.getElementById("dialogIconBox");
+          const btnCancel = document.getElementById("dialogBtnCancel");
+          const btnConfirm = document.getElementById("dialogBtnConfirm");
 
-        dTitle.innerText = title;
-        dMsg.innerText = msg;
+          dTitle.innerText = title;
+          dMsg.innerText = msg;
 
-        // Style changes according to type
-        if (type === "warning" || type === "danger") {
-          dIconBox.className = "p-2 rounded-xl bg-red-50 text-red-600";
-          dIcon.setAttribute("data-lucide", "alert-triangle");
-          btnConfirm.className =
-            "bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow-sm";
-        } else {
-          dIconBox.className = "p-2 rounded-xl bg-emerald-50 text-emerald-600";
-          dIcon.setAttribute("data-lucide", "help-circle");
-          btnConfirm.className =
-            "bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow-sm";
-        }
+          // Style changes according to type
+          if (type === "warning" || type === "danger") {
+              dIconBox.className = "p-2.5 rounded-xl bg-red-950/80 border border-red-800/40 text-red-400";
+              dIcon.setAttribute("data-lucide", "alert-triangle");
+              btnConfirm.className = "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow uppercase tracking-wider border border-red-600";
+          } else {
+              dIconBox.className = "p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-amber-500";
+              dIcon.setAttribute("data-lucide", "help-circle");
+              btnConfirm.className = "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow uppercase tracking-wider border border-amber-600";
+          }
 
-        if (typeof lucide !== "undefined") lucide.createIcons();
+          if (typeof lucide !== "undefined") lucide.createIcons();
 
-        if (onConfirm) {
-          btnCancel.classList.remove("hidden");
-          activeConfirmCallback = onConfirm;
-        } else {
-          btnCancel.classList.add("hidden");
-          activeConfirmCallback = () => {};
-        }
+          if (onConfirm) {
+              btnCancel.classList.remove("hidden");
+              activeConfirmCallback = onConfirm;
+          } else {
+              btnCancel.classList.add("hidden");
+              activeConfirmCallback = () => {};
+          }
 
-        activeCancelCallback = onCancel;
-        dialog.classList.remove("hidden");
+          activeCancelCallback = onCancel;
+          dialog.classList.remove("hidden");
       };
 
       document.getElementById("dialogBtnConfirm").onclick = () => {
-        document.getElementById("customDialog").classList.add("hidden");
-        if (activeConfirmCallback) activeConfirmCallback();
+          document.getElementById("customDialog").classList.add("hidden");
+          if (activeConfirmCallback) activeConfirmCallback();
       };
 
       document.getElementById("dialogBtnCancel").onclick = () => {
-        document.getElementById("customDialog").classList.add("hidden");
-        if (activeCancelCallback) activeCancelCallback();
+          document.getElementById("customDialog").classList.add("hidden");
+          if (activeCancelCallback) activeCancelCallback();
       };
 
       // Dynamic view transitions
@@ -1018,32 +645,24 @@
       const viewAdmin = document.getElementById("viewAdmin");
 
       tabDashboard.onclick = () => {
-        tabDashboard.className =
-          "px-4 py-2 rounded-lg bg-emerald-600 text-white shadow";
-        tabAdmin.className =
-          "px-4 py-2 rounded-lg text-emerald-100 hover:text-white";
-        viewDashboard.classList.remove("hidden");
-        viewAdmin.classList.add("hidden");
-        if (typeof lucide !== "undefined") lucide.createIcons();
+          tabDashboard.className = "px-4 py-2.5 rounded-lg text-white font-bold bg-amber-600/10 tab-active";
+          tabAdmin.className = "px-4 py-2.5 rounded-lg text-slate-400 hover:text-white font-bold transition-all duration-150 uppercase";
+          viewDashboard.classList.remove("hidden");
+          viewAdmin.classList.add("hidden");
+          if(typeof lucide !== "undefined") lucide.createIcons();
       };
 
       tabAdmin.onclick = () => {
-        const role = localStorage.getItem("userRole");
-        if (role !== "admin") {
-          window.triggerDialog(
-            "Access Denied",
-            "Only administrators are permitted to view the Admin Panel.",
-            "warning",
-          );
-          return;
-        }
-        tabAdmin.className =
-          "px-4 py-2 rounded-lg bg-emerald-600 text-white shadow";
-        tabDashboard.className =
-          "px-4 py-2 rounded-lg text-emerald-100 hover:text-white";
-        viewAdmin.classList.remove("hidden");
-        viewDashboard.classList.add("hidden");
-        if (typeof lucide !== "undefined") lucide.createIcons();
+          const role = localStorage.getItem("userRole");
+          if (role !== "admin") {
+              window.triggerDialog("Access Denied", "Only systems administrators are permitted to access administrative registries.", "warning");
+              return;
+          }
+          tabAdmin.className = "px-4 py-2.5 rounded-lg text-white font-bold bg-amber-600/10 tab-active";
+          tabDashboard.className = "px-4 py-2.5 rounded-lg text-slate-400 hover:text-white font-bold transition-all duration-150 uppercase";
+          viewAdmin.classList.remove("hidden");
+          viewDashboard.classList.add("hidden");
+          if(typeof lucide !== "undefined") lucide.createIcons();
       };
 
       btnLogout.addEventListener("click", function () {
@@ -1056,20 +675,14 @@
         document.getElementById("loginWrapper").classList.add("hidden");
         document.getElementById("dashboardWrapper").classList.remove("hidden");
         const body = document.getElementById("mainBody");
-        body.classList.remove(
-          "bg-slate-900",
-          "flex",
-          "items-center",
-          "justify-center",
-        );
-        body.classList.add("bg-slate-50", "block");
+        body.className = "min-h-screen text-slate-100 block";
 
         // Role-based UI masking
         const role = localStorage.getItem("userRole");
         if (role === "admin") {
-          tabAdmin.classList.remove("hidden");
+            tabAdmin.classList.remove("hidden");
         } else {
-          tabAdmin.classList.add("hidden");
+            tabAdmin.classList.add("hidden");
         }
 
         if (typeof lucide !== "undefined") lucide.createIcons();
@@ -1084,61 +697,42 @@
 
     <!-- Firebase System Module Integration -->
     <script type="module">
-      import {
-        initializeApp,
-        getApp,
-        deleteApp,
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-      import {
-        getDatabase,
-        ref,
-        onValue,
-        set,
-        update,
-        query,
-        orderByKey,
-        startAt,
-        endAt,
-        get,
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
-      import {
-        getAuth,
-        signInAnonymously,
-        onAuthStateChanged,
-      } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+      import { initializeApp, getApp, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+      import { getDatabase, ref, onValue, set, update, query, orderByKey, startAt, endAt, get } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+      import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
       // Default HYTECH Fallback parameters
       const defaultFirebaseConfig = {
-        apiKey: "NON//",
-        authDomain: "NON//",
-        databaseURL: "NON//",
-        projectId: "NON//",
-        storageBucket: "NON//",
+        apiKey: "AIzaSyBOb0Qn5InkPkQ2N5MCDojOodjiTPFfrzs",
+        authDomain: "weatherstation-c4dc5.firebaseapp.com",
+        databaseURL: "https://weatherstation-c4dc5-default-rtdb.firebaseio.com",
+        projectId: "weatherstation-c4dc5",
+        storageBucket: "weatherstation-c4dc5.firebasestorage.app",
       };
 
       // Configuration parser & extractor
       function getActiveConfig() {
-        const localStr = localStorage.getItem("custom_firebase_config");
-        if (localStr) {
-          try {
-            return JSON.parse(localStr);
-          } catch (e) {
-            return defaultFirebaseConfig;
+          const localStr = localStorage.getItem("custom_firebase_config");
+          if (localStr) {
+              try {
+                  return JSON.parse(localStr);
+              } catch (e) {
+                  return defaultFirebaseConfig;
+              }
           }
-        }
-        return defaultFirebaseConfig;
+          return defaultFirebaseConfig;
       }
 
       function extractProjectId(url) {
-        if (!url) return "weatherstation-c4dc5";
-        try {
-          const cleaned = url.replace("https://", "").replace("http://", "");
-          const firstDot = cleaned.indexOf(".");
-          if (firstDot !== -1) {
-            return cleaned.substring(0, firstDot).replace("-default-rtdb", "");
-          }
-        } catch (e) {}
-        return "custom-project";
+          if (!url) return "weatherstation-c4dc5";
+          try {
+              const cleaned = url.replace("https://", "").replace("http://", "");
+              const firstDot = cleaned.indexOf(".");
+              if(firstDot !== -1) {
+                  return cleaned.substring(0, firstDot).replace("-default-rtdb", "");
+              }
+          } catch(e) {}
+          return "custom-project";
       }
 
       let activeConfig = getActiveConfig();
@@ -1146,24 +740,24 @@
 
       // Boot Firebase instance dynamically
       async function setupFirebaseConnection(configData) {
-        try {
           try {
-            const currentApp = getApp();
-            await deleteApp(currentApp);
-          } catch (e) {}
+              try {
+                  const currentApp = getApp();
+                  await deleteApp(currentApp);
+              } catch (e) {}
 
-          app = initializeApp(configData);
-          db = getDatabase(app);
-          auth = getAuth(app);
+              app = initializeApp(configData);
+              db = getDatabase(app);
+              auth = getAuth(app);
+              
+              signInAnonymously(auth).catch((err) => {
+                  console.error("Firebase Auth Exception:", err);
+              });
 
-          signInAnonymously(auth).catch((err) => {
-            console.error("Firebase Auth Exception:", err);
-          });
-
-          startListening();
-        } catch (err) {
-          console.error("Failed to boot custom configuration:", err);
-        }
+              startListening();
+          } catch (err) {
+              console.error("Failed to boot custom configuration:", err);
+          }
       }
 
       // Dynamic initialization call
@@ -1176,296 +770,230 @@
 
       // Populating UI configurations
       function populateConfigInputUI() {
-        const active = getActiveConfig();
-        document.getElementById("dbInputUrl").value = active.databaseURL || "";
-        document.getElementById("dbInputApiKey").value = active.apiKey || "";
-        document.getElementById("modalInputUrl").value =
-          active.databaseURL || "";
-        document.getElementById("modalInputApiKey").value = active.apiKey || "";
+          const active = getActiveConfig();
+          document.getElementById("dbInputUrl").value = active.databaseURL || "";
+          document.getElementById("dbInputApiKey").value = active.apiKey || "";
+          document.getElementById("modalInputUrl").value = active.databaseURL || "";
+          document.getElementById("modalInputApiKey").value = active.apiKey || "";
       }
       populateConfigInputUI();
 
       // UI Config Modal triggers
       const dbModal = document.getElementById("dbModal");
-      document.getElementById("btnOpenDbModalLogin").onclick = () =>
-        dbModal.classList.remove("hidden");
-
+      document.getElementById("btnOpenDbModalLogin").onclick = () => dbModal.classList.remove("hidden");
+      
       // Open DB configuration modal directly from active dashboard for all roles (Operators and Admins)
       document.getElementById("btnOpenDbModalDashboard").onclick = () => {
-        populateConfigInputUI();
-        dbModal.classList.remove("hidden");
+          populateConfigInputUI();
+          dbModal.classList.remove("hidden");
       };
-
-      document.getElementById("btnCloseDbModal").onclick = () =>
-        dbModal.classList.add("hidden");
+      
+      document.getElementById("btnCloseDbModal").onclick = () => dbModal.classList.add("hidden");
 
       // Save modal database settings
       document.getElementById("btnModalSave").onclick = async () => {
-        const url = document.getElementById("modalInputUrl").value.trim();
-        const key = document.getElementById("modalInputApiKey").value.trim();
-        if (!url || !key) {
-          window.triggerDialog(
-            "Error",
-            "Please verify all fields are populated correctly.",
-          );
-          return;
-        }
-        const projId = extractProjectId(url);
-        const newConfig = {
-          apiKey: key,
-          authDomain: `${projId}.firebaseapp.com`,
-          databaseURL: url,
-          projectId: projId,
-          storageBucket: `${projId}.firebasestorage.app`,
-        };
-        localStorage.setItem(
-          "custom_firebase_config",
-          JSON.stringify(newConfig),
-        );
-        activeConfig = newConfig;
-        await setupFirebaseConnection(activeConfig);
-        populateConfigInputUI();
-        dbModal.classList.add("hidden");
-        window.triggerDialog(
-          "Success",
-          "Database configurations applied and reconnected.",
-        );
+          const url = document.getElementById("modalInputUrl").value.trim();
+          const key = document.getElementById("modalInputApiKey").value.trim();
+          if(!url || !key) {
+              window.triggerDialog("Configuration Alert", "Missing endpoints. Ensure all parameters are set.");
+              return;
+          }
+          const projId = extractProjectId(url);
+          const newConfig = {
+              apiKey: key,
+              authDomain: `${projId}.firebaseapp.com`,
+              databaseURL: url,
+              projectId: projId,
+              storageBucket: `${projId}.firebasestorage.app`
+          };
+          localStorage.setItem("custom_firebase_config", JSON.stringify(newConfig));
+          activeConfig = newConfig;
+          await setupFirebaseConnection(activeConfig);
+          populateConfigInputUI();
+          dbModal.classList.add("hidden");
+          window.triggerDialog("Active Node Saved", "Connection re-initialized with specified PLC node.");
       };
 
       // Reset modal configurations
       document.getElementById("btnModalReset").onclick = async () => {
-        localStorage.removeItem("custom_firebase_config");
-        activeConfig = defaultFirebaseConfig;
-        await setupFirebaseConnection(activeConfig);
-        populateConfigInputUI();
-        dbModal.classList.add("hidden");
-        window.triggerDialog(
-          "Success",
-          "Returned to default HYTECH database parameters.",
-        );
+          localStorage.removeItem("custom_firebase_config");
+          activeConfig = defaultFirebaseConfig;
+          await setupFirebaseConnection(activeConfig);
+          populateConfigInputUI();
+          dbModal.classList.add("hidden");
+          window.triggerDialog("Restore Complete", "System connected to default HYTECH registry.");
       };
 
       // Direct admin panel config saves
       document.getElementById("btnSaveCustomDb").onclick = async () => {
-        const url = document.getElementById("dbInputUrl").value.trim();
-        const key = document.getElementById("dbInputApiKey").value.trim();
-        if (!url || !key) {
-          window.triggerDialog("Error", "Please input valid settings.");
-          return;
-        }
-        const projId = extractProjectId(url);
-        const newConfig = {
-          apiKey: key,
-          authDomain: `${projId}.firebaseapp.com`,
-          databaseURL: url,
-          projectId: projId,
-          storageBucket: `${projId}.firebasestorage.app`,
-        };
-        localStorage.setItem(
-          "custom_firebase_config",
-          JSON.stringify(newConfig),
-        );
-        activeConfig = newConfig;
-        await setupFirebaseConnection(activeConfig);
-        populateConfigInputUI();
-        window.triggerDialog(
-          "Success",
-          "Custom settings synced and active configurations reloaded.",
-        );
+          const url = document.getElementById("dbInputUrl").value.trim();
+          const key = document.getElementById("dbInputApiKey").value.trim();
+          if(!url || !key) {
+              window.triggerDialog("Settings Validation", "Ensure custom endpoints are active.");
+              return;
+          }
+          const projId = extractProjectId(url);
+          const newConfig = {
+              apiKey: key,
+              authDomain: `${projId}.firebaseapp.com`,
+              databaseURL: url,
+              projectId: projId,
+              storageBucket: `${projId}.firebasestorage.app`
+          };
+          localStorage.setItem("custom_firebase_config", JSON.stringify(newConfig));
+          activeConfig = newConfig;
+          await setupFirebaseConnection(activeConfig);
+          populateConfigInputUI();
+          window.triggerDialog("SCADA Connection Locked", "Custom device node online and monitoring active.");
       };
 
       document.getElementById("btnRevertDb").onclick = async () => {
-        localStorage.removeItem("custom_firebase_config");
-        activeConfig = defaultFirebaseConfig;
-        await setupFirebaseConnection(activeConfig);
-        populateConfigInputUI();
-        window.triggerDialog("Success", "Returned to default configurations.");
+          localStorage.removeItem("custom_firebase_config");
+          activeConfig = defaultFirebaseConfig;
+          await setupFirebaseConnection(activeConfig);
+          populateConfigInputUI();
+          window.triggerDialog("Default Restored", "Returned to primary HYTECH database cluster.");
       };
 
       // Toggle new user creator panels
       const addUserBox = document.getElementById("addUserBox");
-      document.getElementById("btnToggleAddUser").onclick = () =>
-        addUserBox.classList.remove("hidden");
-      document.getElementById("btnCancelAddUser").onclick = () =>
-        addUserBox.classList.add("hidden");
+      document.getElementById("btnToggleAddUser").onclick = () => addUserBox.classList.remove("hidden");
+      document.getElementById("btnCancelAddUser").onclick = () => addUserBox.classList.add("hidden");
 
       // Handle login action
       loginForm.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const id = document.getElementById("loginId").value.trim();
-        const pass = document.getElementById("loginPass").value.trim();
-        const loginError = document.getElementById("loginError");
-        const loginErrorMsg = document.getElementById("loginErrorMsg");
+          e.preventDefault();
+          const id = document.getElementById("loginId").value.trim();
+          const pass = document.getElementById("loginPass").value.trim();
+          const loginError = document.getElementById("loginError");
+          const loginErrorMsg = document.getElementById("loginErrorMsg");
 
-        // Local master fallback
-        if (id === MASTER_ID && pass === MASTER_PASS) {
-          localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("userRole", "admin");
-          showDashboard();
-          return;
-        }
-
-        try {
-          const userSnap = await get(ref(db, `authorized_users/${id}`));
-          if (userSnap.exists()) {
-            const dbProfile = userSnap.val();
-            if (dbProfile && dbProfile.password === pass) {
-              if (dbProfile.status === "Suspended") {
-                loginErrorMsg.innerText =
-                  "This account is suspended. Please contact Admin.";
-                loginError.classList.remove("hidden");
-                return;
-              }
+          // Local master fallback
+          if (id === MASTER_ID && pass === MASTER_PASS) {
               localStorage.setItem("isLoggedIn", "true");
-              localStorage.setItem("userRole", dbProfile.role || "operator");
+              localStorage.setItem("userRole", "admin");
               showDashboard();
               return;
-            }
           }
-          loginErrorMsg.innerText = "Invalid User ID or Password";
-          loginError.classList.remove("hidden");
-        } catch (err) {
-          console.error("Cloud verification error:", err);
-          loginErrorMsg.innerText =
-            "Failed to communicate with database server.";
-          loginError.classList.remove("hidden");
-        }
+
+          try {
+              const userSnap = await get(ref(db, `authorized_users/${id}`));
+              if (userSnap.exists()) {
+                  const dbProfile = userSnap.val();
+                  if (dbProfile && dbProfile.password === pass) {
+                      if (dbProfile.status === "Suspended") {
+                          loginErrorMsg.innerText = "Operator session suspended. Contact Lead Systems Administrator.";
+                          loginError.classList.remove("hidden");
+                          return;
+                      }
+                      localStorage.setItem("isLoggedIn", "true");
+                      localStorage.setItem("userRole", dbProfile.role || "operator");
+                      showDashboard();
+                      return;
+                  }
+              }
+              loginErrorMsg.innerText = "Invalid Operator ID or Security Access Key";
+              loginError.classList.remove("hidden");
+          } catch(err) {
+              console.error("Cloud verification error:", err);
+              loginErrorMsg.innerText = "Security node telemetry timed out.";
+              loginError.classList.remove("hidden");
+          }
       });
 
       // Account creation form submissions
       document.getElementById("addUserForm").onsubmit = async (e) => {
-        e.preventDefault();
-        const curRole = localStorage.getItem("userRole");
-        if (curRole !== "admin") {
-          window.triggerDialog(
-            "Access Denied",
-            "Only administrators can register new user accounts.",
-            "warning",
-          );
-          return;
-        }
-        const fn = document.getElementById("newFullName").value.trim();
-        const id = document
-          .getElementById("newUserId")
-          .value.trim()
-          .toLowerCase();
-        const pass = document.getElementById("newUserPass").value.trim();
-        const role = document.getElementById("newUserRole").value;
+          e.preventDefault();
+          const curRole = localStorage.getItem("userRole");
+          if (curRole !== "admin") {
+              window.triggerDialog("Unauthorized Access", "Permission level too low to modify security profiles.", "warning");
+              return;
+          }
+          const fn = document.getElementById("newFullName").value.trim();
+          const id = document.getElementById("newUserId").value.trim().toLowerCase();
+          const pass = document.getElementById("newUserPass").value.trim();
+          const role = document.getElementById("newUserRole").value;
 
-        if (id === "admin") {
-          window.triggerDialog(
-            "Access Error",
-            "The root user account 'admin' is system-reserved.",
-            "warning",
-          );
-          return;
-        }
+          if (id === "admin") {
+              window.triggerDialog("Namespace Blocked", "The ID namespace 'admin' is hardware-reserved.", "warning");
+              return;
+          }
 
-        try {
-          await set(ref(db, `authorized_users/${id}`), {
-            fullName: fn,
-            password: pass,
-            role: role,
-            status: "Active",
-          });
-          document.getElementById("newFullName").value = "";
-          document.getElementById("newUserId").value = "";
-          document.getElementById("newUserPass").value = "";
-          addUserBox.classList.add("hidden");
-          window.triggerDialog(
-            "User Added",
-            `Successfully registered system account: ${id}`,
-          );
-        } catch (err) {
-          window.triggerDialog(
-            "Database Error",
-            "Failed to register user. Verify write rules permission settings.",
-            "warning",
-          );
-        }
+          try {
+              await set(ref(db, `authorized_users/${id}`), {
+                  fullName: fn,
+                  password: pass,
+                  role: role,
+                  status: "Active"
+              });
+              document.getElementById("newFullName").value = "";
+              document.getElementById("newUserId").value = "";
+              document.getElementById("newUserPass").value = "";
+              addUserBox.classList.add("hidden");
+              window.triggerDialog("User Created", `Registered operator credential: ${id}`);
+          } catch (err) {
+              window.triggerDialog("Database Locked", "Write permissions to operator directory denied. Check write rules.", "warning");
+          }
       };
 
       // Control edit user overlay toggle
       const editUserModal = document.getElementById("editUserModal");
-      document.getElementById("btnCloseEditUserModal").onclick = () =>
-        editUserModal.classList.add("hidden");
+      document.getElementById("btnCloseEditUserModal").onclick = () => editUserModal.classList.add("hidden");
 
       // Edit User Form Submission
       document.getElementById("editUserForm").onsubmit = async (e) => {
-        e.preventDefault();
-        const curRole = localStorage.getItem("userRole");
-        if (curRole !== "admin") {
-          window.triggerDialog(
-            "Access Denied",
-            "Only administrators can modify user records.",
-            "warning",
-          );
-          return;
-        }
-        const originalId = document.getElementById("editOriginalUserId").value;
-        const status = document.getElementById("editUserStatus").value;
-        const fn = document.getElementById("editFullName").value.trim();
-        const id = document
-          .getElementById("editUserId")
-          .value.trim()
-          .toLowerCase();
-        const pass = document.getElementById("editUserPass").value.trim();
-        const role = document.getElementById("editUserRole").value;
-
-        if (id === "admin") {
-          window.triggerDialog(
-            "Access Error",
-            "The root user account 'admin' is system-reserved.",
-            "warning",
-          );
-          return;
-        }
-
-        try {
-          // If username changed, we must delete old node and write new node
-          if (id !== originalId) {
-            // Verify that the new user ID does not conflict with another existing key
-            const snapshotCheck = await get(ref(db, `authorized_users/${id}`));
-            if (snapshotCheck.exists()) {
-              window.triggerDialog(
-                "Access Error",
-                `The User ID '${id}' is already registered to another user account.`,
-                "warning",
-              );
+          e.preventDefault();
+          const curRole = localStorage.getItem("userRole");
+          if (curRole !== "admin") {
+              window.triggerDialog("Permission Required", "This action requires administrative security keys.", "warning");
               return;
-            }
+          }
+          const originalId = document.getElementById("editOriginalUserId").value;
+          const status = document.getElementById("editUserStatus").value;
+          const fn = document.getElementById("editFullName").value.trim();
+          const id = document.getElementById("editUserId").value.trim().toLowerCase();
+          const pass = document.getElementById("editUserPass").value.trim();
+          const role = document.getElementById("editUserRole").value;
 
-            // 1. Write the new structure
-            await set(ref(db, `authorized_users/${id}`), {
-              fullName: fn,
-              password: pass,
-              role: role,
-              status: status,
-            });
-
-            // 2. Erase the old structure key
-            await set(ref(db, `authorized_users/${originalId}`), null);
-          } else {
-            // Direct field overwrite update
-            await update(ref(db, `authorized_users/${originalId}`), {
-              fullName: fn,
-              password: pass,
-              role: role,
-            });
+          if (id === "admin") {
+              window.triggerDialog("Namespace Blocked", "The admin ID configuration is hardware-locked.", "warning");
+              return;
           }
 
-          editUserModal.classList.add("hidden");
-          window.triggerDialog(
-            "Updated Account",
-            `Changes committed for user: ${id}`,
-          );
-        } catch (err) {
-          window.triggerDialog(
-            "Database Error",
-            "Could not commit structural changes to user node.",
-            "warning",
-          );
-        }
+          try {
+              // If username changed, we must delete old node and write new node
+              if (id !== originalId) {
+                  // Verify that the new user ID does not conflict with another existing key
+                  const snapshotCheck = await get(ref(db, `authorized_users/${id}`));
+                  if (snapshotCheck.exists()) {
+                      window.triggerDialog("Credential Collision", `The ID '${id}' is already registered to another terminal operator.`, "warning");
+                      return;
+                  }
+
+                  // 1. Write the new structure
+                  await set(ref(db, `authorized_users/${id}`), {
+                      fullName: fn,
+                      password: pass,
+                      role: role,
+                      status: status
+                  });
+
+                  // 2. Erase the old structure key
+                  await set(ref(db, `authorized_users/${originalId}`), null);
+              } else {
+                  // Direct field overwrite update
+                  await update(ref(db, `authorized_users/${originalId}`), {
+                      fullName: fn,
+                      password: pass,
+                      role: role
+                  });
+              }
+
+              editUserModal.classList.add("hidden");
+              window.triggerDialog("Profile Overwritten", `Committed operator profile metadata changes for ID: ${id}`);
+          } catch (err) {
+              window.triggerDialog("Terminal Lockout", "SCADA was unable to write user metadata changes to cloud cluster.", "warning");
+          }
       };
 
       // Chart initialization configurations
@@ -1475,36 +1003,9 @@
         data: {
           labels: [],
           datasets: [
-            {
-              label: "Soil Moisture %",
-              borderColor: "#3b82f6",
-              backgroundColor: "rgba(59, 130, 246, 0.05)",
-              borderWidth: 2,
-              data: [],
-              tension: 0.4,
-              fill: true,
-              yAxisID: "y",
-            },
-            {
-              label: "Air Temp °C",
-              borderColor: "#f97316",
-              backgroundColor: "transparent",
-              borderWidth: 2,
-              data: [],
-              tension: 0.4,
-              fill: false,
-              yAxisID: "y",
-            },
-            {
-              label: "Air Hum %",
-              borderColor: "#6366f1",
-              backgroundColor: "transparent",
-              borderWidth: 2,
-              data: [],
-              tension: 0.4,
-              fill: false,
-              yAxisID: "y",
-            },
+            { label: "Soil Moisture %", borderColor: "#3b82f6", backgroundColor: "rgba(59, 130, 246, 0.04)", borderWidth: 2.5, data: [], tension: 0.35, fill: true, yAxisID: "y" },
+            { label: "Air Temp °C", borderColor: "#f97316", backgroundColor: "transparent", borderWidth: 2.5, data: [], tension: 0.35, fill: false, yAxisID: "y" },
+            { label: "Air Hum %", borderColor: "#6366f1", backgroundColor: "transparent", borderWidth: 2, data: [], tension: 0.35, fill: false, yAxisID: "y" },
           ],
         },
         options: {
@@ -1512,244 +1013,175 @@
           maintainAspectRatio: false,
           interaction: { intersect: false, mode: "index" },
           plugins: {
-            legend: {
-              display: true,
-              position: "top",
-              labels: {
-                boxWidth: 8,
-                font: { size: 10, weight: "bold" },
-                padding: 20,
-              },
-            },
+            legend: { display: true, position: "top", labels: { boxWidth: 10, color: "#94a3b8", font: { size: 9, weight: "bold" }, padding: 15 } },
+            tooltip: { backgroundColor: "#0f172a", titleColor: "#f97316", bodyColor: "#f8fafc", borderColor: "#334155", borderWidth: 1, padding: 10 }
           },
           scales: {
-            y: {
-              min: 0,
-              max: 100,
-              grid: { color: "#f1f5f9" },
-              ticks: { font: { size: 10 } },
-            },
-            x: {
-              grid: { display: false },
-              ticks: {
-                font: { size: 9 },
-                maxRotation: 0,
-                autoSkip: true,
-                maxTicksLimit: 8,
-              },
-            },
+            y: { min: 0, max: 100, grid: { color: "#1e293b" }, ticks: { color: "#64748b", font: { size: 9, family: "Share Tech Mono" } } },
+            x: { grid: { display: false }, ticks: { color: "#64748b", font: { size: 8, family: "Share Tech Mono" }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 } },
           },
         },
       });
 
       onAuthStateChanged(auth, (user) => {
         if (user) {
-          document.getElementById("connIndicator").className =
-            "w-2 h-2 rounded-full bg-emerald-400 status-pulse";
-          document.getElementById("connText").innerText = "LIVE: Connected";
+          document.getElementById("connIndicator").className = "w-2.5 h-2.5 rounded-full led-pulse-green";
+          document.getElementById("connText").innerText = "SCADA: CONNECTED";
+          document.getElementById("connText").className = "text-emerald-500 font-bold tracking-wider";
         }
       });
 
       function startListening() {
-        onValue(
-          ref(db, "hydroponic"),
-          (snapshot) => {
-            const data = snapshot.val();
-            if (data) updateLiveUI(data);
-          },
-          (err) => {
-            console.warn(
-              "Realtime read access denied. Set write/read rules to public.",
-              err,
-            );
-          },
-        );
+        onValue(ref(db, "hydroponic"), (snapshot) => {
+          const data = snapshot.val();
+          if (data) updateLiveUI(data);
+        }, (err) => {
+            console.warn("Realtime read access denied. Set write/read rules to public.", err);
+        });
 
         onValue(ref(db, "settings"), (snapshot) => {
           const settings = snapshot.val();
           if (settings && document.activeElement.tagName !== "INPUT") {
             document.getElementById("inputSetON").value = settings.setON || 50;
-            document.getElementById("inputSetOFF").value =
-              settings.setOFF || 65;
-            document.getElementById("inputPumpTime").value =
-              settings.pTime || 1;
-            document.getElementById("inputDelayTime").value =
-              settings.dTime || 1;
-            document.getElementById("inputTempSet").value =
-              settings.tempSet || 35.0;
-            document.getElementById("inputSprayerTime").value =
-              settings.sTime || 1;
-            document.getElementById("inputSprayerDelay").value =
-              settings.sdTime || 1;
+            document.getElementById("inputSetOFF").value = settings.setOFF || 65;
+            document.getElementById("inputPumpTime").value = settings.pTime || 1;
+            document.getElementById("inputDelayTime").value = settings.dTime || 1;
+            document.getElementById("inputTempSet").value = settings.tempSet || 35.0;
+            document.getElementById("inputSprayerTime").value = settings.sTime || 1;
+            document.getElementById("inputSprayerDelay").value = settings.sdTime || 1;
           }
         });
 
         // Realtime sync of User Table
         onValue(ref(db, "authorized_users"), (snapshot) => {
-          const tableBody = document.getElementById("authorizedUsersList");
-          tableBody.innerHTML = "";
-          const users = snapshot.val();
+            const tableBody = document.getElementById("authorizedUsersList");
+            tableBody.innerHTML = "";
+            const users = snapshot.val();
+            
+            if(!users) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500 italic uppercase font-bold tracking-wider">No operator registries identified in active cluster.</td></tr>`;
+                return;
+            }
 
-          if (!users) {
-            tableBody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 italic">No user accounts found in this database.</td></tr>`;
-            return;
-          }
+            Object.keys(users).forEach(username => {
+                const item = users[username];
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-900/60 transition-colors border-b border-slate-900";
+                
+                const roleBadge = item.role === "admin" 
+                    ? `<span class="bg-purple-950/80 text-purple-400 text-[9px] font-bold px-2 py-1 rounded-full border border-purple-900/40 uppercase tracking-widest">SysAdmin</span>` 
+                    : `<span class="bg-blue-950/80 text-blue-400 text-[9px] font-bold px-2 py-1 rounded-full border border-blue-900/40 uppercase tracking-widest">Operator</span>`;
 
-          Object.keys(users).forEach((username) => {
-            const item = users[username];
-            const tr = document.createElement("tr");
-            tr.className = "hover:bg-slate-50 transition-colors";
+                const statusBadge = item.status === "Suspended" 
+                    ? `<span class="bg-red-950/80 text-red-400 text-[9px] font-bold px-2 py-1 rounded-full border border-red-900/40 uppercase tracking-widest">Suspended</span>`
+                    : `<span class="bg-emerald-950/80 text-emerald-400 text-[9px] font-bold px-2 py-1 rounded-full border border-emerald-900/40 uppercase tracking-widest">Active</span>`;
 
-            const roleBadge =
-              item.role === "admin"
-                ? `<span class="bg-purple-50 text-purple-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-purple-100">Administrator</span>`
-                : `<span class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-100">Operator</span>`;
-
-            const statusBadge =
-              item.status === "Suspended"
-                ? `<span class="bg-red-50 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-100">Suspended</span>`
-                : `<span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-100">Active</span>`;
-
-            tr.innerHTML = `
+                tr.innerHTML = `
                   <td class="p-4 flex items-center gap-2.5">
-                     <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs uppercase border">
-                         ${(item.fullName || username).substring(0, 2)}
+                     <div class="w-8 h-8 rounded-full bg-slate-900 text-slate-300 flex items-center justify-center font-bold text-xs uppercase border border-slate-700">
+                         ${(item.fullName || username).substring(0,2)}
                      </div>
                      <div>
-                         <p class="font-bold text-slate-800 text-xs">${item.fullName || "Anonymous"}</p>
-                         <p class="text-[10px] text-slate-400">Synced user data</p>
+                         <p class="font-bold text-slate-200 text-xs">${item.fullName || 'Anonymous'}</p>
+                         <p class="text-[9px] text-slate-500 uppercase font-semibold">Authorized Token ID</p>
                      </div>
                   </td>
-                  <td class="p-4 font-mono text-slate-700 font-bold">${username}</td>
+                  <td class="p-4 font-mono-scada text-amber-500 font-bold">${username}</td>
                   <td class="p-4">${roleBadge}</td>
                   <td class="p-4">${statusBadge}</td>
                   <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
-                      <button class="edit-user-btn bg-slate-100 hover:bg-slate-200 text-slate-700 border rounded-lg p-1.5 transition-all inline-flex" data-username="${username}">
-                         <i data-lucide="pencil" class="w-4 h-4"></i>
+                      <button class="edit-user-btn bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded-lg p-2 transition-all inline-flex" data-username="${username}">
+                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                       </button>
-                      <button class="toggle-status-btn text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 border rounded-lg transition-all" data-username="${username}" data-status="${item.status || "Active"}">
-                         Toggle Status
+                      <button class="toggle-status-btn text-[9px] tracking-wider uppercase font-black px-2.5 py-2 bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-750 rounded-lg transition-all" data-username="${username}" data-status="${item.status || 'Active'}">
+                         Toggle
                       </button>
-                      <button class="delete-user-btn text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 border border-transparent hover:border-red-100 rounded-lg transition-all inline-flex" data-username="${username}">
-                         <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      <button class="delete-user-btn text-red-400 hover:text-red-300 hover:bg-red-950/50 p-2 border border-transparent hover:border-red-900/40 rounded-lg transition-all inline-flex" data-username="${username}">
+                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                       </button>
                   </td>
                 `;
-            tableBody.appendChild(tr);
-          });
+                tableBody.appendChild(tr);
+            });
 
-          // Bind Edit User button action triggers
-          document.querySelectorAll(".edit-user-btn").forEach((btn) => {
-            btn.onclick = async () => {
-              const curRole = localStorage.getItem("userRole");
-              if (curRole !== "admin") {
-                window.triggerDialog(
-                  "Access Denied",
-                  "Only administrators are permitted to edit user details.",
-                  "warning",
-                );
-                return;
-              }
-              const targetUser = btn.dataset.username;
-              try {
-                const snap = await get(
-                  ref(db, `authorized_users/${targetUser}`),
-                );
-                if (snap.exists()) {
-                  const u = snap.val();
-                  document.getElementById("editOriginalUserId").value =
-                    targetUser;
-                  document.getElementById("editUserStatus").value =
-                    u.status || "Active";
-                  document.getElementById("editFullName").value =
-                    u.fullName || "";
-                  document.getElementById("editUserId").value = targetUser;
-                  document.getElementById("editUserPass").value =
-                    u.password || "";
-                  document.getElementById("editUserRole").value =
-                    u.role || "operator";
-                  editUserModal.classList.remove("hidden");
-                }
-              } catch (e) {
-                window.triggerDialog(
-                  "Error",
-                  "Could not fetch user details for editing.",
-                  "warning",
-                );
-              }
-            };
-          });
+            // Bind Edit User button action triggers
+            document.querySelectorAll(".edit-user-btn").forEach(btn => {
+                btn.onclick = async () => {
+                    const curRole = localStorage.getItem("userRole");
+                    if (curRole !== "admin") {
+                        window.triggerDialog("Unauthorized", "Administrative clearance is mandatory to overwrite operational directory records.", "warning");
+                        return;
+                    }
+                    const targetUser = btn.dataset.username;
+                    try {
+                        const snap = await get(ref(db, `authorized_users/${targetUser}`));
+                        if (snap.exists()) {
+                            const u = snap.val();
+                            document.getElementById("editOriginalUserId").value = targetUser;
+                            document.getElementById("editUserStatus").value = u.status || "Active";
+                            document.getElementById("editFullName").value = u.fullName || "";
+                            document.getElementById("editUserId").value = targetUser;
+                            document.getElementById("editUserPass").value = u.password || "";
+                            document.getElementById("editUserRole").value = u.role || "operator";
+                            editUserModal.classList.remove("hidden");
+                        }
+                    } catch (e) {
+                        window.triggerDialog("Registry Sync Out", "Failed to retrieve specified operator information.", "warning");
+                    }
+                };
+            });
 
-          // Bind Table Action buttons dynamically
-          document.querySelectorAll(".toggle-status-btn").forEach((btn) => {
-            btn.onclick = async () => {
-              const curRole = localStorage.getItem("userRole");
-              if (curRole !== "admin") {
-                window.triggerDialog(
-                  "Access Denied",
-                  "Only administrators are permitted to change account statuses.",
-                  "warning",
-                );
-                return;
-              }
-              const targetUser = btn.dataset.username;
-              const curStatus = btn.dataset.status;
-              const nextStatus =
-                curStatus === "Suspended" ? "Active" : "Suspended";
+            // Bind Table Action buttons dynamically
+            document.querySelectorAll(".toggle-status-btn").forEach(btn => {
+                btn.onclick = async () => {
+                    const curRole = localStorage.getItem("userRole");
+                    if (curRole !== "admin") {
+                        window.triggerDialog("Clearance Failure", "Operator control status edits require system administrator clearance keys.", "warning");
+                        return;
+                    }
+                    const targetUser = btn.dataset.username;
+                    const curStatus = btn.dataset.status;
+                    const nextStatus = curStatus === "Suspended" ? "Active" : "Suspended";
 
-              window.triggerDialog(
-                "Change Access Status",
-                `Are you sure you want to change account access status for '${targetUser}' to '${nextStatus}'?`,
-                "info",
-                async () => {
-                  try {
-                    await update(ref(db, `authorized_users/${targetUser}`), {
-                      status: nextStatus,
-                    });
-                  } catch (e) {
                     window.triggerDialog(
-                      "Error",
-                      "Failed to update user account. Check write rules permissions.",
-                      "warning",
+                        "Alter Authorization State", 
+                        `Are you sure you want to alter security permission status for operator '${targetUser}' to '${nextStatus}'?`,
+                        "info",
+                        async () => {
+                            try {
+                                await update(ref(db, `authorized_users/${targetUser}`), { status: nextStatus });
+                            } catch (e) {
+                                window.triggerDialog("Execution Failure", "Failed to modify permission registry node.", "warning");
+                            }
+                        }
                     );
-                  }
-                },
-              );
-            };
-          });
+                };
+            });
 
-          document.querySelectorAll(".delete-user-btn").forEach((btn) => {
-            btn.onclick = () => {
-              const curRole = localStorage.getItem("userRole");
-              if (curRole !== "admin") {
-                window.triggerDialog(
-                  "Access Denied",
-                  "Only administrators are permitted to delete accounts.",
-                  "warning",
-                );
-                return;
-              }
-              const targetUser = btn.dataset.username;
-              window.triggerDialog(
-                "Delete User Account",
-                `Are you sure you want to delete and revoke authorization credentials for '${targetUser}'? This cannot be undone.`,
-                "danger",
-                async () => {
-                  try {
-                    await set(ref(db, `authorized_users/${targetUser}`), null);
-                  } catch (e) {
+            document.querySelectorAll(".delete-user-btn").forEach(btn => {
+                btn.onclick = () => {
+                    const curRole = localStorage.getItem("userRole");
+                    if (curRole !== "admin") {
+                        window.triggerDialog("Clearance Failure", "Removing credential sets requires root operational permission key.", "warning");
+                        return;
+                    }
+                    const targetUser = btn.dataset.username;
                     window.triggerDialog(
-                      "Error",
-                      "Failed to clear user entry. Check security rules.",
-                      "warning",
+                        "Revoke Access Credentials", 
+                        `Confirming command to completely delete operator session config for ID '${targetUser}'. This action is terminal.`,
+                        "danger",
+                        async () => {
+                            try {
+                                await set(ref(db, `authorized_users/${targetUser}`), null);
+                            } catch(e) {
+                                window.triggerDialog("Revocation Failure", "Target operator config was not removed from Firebase cluster.", "warning");
+                            }
+                        }
                     );
-                  }
-                },
-              );
-            };
-          });
+                };
+            });
 
-          if (typeof lucide !== "undefined") lucide.createIcons();
+            if (typeof lucide !== "undefined") lucide.createIcons();
         });
       }
 
@@ -1760,47 +1192,27 @@
         const pumpStatus = data.pump || "OFF";
         const sprayerStatus = data.sprayer || "OFF";
         const now = new Date();
-        const timeStr = now.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        });
+        const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-        document.getElementById("valMoisture").innerText =
-          moisture.toFixed(1) + "%";
+        document.getElementById("valMoisture").innerText = moisture.toFixed(1) + "%";
         document.getElementById("valTemp").innerText = temp.toFixed(1) + "°C";
         document.getElementById("valHum").innerText = humidity.toFixed(1) + "%";
         document.getElementById("valLastUpdate").innerText = timeStr;
 
         const pumpEl = document.getElementById("valPump");
-        pumpEl.innerText = pumpStatus === "ON" ? "ACTIVE 💦" : "NOT ACTIVE";
-        pumpEl.className =
-          pumpStatus === "ON"
-            ? "text-sm font-bold text-blue-600"
-            : "text-sm font-bold text-slate-400";
+        pumpEl.innerText = pumpStatus === "ON" ? "ACTIVE 💦" : "IDLE";
+        pumpEl.className = pumpStatus === "ON" ? "text-xs font-black text-emerald-400 bg-emerald-950/40 border border-emerald-900/50 px-2 py-0.5 rounded shadow-[0_0_8px_rgba(16,185,129,0.3)] animate-pulse" : "text-xs font-black text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800";
 
         const sprayerEl = document.getElementById("valSprayer");
-        sprayerEl.innerText =
-          sprayerStatus === "ON" ? "SPRAYING 💨" : "NOT ACTIVE";
-        sprayerEl.className =
-          sprayerStatus === "ON"
-            ? "text-sm font-bold text-orange-600"
-            : "text-sm font-bold text-slate-400";
+        sprayerEl.innerText = sprayerStatus === "ON" ? "SPRAYING 💨" : "IDLE";
+        sprayerEl.className = sprayerStatus === "ON" ? "text-xs font-black text-orange-400 bg-orange-950/40 border border-orange-900/50 px-2 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)] animate-pulse" : "text-xs font-black text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800";
 
-        const entry = {
-          t: timeStr,
-          s: moisture,
-          te: temp,
-          h: humidity,
-          p: pumpStatus,
-          sp: sprayerStatus,
-          iso: now.toISOString(),
-        };
+        const entry = { t: timeStr, s: moisture, te: temp, h: humidity, p: pumpStatus, sp: sprayerStatus, iso: now.toISOString() };
         liveLog.push(entry);
         if (liveLog.length > 50) liveLog.shift();
-
+        
         if (currentPeriod === "live") {
-          refreshChart(liveLog);
+            refreshChart(liveLog);
         }
       }
 
@@ -1809,127 +1221,110 @@
         const dataInfo = document.getElementById("dataInfo");
         loader.classList.remove("hidden");
 
-        const selectedDateVal =
-          document.getElementById("filterHistoryDate").value;
-        const baseDate = selectedDateVal
-          ? new Date(selectedDateVal)
-          : new Date();
-
+        const selectedDateVal = document.getElementById("filterHistoryDate").value;
+        const baseDate = selectedDateVal ? new Date(selectedDateVal) : new Date();
+        
         let startTime, endTime;
 
         if (period === "1D") {
-          const start = new Date(baseDate);
-          start.setHours(0, 0, 0, 0);
-          startTime = start.getTime();
-
-          const end = new Date(baseDate);
-          end.setHours(23, 59, 59, 999);
-          endTime = end.getTime();
-          dataInfo.innerText = `Viewing history records for single day: ${selectedDateVal}`;
+            const start = new Date(baseDate);
+            start.setHours(0,0,0,0);
+            startTime = start.getTime();
+            
+            const end = new Date(baseDate);
+            end.setHours(23,59,59,999);
+            endTime = end.getTime();
+            dataInfo.innerText = `RECORDS CAPTURED FOR SINGLE DIURNAL LOG RANGE: ${selectedDateVal}`;
         } else if (period === "1W") {
-          const end = new Date(baseDate);
-          end.setHours(23, 59, 59, 999);
-          endTime = end.getTime();
-
-          const start = new Date(baseDate);
-          start.setDate(start.getDate() - 7);
-          start.setHours(0, 0, 0, 0);
-          startTime = start.getTime();
-          dataInfo.innerText = `Viewing 1 Week data preceding ${selectedDateVal}`;
+            const end = new Date(baseDate);
+            end.setHours(23,59,59,999);
+            endTime = end.getTime();
+            
+            const start = new Date(baseDate);
+            start.setDate(start.getDate() - 7);
+            start.setHours(0,0,0,0);
+            startTime = start.getTime();
+            dataInfo.innerText = `7-DAY PREDECESSOR REGISTRY FROM: ${selectedDateVal}`;
         } else if (period === "1M") {
-          const end = new Date(baseDate);
-          end.setHours(23, 59, 59, 999);
-          endTime = end.getTime();
-
-          const start = new Date(baseDate);
-          start.setDate(start.getDate() - 30);
-          start.setHours(0, 0, 0, 0);
-          startTime = start.getTime();
-          dataInfo.innerText = `Viewing 1 Month data preceding ${selectedDateVal}`;
+            const end = new Date(baseDate);
+            end.setHours(23,59,59,999);
+            endTime = end.getTime();
+            
+            const start = new Date(baseDate);
+            start.setDate(start.getDate() - 30);
+            start.setHours(0,0,0,0);
+            startTime = start.getTime();
+            dataInfo.innerText = `30-DAY REGISTRY TIMELINE PRECEDING: ${selectedDateVal}`;
         } else if (period === "3M") {
-          const end = new Date(baseDate);
-          end.setHours(23, 59, 59, 999);
-          endTime = end.getTime();
-
-          const start = new Date(baseDate);
-          start.setDate(start.getDate() - 90);
-          start.setHours(0, 0, 0, 0);
-          startTime = start.getTime();
-          dataInfo.innerText = `Viewing 3 Months data preceding ${selectedDateVal}`;
+            const end = new Date(baseDate);
+            end.setHours(23,59,59,999);
+            endTime = end.getTime();
+            
+            const start = new Date(baseDate);
+            start.setDate(start.getDate() - 90);
+            start.setHours(0,0,0,0);
+            startTime = start.getTime();
+            dataInfo.innerText = `90-DAY COMPREHENSIVE CYCLICAL OVERVIEW Preceding: ${selectedDateVal}`;
         }
 
         try {
-          // Fetch up to the last 3000 historical records from Firebase
-          // This avoids complex index-matching rules which cause failure when startAt/endAt are run natively
           const historyRef = ref(db, "history");
           const snapshot = await get(historyRef);
           let dataArray = [];
-
+          
           if (snapshot.exists()) {
-            snapshot.forEach((child) => {
-              const val = child.val();
-              const key = child.key;
+            snapshot.forEach((child) => { 
+                const val = child.val();
+                const key = child.key;
 
-              // Attempt to parse date from key, or iso fallback properties
-              let recordTimeMs = 0;
-              let parsedDate = new Date(key);
-
-              if (isNaN(parsedDate.getTime()) && val.iso) {
-                parsedDate = new Date(val.iso);
-              }
-
-              if (!isNaN(parsedDate.getTime())) {
-                recordTimeMs = parsedDate.getTime();
-              } else {
-                return; // Ignore malformed data entries
-              }
-
-              // Perform precise client-side filter
-              if (
-                period === "all" ||
-                (recordTimeMs >= startTime && recordTimeMs <= endTime)
-              ) {
-                let displayTime = val.t;
-                if (!displayTime) {
-                  displayTime =
-                    parsedDate.toLocaleDateString() +
-                    " " +
-                    parsedDate.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
+                let recordTimeMs = 0;
+                let parsedDate = new Date(key);
+                
+                if (isNaN(parsedDate.getTime()) && val.iso) {
+                    parsedDate = new Date(val.iso);
+                }
+                
+                if (!isNaN(parsedDate.getTime())) {
+                    recordTimeMs = parsedDate.getTime();
+                } else {
+                    return; 
+                }
+                
+                // Perform precise client-side filter
+                if (period === "all" || (recordTimeMs >= startTime && recordTimeMs <= endTime)) {
+                    let displayTime = val.t;
+                    if(!displayTime) {
+                        displayTime = parsedDate.toLocaleDateString() + ' ' + parsedDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
+                    dataArray.push({
+                        t: displayTime,
+                        s: val.s ?? val.soil ?? 0,
+                        te: val.te ?? val.temp ?? 0,
+                        h: val.h ?? val.hum ?? 0,
+                        p: val.p ?? val.pump ?? "OFF",
+                        sp: val.sp ?? val.sprayer ?? "OFF",
+                        iso: val.iso || key,
+                        timeMs: recordTimeMs
                     });
                 }
-                dataArray.push({
-                  t: displayTime,
-                  s: val.s ?? val.soil ?? 0,
-                  te: val.te ?? val.temp ?? 0,
-                  h: val.h ?? val.hum ?? 0,
-                  p: val.p ?? val.pump ?? "OFF",
-                  sp: val.sp ?? val.sprayer ?? "OFF",
-                  iso: val.iso || key,
-                  timeMs: recordTimeMs,
-                });
-              }
             });
           }
-
-          // Sort records strictly in chronological order
+          
           dataArray.sort((a, b) => a.timeMs - b.timeMs);
-
+          
           historyData = dataArray;
           refreshChart(dataArray);
-
-          if (dataArray.length === 0) {
-            dataInfo.innerText =
-              "No data records detected for this specific range.";
+          
+          if(dataArray.length === 0) {
+              dataInfo.innerText = "NO LOGGED ENTRIES IDENTIFIED WITHIN SELECTED COHORT.";
           } else if (period === "all") {
-            dataInfo.innerText = `Successfully loaded all history logs (${dataArray.length} entries).`;
+              dataInfo.innerText = `SUCCESSFULLY MAP-SYNCHRONIZED ${dataArray.length} TELEMETRY RECORDS.`;
           } else {
-            dataInfo.innerText = `Showing ${dataArray.length} records for selected period.`;
+              dataInfo.innerText = `VISUALIZING ${dataArray.length} REGISTRY POINTS IN MEMORY.`;
           }
         } catch (err) {
           console.error("Error fetching historical context:", err);
-          dataInfo.innerText = "Failed to query historical data nodes.";
+          dataInfo.innerText = "TELEMETRY DATABASE READ OPERATION FAILED.";
         } finally {
           loader.classList.add("hidden");
         }
@@ -1940,35 +1335,27 @@
         chart.data.datasets[0].data = data.map((d) => d.s);
         chart.data.datasets[1].data = data.map((d) => d.te);
         chart.data.datasets[2].data = data.map((d) => d.h);
-
-        const radius = data.length > 100 ? 0 : 3;
+        
+        const radius = data.length > 100 ? 0 : 2.5;
         chart.data.datasets.forEach((ds) => (ds.pointRadius = radius));
         chart.update();
       }
 
       document.querySelectorAll(".period-btn").forEach((btn) => {
         btn.onclick = () => {
-          document
-            .querySelectorAll(".period-btn")
-            .forEach(
-              (b) =>
-                (b.className =
-                  "period-btn px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:text-emerald-600 whitespace-nowrap"),
-            );
-          btn.className =
-            "period-btn px-4 py-1.5 rounded-lg text-xs font-bold tab-active whitespace-nowrap";
+          document.querySelectorAll(".period-btn").forEach((b) => b.className = "period-btn px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-400 hover:text-white uppercase transition-all whitespace-nowrap");
+          btn.className = "period-btn px-3 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all whitespace-nowrap tab-active";
           currentPeriod = btn.dataset.period;
-
+          
           const picker = document.getElementById("datePickerContainer");
           if (currentPeriod === "all") {
-            picker.classList.add("opacity-40", "pointer-events-none");
+              picker.classList.add("opacity-30", "pointer-events-none");
           } else {
-            picker.classList.remove("opacity-40", "pointer-events-none");
+              picker.classList.remove("opacity-30", "pointer-events-none");
           }
 
           if (currentPeriod === "live") {
-            document.getElementById("dataInfo").innerText =
-              "Showing live incoming data streams";
+            document.getElementById("dataInfo").innerText = "LISTENING TO TELEMETRY BROADCASTS";
             refreshChart(liveLog);
           } else {
             fetchHistory(currentPeriod);
@@ -1977,53 +1364,46 @@
       });
 
       document.getElementById("filterHistoryDate").onchange = () => {
-        if (currentPeriod !== "live" && currentPeriod !== "all") {
-          fetchHistory(currentPeriod);
-        }
+          if (currentPeriod !== "live" && currentPeriod !== "all") {
+              fetchHistory(currentPeriod);
+          }
       };
 
       document.getElementById("btnExportCSV").onclick = () => {
         const dataToExport = currentPeriod === "live" ? liveLog : historyData;
         if (dataToExport.length === 0) {
-          window.triggerDialog(
-            "No Data",
-            "No target data values available to export inside the selected window.",
-          );
-          return;
+            window.triggerDialog("Empty File", "Unable to compile export. Empty telemetry cache in specified search query.");
+            return;
         }
-
-        let csv =
-          "Local Timestamp (YYYY-MM-DD HH:mm:ss),Time,Soil Moisture %,Temperature C,Humidity %,Pump Status,Sprayer Status\n";
-        dataToExport.forEach((d) => {
-          let dateFormattedStr = "N/A";
-          if (d.iso) {
-            try {
-              const parsedDate = new Date(d.iso);
-              if (!isNaN(parsedDate.getTime())) {
-                const yr = parsedDate.getFullYear();
-                const mo = String(parsedDate.getMonth() + 1).padStart(2, "0");
-                const dy = String(parsedDate.getDate()).padStart(2, "0");
-                const hr = String(parsedDate.getHours()).padStart(2, "0");
-                const mi = String(parsedDate.getMinutes()).padStart(2, "0");
-                const sc = String(parsedDate.getSeconds()).padStart(2, "0");
-
-                dateFormattedStr = `${yr}-${mo}-${dy} ${hr}:${mi}:${sc}`;
-              }
-            } catch (err) {
-              dateFormattedStr = "N/A";
+        
+        let csv = "Local Timestamp (YYYY-MM-DD HH:mm:ss),Time,Soil Moisture %,Temperature C,Humidity %,Pump Status,Sprayer Status\n";
+        dataToExport.forEach((d) => { 
+            let dateFormattedStr = "N/A";
+            if (d.iso) {
+                try {
+                    const parsedDate = new Date(d.iso);
+                    if (!isNaN(parsedDate.getTime())) {
+                        const yr = parsedDate.getFullYear();
+                        const mo = String(parsedDate.getMonth() + 1).padStart(2, '0');
+                        const dy = String(parsedDate.getDate()).padStart(2, '0');
+                        const hr = String(parsedDate.getHours()).padStart(2, '0');
+                        const mi = String(parsedDate.getMinutes()).padStart(2, '0');
+                        const sc = String(parsedDate.getSeconds()).padStart(2, '0');
+                        
+                        dateFormattedStr = `${yr}-${mo}-${dy} ${hr}:${mi}:${sc}`;
+                    }
+                } catch (err) {
+                    dateFormattedStr = "N/A";
+                }
             }
-          }
-          csv += `${dateFormattedStr},${d.t},${d.s}%,${d.te}°C,${d.h}%,${d.p || "OFF"},${d.sp || "OFF"}\n`;
+            csv += `${dateFormattedStr},${d.t},${d.s}%,${d.te}°C,${d.h}%,${d.p || 'OFF'},${d.sp || 'OFF'}\n`; 
         });
-
+        
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute(
-          "download",
-          `HyTech_Data_Export_${currentPeriod}.csv`,
-        );
+        link.setAttribute("download", `HyTech_SCADA_Export_${currentPeriod}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -2040,20 +1420,15 @@
             dTime: parseInt(document.getElementById("inputDelayTime").value),
             tempSet: parseFloat(document.getElementById("inputTempSet").value),
             sTime: parseInt(document.getElementById("inputSprayerTime").value),
-            sdTime: parseInt(
-              document.getElementById("inputSprayerDelay").value,
-            ),
+            sdTime: parseInt(document.getElementById("inputSprayerDelay").value)
           });
-          btn.innerText = "Saved!";
-          setTimeout(() => {
-            btn.innerText = "Save Configurations";
-            btn.disabled = false;
-          }, 2000);
+          btn.innerText = "PLC CONFIGURED!";
+          setTimeout(() => { btn.innerText = "Save PLC Configurations"; btn.disabled = false; }, 2000);
         } catch (e) {
-          btn.innerText = "Error";
+          btn.innerText = "SYNC FAILED";
           btn.disabled = false;
         }
       };
     </script>
-  </body>
+</body>
 </html>
