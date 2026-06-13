@@ -1,6 +1,0 @@
-{
-  "name": "Irrigation Pro Dashboard",
-  "description": "An industrial-grade IoT irrigation control dashboard powered by real-time sensor streams and setpoint parameters, built for operators and administrators.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
