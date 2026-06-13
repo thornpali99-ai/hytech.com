@@ -93,7 +93,7 @@
 <body id="mainBody" class="min-h-screen text-slate-100 flex items-center justify-center p-2 sm:p-4">
     <!-- Login Interface -->
     <div id="loginWrapper" class="w-full max-w-md p-2">
-      <div class="scada-bezel rounded-2xl overflow-hidden shadow-2xl border-2 border-slate-700 animate-fade-in">
+      <div class="scada-bezel rounded-2xl overflow-hidden shadow-2xl border-2 border-slate-700">
         
         <!-- Industrial Caution Stripe Header -->
         <div class="h-3 bg-gradient-to-r from-amber-500 via-slate-900 to-amber-500 bg-[size:40px_40px] animate-[stripe-slide_2s_linear_infinite]" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, #000 10px, #000 20px);"></div>
@@ -142,31 +142,31 @@
               <i data-lucide="gauge" class="w-6 h-6 text-white"></i>
             </div>
             <div>
-              <h1 class="text-lg font-black tracking-widest font-mono-scada">HYTECH CLOUD SCADA</h1>
+              <h1 class="text-sm sm:text-lg font-black tracking-widest font-mono-scada">HYTECH CLOUD SCADA</h1>
               <div class="flex items-center gap-2 mt-0.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 led-pulse-green"></span>
-                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">SYSTEM MONITOR ACTIVE</span>
+                <span class="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-widest">SYSTEM MONITOR ACTIVE</span>
               </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-3">
-            <!-- Heartbeat Signal Indicator -->
-            <div id="cloudStatus" class="hidden sm:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-2 rounded-xl text-[10px] font-bold font-mono-scada">
+          <div class="flex items-center gap-2 sm:gap-3">
+            <!-- Heartbeat Signal Indicator (Highly responsive styling for both desktop and mobile) -->
+            <div id="cloudStatus" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-2.5 py-1.5 rounded-xl text-[9px] font-bold font-mono-scada">
               <span id="connIndicator" class="w-2 h-2 rounded-full bg-red-500"></span>
-              <span id="connText" class="text-slate-400 uppercase tracking-wider">OFFLINE</span>
+              <span id="connText" class="text-red-500 uppercase tracking-wider">OFFLINE</span>
             </div>
 
             <!-- Unified Single Settings Dropdown Button -->
             <div class="relative">
-              <button id="btnSystemSettings" class="btn-industrial flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-black tracking-widest text-slate-200 hover:text-white border border-slate-700 shadow-lg">
-                <i data-lucide="settings" class="w-4 h-4 text-amber-500 animate-[spin_10s_linear_infinite]"></i>
+              <button id="btnSystemSettings" class="btn-industrial flex items-center gap-2 px-3 py-2.5 rounded-xl text-[10px] font-black tracking-widest text-slate-200 hover:text-white border border-slate-700 shadow-lg">
+                <i data-lucide="settings" class="w-3.5 h-3.5 text-amber-500 animate-[spin_10s_linear_infinite]"></i>
                 <span class="hidden sm:inline">CONTROL PANEL</span>
                 <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i>
               </button>
 
               <!-- Settings Dropdown Content -->
-              <div id="dropdownSystemPanel" class="hidden absolute right-0 mt-2 w-56 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl p-1.5 z-50 animate-fade-in divide-y divide-slate-900">
+              <div id="dropdownSystemPanel" class="hidden absolute right-0 mt-2 w-52 bg-slate-950 border border-slate-800 rounded-xl shadow-2xl p-1.5 z-50 divide-y divide-slate-900">
                 <div class="space-y-1 pb-1.5">
                   <button id="tabDashboard" class="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-amber-500 hover:bg-slate-900 transition-colors">
                     <i data-lucide="monitor" class="w-4 h-4 text-amber-500"></i> CONSOLE
@@ -191,7 +191,7 @@
 
       <main class="max-w-7xl mx-auto p-2 sm:p-4 md:p-6 space-y-6">
         <!-- ================= VIEW 1: SCADA DASHBOARD VIEW ================= -->
-        <div id="viewDashboard" class="space-y-6 animate-fade-in">
+        <div id="viewDashboard" class="space-y-6">
             <!-- Glowing Sensor Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
@@ -380,7 +380,7 @@
         </div>
 
         <!-- ================= VIEW 2: ADMIN PANEL VIEW ================= -->
-        <div id="viewAdmin" class="hidden space-y-6 animate-fade-in">
+        <div id="viewAdmin" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
                 <!-- Database Connections Configuration Box -->
@@ -430,7 +430,7 @@
                     </div>
 
                     <!-- Register Operator Section -->
-                    <div id="addUserBox" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4 animate-fade-in">
+                    <div id="addUserBox" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4">
                         <div class="flex justify-between items-center">
                             <h3 class="text-xs font-black text-amber-500 flex items-center gap-2 uppercase tracking-widest">
                                 <i data-lucide="shield-alert" class="w-4 h-4"></i>
@@ -635,7 +635,7 @@
           } else {
               dIconBox.className = "p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-amber-500";
               dIcon.setAttribute("data-lucide", "help-circle");
-              btnConfirm.className = "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow uppercase tracking-wider border border-amber-600";
+              btnConfirm.className = "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow uppercase tracking-wider border border-amber-650";
           }
 
           if (typeof lucide !== "undefined") lucide.createIcons();
@@ -777,10 +777,54 @@
                   console.error("Firebase Auth Exception:", err);
               });
 
+              // Re-bind connection tracking elements
+              bindConnectionListeners();
+
               startListening();
           } catch (err) {
               console.error("Failed to boot custom configuration:", err);
           }
+      }
+
+      // Connection Status UI Helpers
+      function setOnlineUI() {
+          const indicator = document.getElementById("connIndicator");
+          const text = document.getElementById("connText");
+          if (indicator && text) {
+              indicator.className = "w-2 h-2 rounded-full led-pulse-green";
+              text.innerText = "ONLINE";
+              text.className = "text-emerald-500 font-bold uppercase tracking-wider";
+          }
+      }
+
+      function setOfflineUI() {
+          const indicator = document.getElementById("connIndicator");
+          const text = document.getElementById("connText");
+          if (indicator && text) {
+              indicator.className = "w-2 h-2 rounded-full bg-red-500";
+              text.innerText = "OFFLINE";
+              text.className = "text-red-500 font-bold uppercase tracking-wider font-mono-scada";
+          }
+      }
+
+      // Robust connection track listeners
+      function bindConnectionListeners() {
+          const connectedRef = ref(db, ".info/connected");
+          onValue(connectedRef, (snap) => {
+              if (snap.val() === true) {
+                  setOnlineUI();
+              } else {
+                  setOfflineUI();
+              }
+          }, (err) => {
+              console.log("System Status Fallback:", err);
+          });
+
+          onAuthStateChanged(auth, (user) => {
+              if (user) {
+                  setOnlineUI();
+              }
+          });
       }
 
       // Dynamic initialization call
@@ -1047,18 +1091,13 @@
         },
       });
 
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          document.getElementById("connIndicator").className = "w-2.5 h-2.5 rounded-full led-pulse-green";
-          document.getElementById("connText").innerText = "SCADA: CONNECTED";
-          document.getElementById("connText").className = "text-emerald-500 font-bold tracking-wider";
-        }
-      });
-
       function startListening() {
         onValue(ref(db, "hydroponic"), (snapshot) => {
           const data = snapshot.val();
-          if (data) updateLiveUI(data);
+          if (data) {
+              setOnlineUI(); // Active database payload confirms ONLINE status
+              updateLiveUI(data);
+          }
         }, (err) => {
             console.warn("Realtime read access denied. Set write/read rules to public.", err);
         });
