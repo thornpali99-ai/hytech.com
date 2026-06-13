@@ -152,10 +152,11 @@
           </div>
 
           <div class="flex flex-wrap items-center justify-center md:justify-end gap-3 w-full md:w-auto">
-            <!-- Navigation Switches styled like mechanical controls -->
+            <!-- Navigation Switches styled like mechanical controls - Consolidated into one setting -->
             <div class="flex bg-slate-900/90 border border-slate-700 p-1 rounded-xl text-[10px] font-black tracking-widest shadow-inner">
                 <button id="tabDashboard" class="px-4 py-2.5 rounded-lg text-white font-bold transition-all duration-150 uppercase bg-amber-600/10 tab-active">CONSOLE</button>
                 <button id="tabAdmin" class="px-4 py-2.5 rounded-lg text-slate-400 hover:text-white font-bold transition-all duration-150 uppercase hidden">SYSTEM ACCESS</button>
+                <button id="btnOpenDbModalDashboard" class="px-4 py-2.5 rounded-lg text-slate-400 hover:text-white font-bold transition-all duration-150 uppercase" title="Configure active hardware databases">DB SETUP</button>
             </div>
 
             <!-- Heartbeat Signal Indicator -->
@@ -163,12 +164,6 @@
               <span id="connIndicator" class="w-2 h-2 rounded-full bg-red-500"></span>
               <span id="connText" class="text-slate-400 uppercase tracking-wider">OFFLINE</span>
             </div>
-
-            <!-- Custom Database Configuration -->
-            <button id="btnOpenDbModalDashboard" class="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 px-3.5 py-2.5 rounded-xl text-[10px] font-black tracking-widest transition-colors shadow-inner uppercase" title="Configure active hardware databases">
-              <i data-lucide="database" class="w-4 h-4 text-amber-500"></i>
-              DB SETUP
-            </button>
 
             <button id="btnLogout" class="flex items-center gap-1.5 bg-red-950/80 hover:bg-red-900 border border-red-800/50 text-red-400 px-3.5 py-2.5 rounded-xl text-[10px] font-black tracking-widest transition-colors shadow-inner uppercase">
               <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -647,6 +642,7 @@
       tabDashboard.onclick = () => {
           tabDashboard.className = "px-4 py-2.5 rounded-lg text-white font-bold bg-amber-600/10 tab-active";
           tabAdmin.className = "px-4 py-2.5 rounded-lg text-slate-400 hover:text-white font-bold transition-all duration-150 uppercase";
+          document.getElementById("btnOpenDbModalDashboard").className = "px-4 py-2.5 rounded-lg text-slate-400 hover:text-white font-bold transition-all duration-150 uppercase";
           viewDashboard.classList.remove("hidden");
           viewAdmin.classList.add("hidden");
           if(typeof lucide !== "undefined") lucide.createIcons();
@@ -660,6 +656,7 @@
           }
           tabAdmin.className = "px-4 py-2.5 rounded-lg text-white font-bold bg-amber-600/10 tab-active";
           tabDashboard.className = "px-4 py-2.5 rounded-lg text-slate-400 hover:text-white font-bold transition-all duration-150 uppercase";
+          document.getElementById("btnOpenDbModalDashboard").className = "px-4 py-2.5 rounded-lg text-slate-400 hover:text-white font-bold transition-all duration-150 uppercase";
           viewAdmin.classList.remove("hidden");
           viewDashboard.classList.add("hidden");
           if(typeof lucide !== "undefined") lucide.createIcons();
