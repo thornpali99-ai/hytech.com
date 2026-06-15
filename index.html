@@ -786,24 +786,39 @@
           }
       }
 
-      // Connection Status UI Helpers
-      function setOnlineUI() {
+      let lastDevicePacketTime = 0;
+      let isBrowserConnected = false;
+
+      // Connection Status Watchdog UI Manager
+      function updateDeviceConnectionStatus() {
           const indicator = document.getElementById("connIndicator");
           const text = document.getElementById("connText");
-          if (indicator && text) {
+          if (!indicator || !text) return;
+
+          const now = Date.now();
+          const timeSinceLastPacket = now - lastDevicePacketTime;
+          const timeoutThreshold = 15000; // 15 seconds (ESP32 runs sendToFirebase every 10s)
+
+          if (!isBrowserConnected) {
+              // Web client disconnected from Firebase services entirely
+              indicator.className = "w-2 h-2 rounded-full bg-red-500";
+              text.innerText = "NET DISCONN";
+              text.className = "text-red-500 font-bold uppercase tracking-wider font-mono-scada";
+          } else if (lastDevicePacketTime === 0 || timeSinceLastPacket > timeoutThreshold) {
+              // Web client is connected to Firebase, but no recent updates received from ESP32
+              indicator.className = "w-2 h-2 rounded-full bg-red-500";
+              if (lastDevicePacketTime === 0) {
+                  text.innerText = "OFFLINE";
+              } else {
+                  const secondsAgo = Math.round(timeSinceLastPacket / 1000);
+                  text.innerText = `OFFLINE (${secondsAgo}s)`;
+              }
+              text.className = "text-red-500 font-bold uppercase tracking-wider font-mono-scada animate-pulse";
+          } else {
+              // ESP32 successfully publishing data packets in real-time
               indicator.className = "w-2 h-2 rounded-full led-pulse-green";
               text.innerText = "ONLINE";
               text.className = "text-emerald-500 font-bold uppercase tracking-wider";
-          }
-      }
-
-      function setOfflineUI() {
-          const indicator = document.getElementById("connIndicator");
-          const text = document.getElementById("connText");
-          if (indicator && text) {
-              indicator.className = "w-2 h-2 rounded-full bg-red-500";
-              text.innerText = "OFFLINE";
-              text.className = "text-red-500 font-bold uppercase tracking-wider font-mono-scada";
           }
       }
 
@@ -811,21 +826,22 @@
       function bindConnectionListeners() {
           const connectedRef = ref(db, ".info/connected");
           onValue(connectedRef, (snap) => {
-              if (snap.val() === true) {
-                  setOnlineUI();
-              } else {
-                  setOfflineUI();
-              }
+              isBrowserConnected = (snap.val() === true);
+              updateDeviceConnectionStatus();
           }, (err) => {
               console.log("System Status Fallback:", err);
           });
 
           onAuthStateChanged(auth, (user) => {
               if (user) {
-                  setOnlineUI();
+                  isBrowserConnected = true;
+                  updateDeviceConnectionStatus();
               }
           });
       }
+
+      // Start the interval checker to refresh device status every second
+      setInterval(updateDeviceConnectionStatus, 1000);
 
       // Dynamic initialization call
       setupFirebaseConnection(activeConfig);
@@ -1095,7 +1111,9 @@
         onValue(ref(db, "hydroponic"), (snapshot) => {
           const data = snapshot.val();
           if (data) {
-              setOnlineUI(); // Active database payload confirms ONLINE status
+              // Update incoming payload packet tracker immediately
+              lastDevicePacketTime = Date.now();
+              updateDeviceConnectionStatus();
               updateLiveUI(data);
           }
         }, (err) => {
@@ -1256,7 +1274,7 @@
         const sprayerStatus = data.sprayer || "OFF";
         const now = new Date();
         const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-        const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
 
         document.getElementById("valMoisture").innerText = moisture.toFixed(1) + "%";
         document.getElementById("valTemp").innerText = temp.toFixed(1) + "°C";
@@ -1271,9 +1289,8 @@
         sprayerEl.innerText = sprayerStatus === "ON" ? "SPRAYING 💨" : "IDLE";
         sprayerEl.className = sprayerStatus === "ON" ? "text-xs font-black text-orange-400 bg-orange-950/40 border border-orange-900/50 px-2 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)] animate-pulse" : "text-xs font-black text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800";
 
-        // Stacked label [Time, Date] renders on two lines on chart's bottom axis
-        const chartLabel = [timeStr, dateStr];
-        const entry = { t: chartLabel, s: moisture, te: temp, h: humidity, p: pumpStatus, sp: sprayerStatus, iso: now.toISOString() };
+        // Multi-line label for Chart.js x-axis formatting [Time, Date]
+        const entry = { t: [timeStr, dateStr], s: moisture, te: temp, h: humidity, p: pumpStatus, sp: sprayerStatus, iso: now.toISOString() };
         liveLog.push(entry);
         if (liveLog.length > 50) liveLog.shift();
         
@@ -1358,17 +1375,12 @@
                 
                 // Perform precise client-side filter
                 if (period === "all" || (recordTimeMs >= startTime && recordTimeMs <= endTime)) {
-                    let displayTime = val.t || parsedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    const yr = parsedDate.getFullYear();
-                    const mo = String(parsedDate.getMonth() + 1).padStart(2, '0');
-                    const dy = String(parsedDate.getDate()).padStart(2, '0');
-                    const dateString = `${yr}-${mo}-${dy}`;
-
-                    // Stacked label [Time, Date] for dynamic historical rendering
-                    const chartLabel = [displayTime, dateString];
-
+                    let displayTime = val.t;
+                    if(!displayTime) {
+                        displayTime = parsedDate.toLocaleDateString() + ' ' + parsedDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
                     dataArray.push({
-                        t: chartLabel,
+                        t: displayTime,
                         s: val.s ?? val.soil ?? 0,
                         te: val.te ?? val.temp ?? 0,
                         h: val.h ?? val.hum ?? 0,
@@ -1467,8 +1479,7 @@
                     dateFormattedStr = "N/A";
                 }
             }
-            const tStr = Array.isArray(d.t) ? d.t.join(' ') : d.t;
-            csv += `${dateFormattedStr},${tStr},${d.s}%,${d.te}°C,${d.h}%,${d.p || 'OFF'},${d.sp || 'OFF'}\n`; 
+            csv += `${dateFormattedStr},${d.t},${d.s}%,${d.te}°C,${d.h}%,${d.p || 'OFF'},${d.sp || 'OFF'}\n`; 
         });
         
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
