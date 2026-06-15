@@ -142,7 +142,7 @@
               <i data-lucide="gauge" class="w-6 h-6 text-white"></i>
             </div>
             <div>
-              <h1 class="text-sm sm:text-lg font-black tracking-widest font-mono-scada">HYTECH CLOUD</h1>
+              <h1 class="text-sm sm:text-lg font-black tracking-widest font-mono-scada">HYTECH CLOUD SCADA</h1>
               <div class="flex items-center gap-2 mt-0.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 led-pulse-green"></span>
                 <span class="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-widest">SYSTEM MONITOR ACTIVE</span>
@@ -500,7 +500,7 @@
                 <div>
                     <h3 class="font-black tracking-widest text-white text-xs uppercase">Terminal Intelligence Broadcast</h3>
                     <p id="systemInsight" class="text-xs text-slate-400 mt-1 leading-relaxed uppercase tracking-wider font-semibold">
-                        System Operational. For technical issues, contact lead engineer: Mr. PALI (0968909656)
+                        System telemetry link operational. For technical issues, contact lead engineer: Mr. PALI (0969809656)
                         <span class="font-mono-scada text-amber-500 text-xs ml-1 font-bold">/HYTECH</span>
                     </p>
                 </div>
@@ -1256,6 +1256,7 @@
         const sprayerStatus = data.sprayer || "OFF";
         const now = new Date();
         const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
 
         document.getElementById("valMoisture").innerText = moisture.toFixed(1) + "%";
         document.getElementById("valTemp").innerText = temp.toFixed(1) + "°C";
@@ -1270,7 +1271,9 @@
         sprayerEl.innerText = sprayerStatus === "ON" ? "SPRAYING 💨" : "IDLE";
         sprayerEl.className = sprayerStatus === "ON" ? "text-xs font-black text-orange-400 bg-orange-950/40 border border-orange-900/50 px-2 py-0.5 rounded shadow-[0_0_8px_rgba(249,115,22,0.3)] animate-pulse" : "text-xs font-black text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800";
 
-        const entry = { t: timeStr, s: moisture, te: temp, h: humidity, p: pumpStatus, sp: sprayerStatus, iso: now.toISOString() };
+        // Stacked label [Time, Date] renders on two lines on chart's bottom axis
+        const chartLabel = [timeStr, dateStr];
+        const entry = { t: chartLabel, s: moisture, te: temp, h: humidity, p: pumpStatus, sp: sprayerStatus, iso: now.toISOString() };
         liveLog.push(entry);
         if (liveLog.length > 50) liveLog.shift();
         
@@ -1355,12 +1358,17 @@
                 
                 // Perform precise client-side filter
                 if (period === "all" || (recordTimeMs >= startTime && recordTimeMs <= endTime)) {
-                    let displayTime = val.t;
-                    if(!displayTime) {
-                        displayTime = parsedDate.toLocaleDateString() + ' ' + parsedDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    }
+                    let displayTime = val.t || parsedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const yr = parsedDate.getFullYear();
+                    const mo = String(parsedDate.getMonth() + 1).padStart(2, '0');
+                    const dy = String(parsedDate.getDate()).padStart(2, '0');
+                    const dateString = `${yr}-${mo}-${dy}`;
+
+                    // Stacked label [Time, Date] for dynamic historical rendering
+                    const chartLabel = [displayTime, dateString];
+
                     dataArray.push({
-                        t: displayTime,
+                        t: chartLabel,
                         s: val.s ?? val.soil ?? 0,
                         te: val.te ?? val.temp ?? 0,
                         h: val.h ?? val.hum ?? 0,
@@ -1459,7 +1467,8 @@
                     dateFormattedStr = "N/A";
                 }
             }
-            csv += `${dateFormattedStr},${d.t},${d.s}%,${d.te}°C,${d.h}%,${d.p || 'OFF'},${d.sp || 'OFF'}\n`; 
+            const tStr = Array.isArray(d.t) ? d.t.join(' ') : d.t;
+            csv += `${dateFormattedStr},${tStr},${d.s}%,${d.te}°C,${d.h}%,${d.p || 'OFF'},${d.sp || 'OFF'}\n`; 
         });
         
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
