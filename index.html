@@ -12,7 +12,11 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;800;900&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;800;900&family=Kantumruy+Pro:wght@400;600;700&display=swap");
+
+      :lang(km), .lang-km {
+        font-family: "Kantumruy Pro", sans-serif !important;
+      }
 
       .font-mono-scada {
         font-family: "Share Tech Mono", "Courier New", monospace;
@@ -176,6 +180,15 @@
           >
             <i data-lucide="database" class="w-5 h-5"></i>
           </button>
+
+          <!-- Language Toggle on Login -->
+          <button
+            id="btnLangToggleLogin"
+            class="absolute top-4 left-4 text-slate-400 hover:text-amber-400 p-2 rounded-xl hover:bg-slate-800/60 border border-transparent hover:border-slate-700 transition-all text-xs font-black tracking-widest"
+            title="Change Language / ប្តូរភាសា"
+          >
+            🌐 <span id="langLabelLogin">ខ្មែរ</span>
+          </button>
         </div>
 
         <form id="loginForm" class="p-6 sm:p-8 space-y-6 bg-slate-950/40">
@@ -190,12 +203,13 @@
             <div>
               <label
                 class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
-                >OPERATOR ID</label
+                data-i18n="login.operatorId">OPERATOR ID</label
               >
               <input
                 id="loginId"
                 type="text"
                 placeholder="ID / Username"
+                data-i18n-placeholder="login.usernamePlaceholder"
                 class="w-full bg-slate-900/85 border border-slate-700 p-3.5 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none font-semibold text-sm text-slate-100 placeholder-slate-500"
                 required
               />
@@ -203,12 +217,13 @@
             <div>
               <label
                 class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1"
-                >ACCESS SECURITY KEY</label
+                data-i18n="login.securityKey">ACCESS SECURITY KEY</label
               >
               <input
                 id="loginPass"
                 type="password"
                 placeholder="Password"
+                data-i18n-placeholder="login.passwordPlaceholder"
                 class="w-full bg-slate-900/85 border border-slate-700 p-3.5 rounded-xl focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none font-semibold text-sm text-slate-100 placeholder-slate-500"
                 required
               />
@@ -218,8 +233,7 @@
             type="submit"
             class="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-4 rounded-xl font-bold hover:from-amber-500 hover:to-orange-500 transition-all shadow-lg shadow-amber-900/20 uppercase tracking-wider text-xs flex items-center justify-center gap-2 border border-amber-600"
           >
-            <i data-lucide="unlock" class="w-4 h-4"></i> Initialize Operator
-            Session
+            <i data-lucide="unlock" class="w-4 h-4"></i> <span data-i18n="login.btnLogin">Initialize Operator Session</span>
           </button>
         </form>
       </div>
@@ -299,7 +313,7 @@
                     class="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-amber-500 hover:bg-slate-900 transition-colors"
                   >
                     <i data-lucide="monitor" class="w-4 h-4 text-amber-500"></i>
-                    HOME
+                    <span data-i18n="nav.home">HOME</span>
                   </button>
                   <button
                     id="tabAdmin"
@@ -309,14 +323,22 @@
                       data-lucide="shield-alert"
                       class="w-4 h-4 text-purple-500"
                     ></i>
-                    SYSTEM ACCESS
+                    <span data-i18n="nav.systemAccess">SYSTEM ACCESS</span>
                   </button>
                   <button
                     id="btnOpenDbModalDashboard"
                     class="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-slate-900 transition-colors"
                   >
                     <i data-lucide="database" class="w-4 h-4 text-blue-500"></i>
-                    DB SETUP
+                    <span data-i18n="nav.dbSetup">DB SETUP</span>
+                  </button>
+                  <!-- Language Toggle in Dropdown -->
+                  <button
+                    id="btnLangToggleDash"
+                    class="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-slate-900 transition-colors"
+                  >
+                    <span class="text-base">🌐</span>
+                    <span id="langLabelDash">ភាសាខ្មែរ</span>
                   </button>
                 </div>
                 <div class="pt-1.5">
@@ -325,7 +347,7 @@
                     class="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors"
                   >
                     <i data-lucide="log-out" class="w-4 h-4 text-red-500"></i>
-                    LOGOUT
+                    <span data-i18n="nav.logout">LOGOUT</span>
                   </button>
                 </div>
               </div>
@@ -347,28 +369,17 @@
                 <div>
                   <p
                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
-                  >
-                    SOIL MOISTURE
-                  </p>
+                    data-i18n="sensor.soilMoisture">SOIL MOISTURE</p>
                   <p
                     class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mt-0.5"
-                  >
-                    Hydration Node
-                  </p>
+                    data-i18n="sensor.hydrationNode">Hydration Node</p>
                 </div>
-                <div
-                  class="p-2 bg-blue-950/60 border border-blue-900/40 rounded-xl"
-                >
+                <div class="p-2 bg-blue-950/60 border border-blue-900/40 rounded-xl">
                   <i data-lucide="droplet" class="w-5 h-5 text-blue-400"></i>
                 </div>
               </div>
               <div class="mt-4 flex items-baseline gap-1">
-                <h3
-                  id="valMoisture"
-                  class="text-4xl font-black font-mono-scada text-white leading-none tracking-tight"
-                >
-                  --%
-                </h3>
+                <h3 id="valMoisture" class="text-4xl font-black font-mono-scada text-white leading-none tracking-tight">--%</h3>
               </div>
             </div>
 
@@ -380,31 +391,17 @@
                 <div>
                   <p
                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
-                  >
-                    AIR TEMPERATURE
-                  </p>
+                    data-i18n="sensor.airTemp">AIR TEMPERATURE</p>
                   <p
                     class="text-[9px] font-bold text-orange-500 uppercase tracking-widest mt-0.5"
-                  >
-                    Thermal Monitor
-                  </p>
+                    data-i18n="sensor.thermalMonitor">Thermal Monitor</p>
                 </div>
-                <div
-                  class="p-2 bg-orange-950/60 border border-orange-900/40 rounded-xl"
-                >
-                  <i
-                    data-lucide="thermometer"
-                    class="w-5 h-5 text-orange-400"
-                  ></i>
+                <div class="p-2 bg-orange-950/60 border border-orange-900/40 rounded-xl">
+                  <i data-lucide="thermometer" class="w-5 h-5 text-orange-400"></i>
                 </div>
               </div>
               <div class="mt-4 flex items-baseline gap-1">
-                <h3
-                  id="valTemp"
-                  class="text-4xl font-black font-mono-scada text-white leading-none tracking-tight"
-                >
-                  --°C
-                </h3>
+                <h3 id="valTemp" class="text-4xl font-black font-mono-scada text-white leading-none tracking-tight">--°C</h3>
               </div>
             </div>
 
@@ -416,28 +413,17 @@
                 <div>
                   <p
                     class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
-                  >
-                    AIR HUMIDITY
-                  </p>
+                    data-i18n="sensor.airHumidity">AIR HUMIDITY</p>
                   <p
                     class="text-[9px] font-bold text-indigo-500 uppercase tracking-widest mt-0.5"
-                  >
-                    Ambient Saturation
-                  </p>
+                    data-i18n="sensor.ambientSat">Ambient Saturation</p>
                 </div>
-                <div
-                  class="p-2 bg-indigo-950/60 border border-indigo-900/40 rounded-xl"
-                >
+                <div class="p-2 bg-indigo-950/60 border border-indigo-900/40 rounded-xl">
                   <i data-lucide="wind" class="w-5 h-5 text-indigo-400"></i>
                 </div>
               </div>
               <div class="mt-4 flex items-baseline gap-1">
-                <h3
-                  id="valHum"
-                  class="text-4xl font-black font-mono-scada text-white leading-none tracking-tight"
-                >
-                  --%
-                </h3>
+                <h3 id="valHum" class="text-4xl font-black font-mono-scada text-white leading-none tracking-tight">--%</h3>
               </div>
             </div>
 
@@ -445,44 +431,18 @@
             <div
               class="scada-bezel p-5 rounded-2xl relative overflow-hidden flex flex-col justify-between border-l-4 border-l-amber-500"
             >
-              <div
-                class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2"
-              >
-                <span
-                  class="text-[10px] font-black text-slate-400 uppercase tracking-widest"
-                  >MOTOR STATUS</span
-                >
-                <span
-                  class="text-[9px] font-mono-scada bg-amber-950/50 border border-amber-900/40 px-1.5 py-0.5 rounded text-amber-500 uppercase"
-                  >STATUS</span
-                >
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest" data-i18n="sensor.motorStatus">MOTOR STATUS</span>
+                <span class="text-[9px] font-mono-scada bg-amber-950/50 border border-amber-900/40 px-1.5 py-0.5 rounded text-amber-500 uppercase" data-i18n="sensor.status">STATUS</span>
               </div>
               <div class="space-y-3">
-                <div
-                  class="flex justify-between items-center bg-slate-950/50 p-2 rounded-xl border border-slate-800/80"
-                >
-                  <span
-                    class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
-                    >Water Pump</span
-                  >
-                  <span
-                    id="valPump"
-                    class="text-xs font-black uppercase tracking-wider text-slate-500"
-                    >Offline</span
-                  >
+                <div class="flex justify-between items-center bg-slate-950/50 p-2 rounded-xl border border-slate-800/80">
+                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider" data-i18n="sensor.waterPump">Water Pump</span>
+                  <span id="valPump" class="text-xs font-black uppercase tracking-wider text-slate-500">Offline</span>
                 </div>
-                <div
-                  class="flex justify-between items-center bg-slate-950/50 p-2 rounded-xl border border-slate-800/80"
-                >
-                  <span
-                    class="text-[10px] font-black text-slate-400 uppercase tracking-wider"
-                    >Sprayer Pump</span
-                  >
-                  <span
-                    id="valSprayer"
-                    class="text-xs font-black uppercase tracking-wider text-slate-500"
-                    >Offline</span
-                  >
+                <div class="flex justify-between items-center bg-slate-950/50 p-2 rounded-xl border border-slate-800/80">
+                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider" data-i18n="sensor.sprayerPump">Sprayer Pump</span>
+                  <span id="valSprayer" class="text-xs font-black uppercase tracking-wider text-slate-500">Offline</span>
                 </div>
               </div>
             </div>
@@ -499,136 +459,63 @@
                   class="text-sm font-black tracking-widest uppercase flex items-center gap-2"
                 >
                   <i data-lucide="sliders" class="text-amber-500"></i>
-                  AUTOMATION CONTROLS
+                  <span data-i18n="ctrl.title">AUTOMATION CONTROLS</span>
                 </h2>
               </div>
 
               <div class="space-y-4">
                 <!-- Soil Moisture setpoint -->
-                <div
-                  class="bg-slate-950/50 p-3.5 rounded-xl border border-slate-800"
-                >
-                  <span
-                    class="text-[10px] font-black text-amber-500 uppercase tracking-widest block mb-2"
-                    >SOIL MOISTURE THRESHOLDS (%)</span
-                  >
+                <div class="bg-slate-950/50 p-3.5 rounded-xl border border-slate-800">
+                  <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest block mb-2" data-i18n="ctrl.soilThresh">SOIL MOISTURE THRESHOLDS (%)</span>
                   <div class="grid grid-cols-2 gap-3">
                     <div>
-                      <label
-                        class="text-[9px] font-black text-slate-500 block mb-1"
-                        >PUMP START (ON)</label
-                      >
-                      <input
-                        type="number"
-                        id="inputSetON"
-                        min="0"
-                        max="100"
-                        value="50"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-100"
-                      />
+                      <label class="text-[9px] font-black text-slate-500 block mb-1" data-i18n="ctrl.pumpStart">PUMP START (ON)</label>
+                      <input type="number" id="inputSetON" min="0" max="100" value="50"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-100"/>
                     </div>
                     <div>
-                      <label
-                        class="text-[9px] font-black text-slate-500 block mb-1"
-                        >PUMP STOP (OFF)</label
-                      >
-                      <input
-                        type="number"
-                        id="inputSetOFF"
-                        min="0"
-                        max="100"
-                        value="65"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold text-slate-100"
-                      />
+                      <label class="text-[9px] font-black text-slate-500 block mb-1" data-i18n="ctrl.pumpStop">PUMP STOP (OFF)</label>
+                      <input type="number" id="inputSetOFF" min="0" max="100" value="65"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-blue-500 outline-none font-bold text-slate-100"/>
                     </div>
                   </div>
                 </div>
 
                 <!-- Water Pump Timer intervals -->
-                <div
-                  class="bg-slate-950/50 p-3.5 rounded-xl border border-slate-800"
-                >
-                  <span
-                    class="text-[10px] font-black text-amber-500 uppercase tracking-widest block mb-2"
-                    >SOLENOID RUNTIMING (MIN)</span
-                  >
+                <div class="bg-slate-950/50 p-3.5 rounded-xl border border-slate-800">
+                  <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest block mb-2" data-i18n="ctrl.solenoidTiming">SOLENOID RUNTIMING (MIN)</span>
                   <div class="grid grid-cols-2 gap-3">
                     <div>
-                      <label
-                        class="text-[9px] font-black text-slate-500 block mb-1"
-                        >MAX RUN TIME</label
-                      >
-                      <input
-                        type="number"
-                        id="inputPumpTime"
-                        value="1"
-                        min="1"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-100"
-                      />
+                      <label class="text-[9px] font-black text-slate-500 block mb-1" data-i18n="ctrl.maxRunTime">MAX RUN TIME</label>
+                      <input type="number" id="inputPumpTime" value="1" min="1"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-100"/>
                     </div>
                     <div>
-                      <label
-                        class="text-[9px] font-black text-slate-500 block mb-1"
-                        >DELAY TIME</label
-                      >
-                      <input
-                        type="number"
-                        id="inputDelayTime"
-                        value="1"
-                        min="0"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-100"
-                      />
+                      <label class="text-[9px] font-black text-slate-500 block mb-1" data-i18n="ctrl.delayTime">DELAY TIME</label>
+                      <input type="number" id="inputDelayTime" value="1" min="0"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-100"/>
                     </div>
                   </div>
                 </div>
 
                 <!-- Thermal Sprayer controls -->
-                <div
-                  class="bg-slate-950/50 p-3.5 rounded-xl border border-slate-800 space-y-3"
-                >
-                  <span
-                    class="text-[10px] font-black text-amber-500 uppercase tracking-widest block"
-                    >SPRAYER THERMAL OVERRIDE</span
-                  >
+                <div class="bg-slate-950/50 p-3.5 rounded-xl border border-slate-800 space-y-3">
+                  <span class="text-[10px] font-black text-amber-500 uppercase tracking-widest block" data-i18n="ctrl.sprayerOverride">SPRAYER THERMAL OVERRIDE</span>
                   <div>
-                    <label
-                      class="text-[9px] font-black text-slate-500 block mb-1"
-                      >TRIGGER THRESHOLD (°C)</label
-                    >
-                    <input
-                      type="number"
-                      id="inputTempSet"
-                      value="35"
-                      step="0.5"
-                      class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none font-bold text-slate-100"
-                    />
+                    <label class="text-[9px] font-black text-slate-500 block mb-1" data-i18n="ctrl.triggerThresh">TRIGGER THRESHOLD (°C)</label>
+                    <input type="number" id="inputTempSet" value="35" step="0.5"
+                      class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none font-bold text-slate-100"/>
                   </div>
                   <div class="grid grid-cols-2 gap-3">
                     <div>
-                      <label
-                        class="text-[9px] font-black text-slate-500 block mb-1"
-                        >SPRAYER RUN TIME</label
-                      >
-                      <input
-                        type="number"
-                        id="inputSprayerTime"
-                        value="1"
-                        min="1"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none font-bold text-slate-100"
-                      />
+                      <label class="text-[9px] font-black text-slate-500 block mb-1" data-i18n="ctrl.sprayerRunTime">SPRAYER RUN TIME</label>
+                      <input type="number" id="inputSprayerTime" value="1" min="1"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none font-bold text-slate-100"/>
                     </div>
                     <div>
-                      <label
-                        class="text-[9px] font-black text-slate-500 block mb-1"
-                        >DELAY TIME</label
-                      >
-                      <input
-                        type="number"
-                        id="inputSprayerDelay"
-                        value="1"
-                        min="0"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none font-bold text-slate-100"
-                      />
+                      <label class="text-[9px] font-black text-slate-500 block mb-1" data-i18n="ctrl.delayTime">DELAY TIME</label>
+                      <input type="number" id="inputSprayerDelay" value="1" min="0"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-orange-500 outline-none font-bold text-slate-100"/>
                     </div>
                   </div>
                 </div>
@@ -638,7 +525,7 @@
                   class="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold py-3.5 rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all shadow-md text-xs uppercase tracking-wider border border-amber-600"
                 >
                   <i data-lucide="save" class="w-4 h-4 inline-block mr-1"></i>
-                  Save Configurations
+                  <span data-i18n="ctrl.saveConfig">Save Configurations</span>
                 </button>
               </div>
             </div>
@@ -655,9 +542,9 @@
                     class="text-sm font-black tracking-widest uppercase flex items-center gap-2"
                   >
                     <i data-lucide="activity" class="text-amber-500"></i>
-                    real-time data logs
+                    <span data-i18n="chart.title">real-time data logs</span>
                   </h2>
-                  <p class="text-[9px] text-slate-500 font-bold uppercase mt-1">
+                  <p class="text-[9px] text-slate-500 font-bold uppercase mt-1" data-i18n="chart.subtitle">
                     Trend Analysis Panel
                   </p>
                 </div>
@@ -681,11 +568,8 @@
                     class="flex items-center gap-1 bg-slate-900 border border-slate-800 text-[9px] text-slate-300 px-3 py-2 rounded-xl font-bold hover:bg-slate-800 transition-colors uppercase tracking-wider shadow"
                     title="Export current dataset to CSV format"
                   >
-                    <i
-                      data-lucide="download"
-                      class="w-3 h-3 text-amber-500"
-                    ></i>
-                    EXPORT
+                    <i data-lucide="download" class="w-3 h-3 text-amber-500"></i>
+                    <span data-i18n="chart.export">EXPORT</span>
                   </button>
                 </div>
               </div>
@@ -782,11 +666,11 @@
                   class="text-sm font-black tracking-widest uppercase flex items-center gap-2"
                 >
                   <i data-lucide="database" class="text-amber-500"></i>
-                  Custom Target database setup
+                  <span data-i18n="admin.dbTitle">Custom Target database setup</span>
                 </h2>
                 <p
                   class="text-[10px] text-slate-500 uppercase font-semibold mt-1"
-                >
+                  data-i18n="admin.dbSubtitle">
                   Bind this console to any active ESP32 PLC node.
                 </p>
               </div>
@@ -795,8 +679,7 @@
                 <div>
                   <label
                     class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1"
-                    >Firebase RTDB Endpoint URL</label
-                  >
+                    data-i18n="admin.dbUrl">Firebase RTDB Endpoint URL</label>
                   <input
                     type="text"
                     id="dbInputUrl"
@@ -807,8 +690,7 @@
                 <div>
                   <label
                     class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1"
-                    >Firebase Web API Access Key</label
-                  >
+                    data-i18n="admin.dbApiKey">Firebase Web API Access Key</label>
                   <input
                     type="password"
                     id="dbInputApiKey"
@@ -821,14 +703,14 @@
                   <button
                     id="btnSaveCustomDb"
                     class="flex-grow bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold py-3 rounded-xl transition-all shadow-md text-xs uppercase tracking-wider border border-amber-600"
-                  >
+                    data-i18n="admin.applyConfig">
                     Apply Config
                   </button>
                   <button
                     id="btnRevertDb"
                     class="bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold px-4 py-3 rounded-xl border border-slate-750 transition-all text-xs uppercase tracking-wider"
                     title="Restore HYTECH default database paths"
-                  >
+                    data-i18n="admin.default">
                     Default
                   </button>
                 </div>
@@ -843,110 +725,63 @@
                 class="flex flex-wrap justify-between items-start border-b border-slate-800 pb-3 gap-3"
               >
                 <div>
-                  <h2
-                    class="text-sm font-black tracking-widest uppercase flex items-center gap-2"
-                  >
+                  <h2 class="text-sm font-black tracking-widest uppercase flex items-center gap-2">
                     <i data-lucide="users" class="text-amber-500"></i>
-                    Operator Directory Registry
+                    <span data-i18n="admin.opRegistry">Operator Directory Registry</span>
                   </h2>
-                  <p
-                    class="text-[10px] text-slate-500 uppercase font-semibold mt-1"
-                  >
-                    Manage system logins, access configurations, and security
-                    level permissions.
+                  <p class="text-[10px] text-slate-500 uppercase font-semibold mt-1" data-i18n="admin.opRegistryDesc">
+                    Manage system logins, access configurations, and security level permissions.
                   </p>
                 </div>
                 <button
                   id="btnToggleAddUser"
                   class="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all shadow-md flex items-center gap-1.5 uppercase tracking-wider border border-amber-650"
                 >
-                  <i data-lucide="user-plus" class="w-4 h-4"></i> Add Operator
+                  <i data-lucide="user-plus" class="w-4 h-4"></i> <span data-i18n="admin.addOperator">Add Operator</span>
                 </button>
               </div>
 
               <!-- Register Operator Section -->
-              <div
-                id="addUserBox"
-                class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4"
-              >
+              <div id="addUserBox" class="hidden bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4">
                 <div class="flex justify-between items-center">
-                  <h3
-                    class="text-xs font-black text-amber-500 flex items-center gap-2 uppercase tracking-widest"
-                  >
+                  <h3 class="text-xs font-black text-amber-500 flex items-center gap-2 uppercase tracking-widest">
                     <i data-lucide="shield-alert" class="w-4 h-4"></i>
-                    Register system access credential
+                    <span data-i18n="admin.registerCred">Register system access credential</span>
                   </h3>
-                  <button
-                    id="btnCancelAddUser"
-                    class="text-xs text-slate-500 hover:text-white transition-colors"
-                  >
+                  <button id="btnCancelAddUser" class="text-xs text-slate-500 hover:text-white transition-colors">
                     <i data-lucide="x" class="w-4 h-4"></i>
                   </button>
                 </div>
                 <form id="addUserForm" class="space-y-4">
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label
-                        class="text-[9px] font-black text-slate-500 uppercase block mb-1"
-                        >FULL NAME / SURNAME</label
-                      >
-                      <input
-                        type="text"
-                        id="newFullName"
-                        placeholder="Operator Name"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200"
-                        required
-                      />
+                      <label class="text-[9px] font-black text-slate-500 uppercase block mb-1" data-i18n="admin.fullName">FULL NAME / SURNAME</label>
+                      <input type="text" id="newFullName" placeholder="Operator Name" data-i18n-placeholder="admin.opNamePlaceholder"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required/>
                     </div>
                     <div>
-                      <label
-                        class="text-[9px] font-black text-slate-500 uppercase block mb-1"
-                        >OPERATOR ID (USERNAME)</label
-                      >
-                      <input
-                        type="text"
-                        id="newUserId"
-                        placeholder="operator_id"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200"
-                        required
-                      />
+                      <label class="text-[9px] font-black text-slate-500 uppercase block mb-1" data-i18n="admin.operatorId">OPERATOR ID (USERNAME)</label>
+                      <input type="text" id="newUserId" placeholder="operator_id"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required/>
                     </div>
                     <div>
-                      <label
-                        class="text-[9px] font-black text-slate-500 uppercase block mb-1"
-                        >SESSION PASSWORD</label
-                      >
-                      <input
-                        type="password"
-                        id="newUserPass"
-                        placeholder="Enter password"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200"
-                        required
-                      />
+                      <label class="text-[9px] font-black text-slate-500 uppercase block mb-1" data-i18n="admin.sessionPass">SESSION PASSWORD</label>
+                      <input type="password" id="newUserPass" placeholder="Enter password" data-i18n-placeholder="admin.enterPass"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required/>
                     </div>
                     <div>
-                      <label
-                        class="text-[9px] font-black text-slate-500 uppercase block mb-1"
-                        >SECURITY ACCESS ROLE</label
-                      >
-                      <select
-                        id="newUserRole"
-                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-200 bg-slate-900"
-                      >
-                        <option value="operator">
-                          Operator (Dashboard Control Only)
-                        </option>
-                        <option value="admin">
-                          Administrator (Full Systems + Admin Panels)
-                        </option>
+                      <label class="text-[9px] font-black text-slate-500 uppercase block mb-1" data-i18n="admin.accessRole">SECURITY ACCESS ROLE</label>
+                      <select id="newUserRole"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-200 bg-slate-900">
+                        <option value="operator" data-i18n="admin.roleOperator">Operator (Dashboard Control Only)</option>
+                        <option value="admin" data-i18n="admin.roleAdmin">Administrator (Full Systems + Admin Panels)</option>
                       </select>
                     </div>
                   </div>
                   <div class="flex justify-end gap-2">
-                    <button
-                      type="submit"
+                    <button type="submit"
                       class="bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold px-5 py-3 rounded-xl text-xs transition-all shadow-md uppercase tracking-wider border border-amber-650"
-                    >
+                      data-i18n="admin.authorizeAccess">
                       Authorize Access
                     </button>
                   </div>
@@ -954,32 +789,20 @@
               </div>
 
               <!-- Operator directory Table -->
-              <div
-                class="overflow-x-auto border border-slate-800 rounded-2xl bg-slate-950 shadow-inner"
-              >
-                <table
-                  class="w-full border-collapse text-left text-xs text-slate-300"
-                >
-                  <thead
-                    class="bg-slate-900 font-bold uppercase text-[9px] text-slate-400 tracking-wider border-b border-slate-800"
-                  >
+              <div class="overflow-x-auto border border-slate-800 rounded-2xl bg-slate-950 shadow-inner">
+                <table class="w-full border-collapse text-left text-xs text-slate-300">
+                  <thead class="bg-slate-900 font-bold uppercase text-[9px] text-slate-400 tracking-wider border-b border-slate-800">
                     <tr>
-                      <th class="p-4">operator details</th>
-                      <th class="p-4">system ID</th>
-                      <th class="p-4">access role</th>
-                      <th class="p-4">session status</th>
-                      <th class="p-4 text-right">actions</th>
+                      <th class="p-4" data-i18n="admin.tblDetails">operator details</th>
+                      <th class="p-4" data-i18n="admin.tblId">system ID</th>
+                      <th class="p-4" data-i18n="admin.tblRole">access role</th>
+                      <th class="p-4" data-i18n="admin.tblStatus">session status</th>
+                      <th class="p-4 text-right" data-i18n="admin.tblActions">actions</th>
                     </tr>
                   </thead>
-                  <tbody
-                    id="authorizedUsersList"
-                    class="divide-y divide-slate-900"
-                  >
+                  <tbody id="authorizedUsersList" class="divide-y divide-slate-900">
                     <tr>
-                      <td
-                        colspan="5"
-                        class="p-8 text-center text-slate-500 italic uppercase font-bold tracking-widest animate-pulse"
-                      >
+                      <td colspan="5" class="p-8 text-center text-slate-500 italic uppercase font-bold tracking-widest animate-pulse" data-i18n="admin.syncing">
                         Syncing system operator directory...
                       </td>
                     </tr>
@@ -1002,16 +825,12 @@
               ></i>
             </div>
             <div>
-              <h3
-                class="font-black tracking-widest text-white text-xs uppercase"
-              >
-                COMPANY INFO
-              </h3>
+              <h3 class="font-black tracking-widest text-white text-xs uppercase" data-i18n="info.companyInfo">COMPANY INFO</h3>
               <p
                 id="systemInsight"
                 class="text-xs text-slate-400 mt-1 leading-relaxed uppercase tracking-wider font-semibold"
               >
-                For technical issues, contact lead engineer:(0968909656)
+                <span data-i18n="info.contact">For technical issues, contact lead engineer:(0968909656)</span>
                 <span
                   class="font-mono-scada text-amber-500 text-xs ml-1 font-bold"
                   >Mr.PALI</span
@@ -1037,8 +856,7 @@
           <h3
             class="font-black font-mono-scada uppercase tracking-wider flex items-center gap-2"
           >
-            <i data-lucide="database" class="text-amber-500"></i> Setup Active
-            Firebase
+            <i data-lucide="database" class="text-amber-500"></i> <span data-i18n="modal.setupFirebase">Setup Active Firebase</span>
           </h3>
           <button
             id="btnCloseDbModal"
@@ -1051,8 +869,7 @@
           <div>
             <label
               class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1"
-              >Database URL Endpoint</label
-            >
+              data-i18n="modal.dbUrlLabel">Database URL Endpoint</label>
             <input
               type="text"
               id="modalInputUrl"
@@ -1063,8 +880,7 @@
           <div>
             <label
               class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1"
-              >API Authentication Key</label
-            >
+              data-i18n="modal.apiKeyLabel">API Authentication Key</label>
             <input
               type="password"
               id="modalInputApiKey"
@@ -1076,13 +892,13 @@
             <button
               id="btnModalSave"
               class="flex-grow bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white py-3 rounded-xl text-xs font-black transition-all uppercase tracking-wider border border-amber-650"
-            >
+              data-i18n="modal.applyConfig">
               Apply Configuration
             </button>
             <button
               id="btnModalReset"
               class="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-750 px-4 py-3 rounded-xl text-xs font-black transition-all uppercase tracking-wider"
-            >
+              data-i18n="modal.resetDefaults">
               Reset Defaults
             </button>
           </div>
@@ -1104,8 +920,7 @@
           <h3
             class="font-black font-mono-scada uppercase tracking-wider flex items-center gap-2"
           >
-            <i data-lucide="user-cog" class="text-amber-500"></i> Edit User
-            Account
+            <i data-lucide="user-cog" class="text-amber-500"></i> <span data-i18n="editUser.title">Edit User Account</span>
           </h3>
           <button
             id="btnCloseEditUserModal"
@@ -1119,66 +934,32 @@
           <input type="hidden" id="editOriginalUserId" />
           <input type="hidden" id="editUserStatus" />
           <div>
-            <label
-              class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1"
-              >Full Name</label
-            >
-            <input
-              type="text"
-              id="editFullName"
-              placeholder="Operator Name"
-              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200"
-              required
-            />
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1" data-i18n="editUser.fullName">Full Name</label>
+            <input type="text" id="editFullName" placeholder="Operator Name"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required/>
           </div>
           <div>
-            <label
-              class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1"
-              >Operator ID / Username</label
-            >
-            <input
-              type="text"
-              id="editUserId"
-              placeholder="operator_id"
-              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200"
-              required
-            />
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1" data-i18n="editUser.operatorId">Operator ID / Username</label>
+            <input type="text" id="editUserId" placeholder="operator_id"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required/>
           </div>
           <div>
-            <label
-              class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1"
-              >Session Password</label
-            >
-            <input
-              type="text"
-              id="editUserPass"
-              placeholder="Enter password"
-              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200"
-              required
-            />
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1" data-i18n="editUser.sessionPass">Session Password</label>
+            <input type="text" id="editUserPass" placeholder="Enter password" data-i18n-placeholder="admin.enterPass"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-semibold text-slate-200" required/>
           </div>
           <div>
-            <label
-              class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1"
-              >Access Role</label
-            >
-            <select
-              id="editUserRole"
-              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-200 bg-slate-900"
-            >
-              <option value="operator">
-                Operator (Dashboard Control Only)
-              </option>
-              <option value="admin">
-                Administrator (Full Systems + Admin Panels)
-              </option>
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1" data-i18n="editUser.accessRole">Access Role</label>
+            <select id="editUserRole"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs focus:ring-1 focus:ring-amber-500 outline-none font-bold text-slate-200 bg-slate-900">
+              <option value="operator" data-i18n="admin.roleOperator">Operator (Dashboard Control Only)</option>
+              <option value="admin" data-i18n="admin.roleAdmin">Administrator (Full Systems + Admin Panels)</option>
             </select>
           </div>
           <div class="flex gap-3 pt-2">
-            <button
-              type="submit"
+            <button type="submit"
               class="flex-grow bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white py-3 rounded-xl text-xs font-black transition-all uppercase tracking-wider border border-amber-650"
-            >
+              data-i18n="editUser.applyEdits">
               Apply Edits
             </button>
           </div>
@@ -2451,6 +2232,241 @@
           btn.disabled = false;
         }
       };
+    </script>
+
+    <!-- ===== LANGUAGE / i18n SYSTEM ===== -->
+    <script>
+      // ── Translation dictionary ──────────────────────────────────────────────
+      const translations = {
+        en: {
+          // Login
+          "login.operatorId":          "OPERATOR ID",
+          "login.usernamePlaceholder": "Enter username",
+          "login.securityKey":         "ACCESS SECURITY KEY",
+          "login.passwordPlaceholder": "Enter password",
+          "login.btnLogin":            "Initialize Operator Session",
+
+          // Nav / dropdown
+          "nav.home":         "HOME",
+          "nav.systemAccess": "SYSTEM ACCESS",
+          "nav.dbSetup":      "DB SETUP",
+          "nav.langSwitch":   "ភាសាខ្មែរ",   // label shown when language IS English
+          "nav.logout":       "LOGOUT",
+
+          // Sensor cards
+          "sensor.soilMoisture":  "SOIL MOISTURE",
+          "sensor.hydrationNode": "Hydration Node",
+          "sensor.airTemp":       "AIR TEMPERATURE",
+          "sensor.thermalMonitor":"Thermal Monitor",
+          "sensor.airHumidity":   "AIR HUMIDITY",
+          "sensor.ambientSat":    "Ambient Saturation",
+          "sensor.motorStatus":   "MOTOR STATUS",
+          "sensor.status":        "STATUS",
+          "sensor.waterPump":     "Water Pump",
+          "sensor.sprayerPump":   "Sprayer Pump",
+
+          // Controls panel
+          "ctrl.title":          "AUTOMATION CONTROLS",
+          "ctrl.soilThresh":     "SOIL MOISTURE THRESHOLDS (%)",
+          "ctrl.pumpStart":      "PUMP START (ON)",
+          "ctrl.pumpStop":       "PUMP STOP (OFF)",
+          "ctrl.solenoidTiming": "SOLENOID RUNTIMING (MIN)",
+          "ctrl.maxRunTime":     "MAX RUN TIME",
+          "ctrl.delayTime":      "DELAY TIME",
+          "ctrl.sprayerOverride":"SPRAYER THERMAL OVERRIDE",
+          "ctrl.triggerThresh":  "TRIGGER THRESHOLD (°C)",
+          "ctrl.sprayerRunTime": "SPRAYER RUN TIME",
+          "ctrl.saveConfig":     "Save Configurations",
+
+          // Chart
+          "chart.title":    "real-time data logs",
+          "chart.subtitle": "Trend Analysis Panel",
+          "chart.export":   "EXPORT",
+
+          // Admin panel
+          "admin.dbTitle":        "Custom Target database setup",
+          "admin.dbSubtitle":     "Bind this console to any active ESP32 PLC node.",
+          "admin.dbUrl":          "Firebase RTDB Endpoint URL",
+          "admin.dbApiKey":       "Firebase Web API Access Key",
+          "admin.applyConfig":    "Apply Config",
+          "admin.default":        "Default",
+          "admin.opRegistry":     "Operator Directory Registry",
+          "admin.opRegistryDesc": "Manage system logins, access configurations, and security level permissions.",
+          "admin.addOperator":    "Add Operator",
+          "admin.registerCred":   "Register system access credential",
+          "admin.fullName":       "FULL NAME / SURNAME",
+          "admin.opNamePlaceholder":"Operator Name",
+          "admin.operatorId":     "OPERATOR ID (USERNAME)",
+          "admin.sessionPass":    "SESSION PASSWORD",
+          "admin.enterPass":      "Enter password",
+          "admin.accessRole":     "SECURITY ACCESS ROLE",
+          "admin.roleOperator":   "Operator (Dashboard Control Only)",
+          "admin.roleAdmin":      "Administrator (Full Systems + Admin Panels)",
+          "admin.authorizeAccess":"Authorize Access",
+          "admin.tblDetails":     "operator details",
+          "admin.tblId":          "system ID",
+          "admin.tblRole":        "access role",
+          "admin.tblStatus":      "session status",
+          "admin.tblActions":     "actions",
+          "admin.syncing":        "Syncing system operator directory...",
+
+          // Info bar
+          "info.companyInfo": "COMPANY INFO",
+          "info.contact":     "For technical issues, contact lead engineer:(0968909656)",
+
+          // DB modal
+          "modal.setupFirebase": "Setup Active Firebase",
+          "modal.dbUrlLabel":    "Database URL Endpoint",
+          "modal.apiKeyLabel":   "API Authentication Key",
+          "modal.applyConfig":   "Apply Configuration",
+          "modal.resetDefaults": "Reset Defaults",
+
+          // Edit user modal
+          "editUser.title":      "Edit User Account",
+          "editUser.fullName":   "Full Name",
+          "editUser.operatorId": "Operator ID / Username",
+          "editUser.sessionPass":"Session Password",
+          "editUser.accessRole": "Access Role",
+          "editUser.applyEdits": "Apply Edits",
+        },
+
+        km: {
+          // Login
+          "login.operatorId":          "លេខសម្គាល់អ្នកប្រើ",
+          "login.usernamePlaceholder": "បញ្ចូលឈ្មោះអ្នកប្រើ",
+          "login.securityKey":         "ពាក្យសម្ងាត់",
+          "login.passwordPlaceholder": "បញ្ចូលពាក្យសម្ងាត់",
+          "login.btnLogin":            "ចូលប្រើប្រព័ន្ធ",
+
+          // Nav / dropdown
+          "nav.home":         "ទំព័រដើម",
+          "nav.systemAccess": "ការគ្រប់គ្រងប្រព័ន្ធ",
+          "nav.dbSetup":      "កំណត់ Database",
+          "nav.langSwitch":   "English",            // label shown when language IS Khmer
+          "nav.logout":       "ចាកចេញ",
+
+          // Sensor cards
+          "sensor.soilMoisture":  "សំណើមដី",
+          "sensor.hydrationNode": "ចំណុចត្រួតពិនិត្យទឹក",
+          "sensor.airTemp":       "សីតុណ្ហភាព",
+          "sensor.thermalMonitor":"ត្រួតពិនិត្យកំដៅ",
+          "sensor.airHumidity":   "សំណើមខ្យល់",
+          "sensor.ambientSat":    "កម្រិតសំណើម",
+          "sensor.motorStatus":   "ស្ថានភាពម៉ូទ័រ",
+          "sensor.status":        "ស្ថានភាព",
+          "sensor.waterPump":     "បូមទឹក",
+          "sensor.sprayerPump":   "បូមស្រោច",
+
+          // Controls panel
+          "ctrl.title":          "ប្រព័ន្ធគ្រប់គ្រងស្វ័យប្រវត្តិ",
+          "ctrl.soilThresh":     "កំរិតសំណើមដី (%)",
+          "ctrl.pumpStart":      "បើកបូម (ON)",
+          "ctrl.pumpStop":       "បិទបូម (OFF)",
+          "ctrl.solenoidTiming": "ពេលវេលារដូវវិល (នាទី)",
+          "ctrl.maxRunTime":     "ពេលដំណើរការអតិបរមា",
+          "ctrl.delayTime":      "ពេលរង់ចាំ",
+          "ctrl.sprayerOverride":"ប្រព័ន្ធស្រោចតាមកំដៅ",
+          "ctrl.triggerThresh":  "កំរិតសីតុណ្ហភាព (°C)",
+          "ctrl.sprayerRunTime": "ពេលស្រោច",
+          "ctrl.saveConfig":     "រក្សាទុកការកំណត់",
+
+          // Chart
+          "chart.title":    "ទិន្នន័យក្នុងពេលវេលាជាក់ស្ដែង",
+          "chart.subtitle": "ក្រាហ្វវិភាគ",
+          "chart.export":   "នាំចេញ",
+
+          // Admin panel
+          "admin.dbTitle":        "កំណត់ Database គោលដៅ",
+          "admin.dbSubtitle":     "ភ្ជាប់ console នេះទៅ ESP32 PLC ណាមួយ។",
+          "admin.dbUrl":          "Firebase RTDB Endpoint URL",
+          "admin.dbApiKey":       "Firebase API Key",
+          "admin.applyConfig":    "អនុវត្ត",
+          "admin.default":        "លំនាំដើម",
+          "admin.opRegistry":     "បញ្ជីអ្នកប្រើប្រព័ន្ធ",
+          "admin.opRegistryDesc": "គ្រប់គ្រងការចូល សិទ្ធិ និងការកំណត់សុវត្ថិភាព។",
+          "admin.addOperator":    "បន្ថែមអ្នកប្រើ",
+          "admin.registerCred":   "ចុះឈ្មោះការចូលប្រើ",
+          "admin.fullName":       "នាមត្រកូល / ឈ្មោះ",
+          "admin.opNamePlaceholder":"ឈ្មោះអ្នកប្រើ",
+          "admin.operatorId":     "លេខសម្គាល់ (USERNAME)",
+          "admin.sessionPass":    "ពាក្យសម្ងាត់",
+          "admin.enterPass":      "បញ្ចូលពាក្យសម្ងាត់",
+          "admin.accessRole":     "កម្រិតសិទ្ធិ",
+          "admin.roleOperator":   "អ្នកប្រើ (គ្រប់គ្រងផ្ទាំងគ្រប់គ្រងប៉ុណ្ណោះ)",
+          "admin.roleAdmin":      "អ្នកគ្រប់គ្រង (ប្រព័ន្ធពេញ + ផ្ទាំង Admin)",
+          "admin.authorizeAccess":"អនុញ្ញាតការចូលប្រើ",
+          "admin.tblDetails":     "ព័ត៌មានអ្នកប្រើ",
+          "admin.tblId":          "លេខសម្គាល់",
+          "admin.tblRole":        "សិទ្ធិ",
+          "admin.tblStatus":      "ស្ថានភាព",
+          "admin.tblActions":     "សកម្មភាព",
+          "admin.syncing":        "កំពុងដំណើរការបញ្ជីអ្នកប្រើ...",
+
+          // Info bar
+          "info.companyInfo": "ព័ត៌មានក្រុមហ៊ុន",
+          "info.contact":     "សម្រាប់បញ្ហាបច្ចេកទេស សូមទាក់ទងវិស្វករ:(0968909656)",
+
+          // DB modal
+          "modal.setupFirebase": "កំណត់ Firebase",
+          "modal.dbUrlLabel":    "Database URL",
+          "modal.apiKeyLabel":   "API Key",
+          "modal.applyConfig":   "អនុវត្ត",
+          "modal.resetDefaults": "ស្ដារលំនាំដើម",
+
+          // Edit user modal
+          "editUser.title":      "កែប្រែគណនីអ្នកប្រើ",
+          "editUser.fullName":   "ឈ្មោះពេញ",
+          "editUser.operatorId": "លេខសម្គាល់ / Username",
+          "editUser.sessionPass":"ពាក្យសម្ងាត់",
+          "editUser.accessRole": "កម្រិតសិទ្ធិ",
+          "editUser.applyEdits": "រក្សាទុកការកែ",
+        }
+      };
+
+      // ── Core apply function ─────────────────────────────────────────────────
+      function applyLanguage(lang) {
+        const dict = translations[lang];
+        if (!dict) return;
+
+        // 1. text nodes: data-i18n
+        document.querySelectorAll("[data-i18n]").forEach(el => {
+          const key = el.getAttribute("data-i18n");
+          if (dict[key] !== undefined) el.textContent = dict[key];
+        });
+
+        // 2. placeholders: data-i18n-placeholder
+        document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+          const key = el.getAttribute("data-i18n-placeholder");
+          if (dict[key] !== undefined) el.placeholder = dict[key];
+        });
+
+        // 3. html lang attribute + Kantumruy Pro font for Khmer
+        document.documentElement.lang = lang === "km" ? "km" : "en";
+
+        // 4. Update both toggle button labels to show the OTHER language
+        const label = dict["nav.langSwitch"] || "";
+        const loginLabel = document.getElementById("langLabelLogin");
+        const dashLabel  = document.getElementById("langLabelDash");
+        if (loginLabel) loginLabel.textContent = label;
+        if (dashLabel)  dashLabel.textContent  = label;
+
+        // 5. Persist choice
+        localStorage.setItem("uiLang", lang);
+      }
+
+      // ── Wire toggle buttons ─────────────────────────────────────────────────
+      function toggleLanguage() {
+        const current = localStorage.getItem("uiLang") || "en";
+        applyLanguage(current === "en" ? "km" : "en");
+      }
+
+      const btnLogin = document.getElementById("btnLangToggleLogin");
+      const btnDash  = document.getElementById("btnLangToggleDash");
+      if (btnLogin) btnLogin.addEventListener("click", toggleLanguage);
+      if (btnDash)  btnDash.addEventListener("click",  toggleLanguage);
+
+      // ── Apply saved language on page load ──────────────────────────────────
+      applyLanguage(localStorage.getItem("uiLang") || "en");
     </script>
   </body>
 </html>
