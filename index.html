@@ -1351,6 +1351,7 @@
         dropdownSystemPanel.classList.add("hidden");
         localStorage.removeItem("isLoggedIn");
         localStorage.removeItem("userRole");
+        localStorage.removeItem("loggedInUserId");
         location.reload();
       });
 
@@ -1413,16 +1414,29 @@
       };
 
       // Configuration parser & extractor
+      // Each user gets their own config key so operators cannot overwrite
+      // each other's (or the admin's) Firebase URL and API Key.
+      function getConfigKey() {
+        const userId = localStorage.getItem("loggedInUserId") || "default";
+        return `custom_firebase_config_${userId}`;
+      }
+
       function getActiveConfig() {
-        const localStr = localStorage.getItem("custom_firebase_config");
-        if (localStr) {
-          try {
-            return JSON.parse(localStr);
-          } catch (e) {
-            return defaultFirebaseConfig;
-          }
+        // 1. Try per-user config first
+        const userStr = localStorage.getItem(getConfigKey());
+        if (userStr) {
+          try { return JSON.parse(userStr); } catch (e) {}
         }
+        // 2. Fall back to global default
         return defaultFirebaseConfig;
+      }
+
+      function saveActiveConfig(newConfig) {
+        localStorage.setItem(getConfigKey(), JSON.stringify(newConfig));
+      }
+
+      function clearActiveConfig() {
+        localStorage.removeItem(getConfigKey());
       }
 
       function extractProjectId(url) {
@@ -1585,10 +1599,7 @@
           projectId: projId,
           storageBucket: `${projId}.firebasestorage.app`,
         };
-        localStorage.setItem(
-          "custom_firebase_config",
-          JSON.stringify(newConfig),
-        );
+        saveActiveConfig(newConfig);
         activeConfig = newConfig;
         await setupFirebaseConnection(activeConfig);
         populateConfigInputUI();
@@ -1601,7 +1612,7 @@
 
       // Reset modal configurations
       document.getElementById("btnModalReset").onclick = async () => {
-        localStorage.removeItem("custom_firebase_config");
+        clearActiveConfig();
         activeConfig = defaultFirebaseConfig;
         await setupFirebaseConnection(activeConfig);
         populateConfigInputUI();
@@ -1631,10 +1642,7 @@
           projectId: projId,
           storageBucket: `${projId}.firebasestorage.app`,
         };
-        localStorage.setItem(
-          "custom_firebase_config",
-          JSON.stringify(newConfig),
-        );
+        saveActiveConfig(newConfig);
         activeConfig = newConfig;
         await setupFirebaseConnection(activeConfig);
         populateConfigInputUI();
@@ -1645,7 +1653,7 @@
       };
 
       document.getElementById("btnRevertDb").onclick = async () => {
-        localStorage.removeItem("custom_firebase_config");
+        clearActiveConfig();
         activeConfig = defaultFirebaseConfig;
         await setupFirebaseConnection(activeConfig);
         populateConfigInputUI();
@@ -1674,6 +1682,7 @@
         if (id === MASTER_ID && pass === MASTER_PASS) {
           localStorage.setItem("isLoggedIn", "true");
           localStorage.setItem("userRole", "admin");
+          localStorage.setItem("loggedInUserId", MASTER_ID);
           showDashboard();
           return;
         }
@@ -1691,6 +1700,7 @@
               }
               localStorage.setItem("isLoggedIn", "true");
               localStorage.setItem("userRole", dbProfile.role || "operator");
+              localStorage.setItem("loggedInUserId", id);
               showDashboard();
               return;
             }
@@ -2433,7 +2443,7 @@
           });
           btn.innerText = "CONFIGURED!";
           setTimeout(() => {
-            btn.innerText = "SaveConfigurations";
+            btn.innerText = "Save Configurations";
             btn.disabled = false;
           }, 2000);
         } catch (e) {
